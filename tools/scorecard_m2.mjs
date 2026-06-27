@@ -43,7 +43,6 @@ const REPO_ROOT = path.resolve(__dirname, "..");
 const VIEWPORT = { width: 1920, height: 1080 };
 const ASPECT_TOLERANCE = 0.05; // 5% deviation allowed
 const OVERLAP_TOLERANCE = 1; // 1px jitter tolerance
-const MIN_FONT_SIZE = 6; // pixels
 
 // Scenes to score (same 6 D2 allowlisted scenes as D4)
 const SCENES_TO_SCORE = [
@@ -127,17 +126,6 @@ const RECOMMENDATION_TAXONOMY = {
 // Utility functions
 //============================================
 
-function findRepoRoot() {
-  let current = __dirname;
-  while (current !== "/") {
-    if (fs.existsSync(path.join(current, ".git"))) {
-      return current;
-    }
-    current = path.dirname(current);
-  }
-  throw new Error("Could not find repo root");
-}
-
 function getBboxDeviationRatio(renderedWidth, renderedHeight, vbWidth, vbHeight) {
   const renderedAspect = renderedWidth / renderedHeight;
   const naturalAspect = vbWidth / vbHeight;
@@ -152,7 +140,7 @@ function extractViewBoxDimensions(viewBoxStr) {
   return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
 }
 
-async function checkComputedStyles(locator, page) {
+async function checkComputedStyles(locator, _page) {
   const styles = await locator.evaluate((el) => {
     const computed = window.getComputedStyle(el);
     return {
@@ -217,7 +205,7 @@ function computeSceneOccupiedScore(whitespacePct) {
   return 100 - (whitespacePct || 0);
 }
 
-function computeSupportDistanceScore(supportDistanceData) {
+function _computeSupportDistanceScore(supportDistanceData) {
   if (!supportDistanceData || supportDistanceData.skipped) {
     return 100;
   }
@@ -231,7 +219,7 @@ function computeSupportDistanceScore(supportDistanceData) {
   return 100 * (1 - distance);
 }
 
-function computeBalanceScore(largestEmptyBand, sceneArea) {
+function _computeBalanceScore(largestEmptyBand, sceneArea) {
   if (!largestEmptyBand || !sceneArea) {
     return 50;
   }
@@ -243,7 +231,7 @@ function computeBalanceScore(largestEmptyBand, sceneArea) {
   return 100 * (1 - bandRatio * 2);
 }
 
-function computeRegionFillingScore(regionWhitespaceData) {
+function _computeRegionFillingScore(regionWhitespaceData) {
   if (!regionWhitespaceData || regionWhitespaceData.length === 0) {
     return 50;
   }
@@ -399,8 +387,7 @@ async function analyzeScene(page, sceneRootBbox) {
     }
   }
 
-  // C: Aspect ratio preserved
-  let aspectMismatchCount = 0;
+  // C: Aspect ratio preserved -- tag each mismatched placement for computeAspectRatioFidelityScore
   for (const placement of placements) {
     if (placement.svgBbox && placement.viewBox) {
       const vbDims = extractViewBoxDimensions(placement.viewBox);
@@ -412,28 +399,9 @@ async function analyzeScene(page, sceneRootBbox) {
           vbDims.height,
         );
         if (deviation > ASPECT_TOLERANCE) {
-          aspectMismatchCount++;
           placement.aspectMismatch = deviation;
         }
       }
-    }
-  }
-
-  // F: No item overlap
-  let overlapCount = 0;
-  for (let i = 0; i < placements.length; i++) {
-    for (let j = i + 1; j < placements.length; j++) {
-      if (bboxsOverlap(placements[i].bbox, placements[j].bbox, OVERLAP_TOLERANCE)) {
-        overlapCount++;
-      }
-    }
-  }
-
-  // G: No label outside scene
-  let labelOffPageCount = 0;
-  for (const label of labels) {
-    if (!bboxContains(sceneRootBbox, label.bbox)) {
-      labelOffPageCount++;
     }
   }
 
@@ -734,7 +702,7 @@ async function rebuildDist() {
       timeout: 30000,
     });
   } catch (err) {
-    throw new Error(`Build failed: ${err.message}`);
+    throw new Error(`Build failed: ${err.message}`, { cause: err });
   }
 }
 
@@ -809,7 +777,7 @@ async function main() {
       console.log(`Scoring ${sceneName}...`);
 
       // Rewrite main.ts
-      const prevContent = await rewriteMainTsForScene(sceneName);
+      const _prevContent = await rewriteMainTsForScene(sceneName);
       await rebuildDist();
 
       const page = await browser.newPage({ viewport: VIEWPORT });

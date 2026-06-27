@@ -1,5 +1,156 @@
 # Changelog
 
+## 2026-06-27
+
+### Additions and New Features
+
+- Added `run_scene_health.py` (root-level): visible single-command entry point for non-technical scene authors.
+  Runs the full two-step chain (`layout_metrics.mjs --all` then
+  `layout_health_report.mjs --all`) with no npm or node knowledge required.
+  `python3 run_scene_health.py` checks all scenes and streams the scorecard;
+  `python3 run_scene_health.py <scene_name>` checks one scene and prints a
+  compact summary (finding, categories, verdict, severity, target) plus the
+  report path; `python3 run_scene_health.py --list` lists known scene names.
+  Friendly prereq checks (node on PATH, tools present) with plain-language
+  errors. No precompute step required: metrics tool runs the pipeline live.
+- Extended `docs/specs/SCENE_METRICS.md` with task-first workflow section "How do
+  I get scene metrics for my new scene?" (6-step workflow: edit YAML, run
+  `python3 run_scene_health.py <scene_name>` -- script does everything, read
+  scorecard row, open `health_report.md` for full detail, revise YAML, rerun
+  until acceptable) and a troubleshooting mini-list (scene not found, report did
+  not update, metrics look wrong, borderline warning). Single-scene mode prints
+  to stdout only; all-scenes mode writes `test-results/layout_health/health_report.md`.
+- Added `tools/layout_golden_diff.mjs` (M1/WS-A): ephemeral regression harness that
+  captures a gitignored snapshot at `test-results/layout_reference_snapshot.json`
+  and compares engine output after changes. Snapshot includes provenance (scene count,
+  generated-layout hash, command, timestamp) and staleness warnings when older than the
+  current engine state. Accessible via `npm run layout:diff` and `npm run layout:refresh`.
+- Added `tools/layout_metrics.mjs` (M1/WS-B): raw per-scene geometry tool reporting
+  rectangle-union fill, largest-empty-rect, per-zone and per-grid occupancy, per-object
+  scale and floor proxies, label overlaps, AABB overlap graph, and balance. Generates a
+  per-scene overlay summary; accessible via `npm run layout:metrics`.
+- Added `tools/layout_health_report.mjs` (M2/WS-C): interprets raw geometry metrics
+  into provisional health categories (`healthy`, `shrink-stressed`,
+  `high-empty-space-plus-shrink`, `crowded`, `label-stressed`, `sparse`). Classifies
+  each scene finding as `engine-fit`, `authoring`, `intentional`, or `healthy` with
+  per-scene diagnoses and a worst-first author scorecard. Distribution-derived
+  PROVISIONAL bands (pending human approval); shrink fields labeled PROXY; borderline
+  tagging. Accessible via `npm run layout:health`.
+- Added `npm run layout:health` alias (`node --import tsx tools/layout_health_report.mjs --all`)
+  to `package.json`.
+- Extended `docs/LAYOUT_REMAINING_WORK.md` with sections 8-10 (M2/WS-D): section 8
+  explains the health report for scene designers (how to generate, category reference,
+  finding reference, reading evidence blocks); section 9 documents the PROVISIONAL
+  metric bands (fill, LER, shrink, label conflict) with distribution-derived values;
+  section 10 lists the 16 authoring-class scenes worst-first with one-line diagnoses
+  and authoring targets.
+- Added `docs/active_plans/audits/layout_geometry_audit.md` (M3/WS-E): documents the
+  audit contract, constraint set, and objective function; the three shrink mechanisms
+  as a greedy rescue heuristic; the sparse-and-shrunk answer; ranked findings; and
+  filled M5 decision templates. M5 verdict: NO-GO (see Decisions below).
+- Added report-only off-canvas validation diagnostic stream (M3/WS-F): the validate
+  phase classifies each item against scene_bounds as `fully_off_canvas` (error-level)
+  or `partial_overflow` (magnitude-scaled warning). Findings surface on
+  `PipelineResult.offCanvasDiagnostics` as a separate stream that never blocks the
+  build gate. New `tools/offcanvas_baseline.mjs` writes a baseline report to
+  `docs/active_plans/audits/offcanvas_baseline.md` (0 of 38 scenes flagged).
+  New `src/scene_runtime/layout/diagnostics/offcanvas.ts` holds the diagnostic type
+  and classifier. Placement output is byte-identical to HEAD.
+  New `tests/test_layout_offcanvas.mjs` exercises the off-canvas classifier.
+- Added `tests/test_layout_config.mjs` (M4/WS-J): 16 behavioral config-precedence
+  tests covering zone_gap split (confirmed intentional; no disagreeing duplicate),
+  scene-level and zone-level overrides, and strategy-local values.
+- Added `docs/specs/SCENE_METRICS.md`: canonical scene-metrics reference for scene
+  writers. Five-section structure: quickstart (commands, output path, scorecard
+  columns), category meanings (sparse, crowded, shrink-stressed, label-stressed,
+  off-canvas, high-empty-space-plus-shrink), finding-to-action table (authoring,
+  engine-fit, intentional, validation) with practical authoring moves, evidence-field
+  glossary (fill ratio, largest empty rectangle, scale, floor hits, overlap graph,
+  balance; PROVISIONAL bands and PROXY shrink signals noted), and maintainer notes
+  (band derivation, current provisional values, severity scoring weights). Content
+  moved from `docs/LAYOUT_REMAINING_WORK.md` sections 8.2-8.4 and 9; those sections
+  now point here. Linked from `AGENTS.md` specs list and
+  `docs/specs/PROTOCOL_AUTHORING_GUIDE.md` related references.
+
+### Fixes and Maintenance
+
+- Audit-fix pass: scrubbed planning-scaffold tags (WP-#, WS-#, M#) from all
+  comments and docstrings in `tests/test_normalize_svg_v3.py`; renamed 8 test
+  functions to drop the `wp3b_` prefix; added `pathlib` import and annotated 3
+  unannotated helper params. Replaced `sys.exit(1)` with `raise SystemExit(1)`
+  in `run_scene_health.py` (PYTHON_STYLE: avoid sys.exit). Corrected
+  `docs/specs/SCENE_METRICS.md` single-scene-mode description (the command
+  DOES write `health_report.md`, contrary to the prior text). Added
+  `run_scene_health.py` and `docs/specs/SCENE_METRICS.md` to
+  `docs/FILE_STRUCTURE.md` table. Reordered `docs/LAYOUT_REMAINING_WORK.md`
+  section 8.1 so the designer-facing `python3 run_scene_health.py` command
+  leads, with node/npm forms moved to a maintainer subsection. Fixed
+  `docs/CODE_ARCHITECTURE.md` normalize_svg_v3 deps filename from
+  `pip_requirements.txt` to `pip_requirements-dev.txt`.
+- Removed the fixture-manifest harness from `tests/test_normalize_svg_v3.py`
+  (`_MANIFEST_PATH`, `_load_manifest`, `_manifest_normalize_params`,
+  `test_manifest_entries_normalize`, `_manifest_rejection_params`,
+  `test_manifest_rejection_entries`, `_manifest_viewbox_params`,
+  `test_manifest_viewbox_entries`): the external file
+  `tests/fixtures/svg_normalizer/expected_bboxes.json` is banned per
+  PYTEST_STYLE.md (no fixtures in the repo) and its absence was aborting
+  collection of all 4556+ tests. Replaced with five inline real-SVG cases
+  covering the manifest scope areas not already exercised by existing inline
+  tests: relative `h`/`v` path commands (bbox width/height round-trip),
+  relative `l` (lineto) commands (triangle bbox), relative `a` arc command
+  (arc-bulge capture), viewBox with padding (dimensions include 2x padding),
+  and viewBox with zero padding (dimensions tight to geometry). Collection no
+  longer errors; `pytest tests/` passes 4677 tests.
+- Repaired a dead ancestor-walk in `tests/playwright/test_bench_basic_render.mjs`
+  Assertion A (M3/WS-G): replaced with a real `parentElement` clip-detection walk up
+  to `#scene-root` that checks for `overflow`, `clip`, `mask`, and `contain` CSS
+  properties. Spec result stays 9/11 (Assertions B/C are pre-existing missing-SVG
+  failures unrelated to this change).
+- ESLint config (task #11): added browser-globals override for browser-context files
+  (suppresses false-positive `window`/`document` errors); added `^_` ignore pattern
+  for `no-unused-vars`; removed genuinely dead symbols; added `{cause}` to two
+  rethrows. `check_codebase.sh` now passes all 5 checks.
+
+### Decisions and Failures
+
+- M5 audit verdict NO-GO (M3/WS-E): the geometry audit found zero same-tier collisions
+  across all 38 scenes. The 6 engine-fit scenes are authoring-bounded (packed zones
+  narrower than their content), not solver defects. A fixed-row reformulation is
+  theoretically feasible but unmotivated given that authoring edits resolve all flagged
+  cases. Decision and full analysis recorded in
+  `docs/active_plans/audits/layout_geometry_audit.md`.
+- Golden baseline refresh deferred to human (M1/WS-A): the `test-results/layout_reference_snapshot.json`
+  snapshot must be captured from a clean committed tree. It is currently stale-but-harmless;
+  a byte-identical precompute confirms no layout change occurred. Run
+  `npm run layout:refresh` from a clean committed tree to establish the post-wave baseline.
+- M4 (WS-H/WS-I): confirmed the layered config module (`src/scene_runtime/layout/config/`)
+  and all call-site wiring already shipped before this wave; no new config module was added
+  to avoid duplication. The `label_offset_y` reconciliation (canonical 3.5) was confirmed
+  already present.
+
+## 2026-06-26
+
+### Behavior or Interface Changes
+
+- Redesigned `tools/layout_golden_diff.mjs` to use an ephemeral, gitignored snapshot
+  at `test-results/layout_reference_snapshot.json` instead of `tests/fixtures/`.
+  The snapshot is never committed; it is captured with `--refresh` from a clean engine
+  state at the start of a refactor session and compared after changes. The compare mode
+  exits non-zero with a clear message when the snapshot is absent, instructing the user
+  to run `--refresh` first. Added `fs.mkdirSync` in the refresh path so `test-results/`
+  is created automatically on a fresh clone.
+- Added `layout:refresh` npm script alias (`npm run layout:refresh`) alongside the
+  existing `layout:diff` alias.
+- Updated `docs/USAGE.md` layout regression harness section to document the ephemeral
+  lifecycle; removed the three-condition committed-fixture refresh procedure.
+
+### Decisions and Failures
+
+- Moved the snapshot from `tests/fixtures/` (not gitignored, commit-eligible) to
+  `test-results/` (gitignored at line 7 of `.gitignore`) after the user ruled out
+  committed fixtures. The prior snapshot at `tests/fixtures/layout_reference_snapshot.json`
+  is now orphaned (no longer read or written by the tool) and is safe to delete manually.
+
 ## 2026-06-11
 
 ### Fixes and Maintenance

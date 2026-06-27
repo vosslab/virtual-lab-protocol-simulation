@@ -218,53 +218,58 @@ async function main() {
         continue;
       }
 
-      // Walk ancestors up to #scene-root
-      let element = placement.locator;
-      let ancestorPath = [];
-      let currentDepth = 0;
-
-      try {
-        while (currentDepth < 20) {
-          const selector = await element.evaluate((el) => {
-            if (!el.parentElement) return null;
-            const parent = el.parentElement;
-            if (parent.id === "scene-root") return "#scene-root";
-            return parent.className || parent.tagName.toLowerCase();
-          });
-
-          if (!selector) break;
-          ancestorPath.push(selector);
-
-          if (selector === "#scene-root") break;
-
-          element = page.locator(`../${selector}`).first(); // fallback to parent
-          currentDepth++;
+      // Check the placement element and every ancestor up to (but not including)
+      // #scene-root for banned clipping styles. #scene-root is the scene viewport
+      // boundary and is allowed to clip; Assertions D and G already verify items
+      // stay inside it. A banned overflow/clip/mask/contain on an INTERMEDIATE
+      // card or region wrapper is what crops scientific assets (see PRIMARY_DESIGN
+      // "never crop scientific assets"). The walk runs in one page.evaluate over
+      // real parentElement links, so it tests the actual rendered ancestor chain
+      // instead of building an unused selector path that asserts nothing.
+      const clipOffender = await placement.locator.evaluate((startEl) => {
+        function isBannedClip(cs) {
+          return (
+            cs.overflow === "hidden" ||
+            cs.overflow === "clip" ||
+            cs.overflowX === "hidden" ||
+            cs.overflowX === "clip" ||
+            cs.overflowY === "hidden" ||
+            cs.overflowY === "clip" ||
+            cs.clipPath !== "none" ||
+            cs.mask !== "none" ||
+            cs.maskImage !== "none" ||
+            cs.contain.includes("paint") ||
+            cs.contain === "strict" ||
+            cs.contain === "content"
+          );
         }
-      } catch (e) {
-        // Ancestor traversal is best-effort
-      }
+        let el = startEl;
+        while (el && el.id !== "scene-root") {
+          const cs = window.getComputedStyle(el);
+          if (isBannedClip(cs)) {
+            const cls = typeof el.className === "string" ? el.className : "";
+            const selector =
+              el.tagName.toLowerCase() +
+              (el.id ? `#${el.id}` : "") +
+              (cls ? `.${cls.trim().split(/\s+/).join(".")}` : "");
+            return {
+              selector,
+              overflow: cs.overflow,
+              clipPath: cs.clipPath,
+              mask: cs.mask,
+              contain: cs.contain,
+            };
+          }
+          el = el.parentElement;
+        }
+        return null;
+      });
 
-      // Check for banned overflow/clip properties on placement element itself and ancestors
-      const computedStyles = await checkComputedStyles(placement.locator, page);
-      const hasBannedProps =
-        computedStyles.overflow === "hidden" ||
-        computedStyles.overflow === "clip" ||
-        computedStyles.overflowX === "hidden" ||
-        computedStyles.overflowX === "clip" ||
-        computedStyles.overflowY === "hidden" ||
-        computedStyles.overflowY === "clip" ||
-        computedStyles.clipPath !== "none" ||
-        computedStyles.mask !== "none" ||
-        computedStyles.maskImage !== "none" ||
-        computedStyles.contain.includes("paint") ||
-        computedStyles.contain === "strict" ||
-        computedStyles.contain === "content";
-
-      if (hasBannedProps) {
+      if (clipOffender) {
         console.error(
-          `FAIL: Placement ${placement.name} or ancestor has banned style: ` +
-            `overflow=${computedStyles.overflow}, clipPath=${computedStyles.clipPath}, ` +
-            `mask=${computedStyles.mask}, contain=${computedStyles.contain}`,
+          `FAIL: Placement ${placement.name} clipped by <${clipOffender.selector}>: ` +
+            `overflow=${clipOffender.overflow}, clipPath=${clipOffender.clipPath}, ` +
+            `mask=${clipOffender.mask}, contain=${clipOffender.contain}`,
         );
         assertionAFailed = true;
       }

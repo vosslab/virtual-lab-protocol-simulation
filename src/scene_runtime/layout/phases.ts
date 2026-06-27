@@ -54,6 +54,7 @@
 // their computed bands instead.
 
 import { clampSceneBounds } from "./clamp_scene_bounds.js";
+import { collectOffCanvasDiagnostics } from "./diagnostics/offcanvas.js";
 import { groupByZone } from "./group_by_zone.js";
 import { horizontalLayout } from "./horizontal_layout.js";
 import { layoutLabels, resolveLabelCollisions } from "./layout_labels.js";
@@ -61,6 +62,7 @@ import { reflowZones } from "./reflow_zones.js";
 import { verticalLayout } from "./vertical_layout.js";
 import { verticalFootprintFor } from "./vertical_footprint.js";
 import type { BoundsOverflow } from "./clamp_scene_bounds.js";
+import type { OffCanvasDiagnostic } from "./diagnostics/offcanvas.js";
 import type { LayoutConfig } from "./config/index.js";
 import type { SeverityDiagnostic } from "./diagnostics/severity_model.js";
 import type { PackerZoneOutcome } from "./strategies/index.js";
@@ -138,6 +140,12 @@ export interface LayoutContext {
   // any zone whose items still escape scene_bounds after fit/shrink. run_pipeline
   // reads this to surface the Errors; it does not affect positions.
   overflows?: BoundsOverflow[];
+  // Report-only validate-phase output: per-item off-canvas classification.
+  // Each escaping item is graded fully_off_canvas (error class) or
+  // partial_overflow (warning, magnitude-scaled). This is a SEPARATE informational
+  // stream from the build-gate severity diagnostics; nothing reads it to fail or
+  // block a build. run_pipeline surfaces it on PipelineResult.offCanvasDiagnostics.
+  offCanvas?: OffCanvasDiagnostic[];
   // resolve-collisions output: severity diagnostics from the global label
   // de-overlap (unresolved_label_overlap Errors, poor_label_alignment Warnings,
   // possible_overload Reviews). run_pipeline surfaces these on
@@ -411,6 +419,14 @@ const resolveCollisionsPhase: Phase = {
 // escapes scene_bounds after the vertical auto-fit and convergence shrink. It
 // returns its input map unchanged, so this phase does not mutate positions.
 //
+// It also runs the per-item off-canvas classifier (collectOffCanvasDiagnostics),
+// which grades each item independently against scene_bounds as fully_off_canvas
+// (error class) or partial_overflow (warning, magnitude-scaled). That closes the
+// gap between the zone-bbox overflow above (which can average a fully off-screen
+// item back inside) and true per-item off-canvas art. The off-canvas stream is
+// REPORT-ONLY and SEPARATE from the build gate: it is stored on ctx.offCanvas and
+// surfaced on the result, but nothing reads it to fail or block a build.
+//
 // mutatesPositions is false: the vertical auto-fit owns the shrink-to-fit, so
 // validate only reports. The prior silent group translation was removed when the
 // vertical auto-fit stage took over that responsibility.
@@ -429,6 +445,13 @@ const validatePhase: Phase = {
       ctx.scene.scene_name,
     );
     ctx.overflows = overflows;
+    // Report-only per-item off-canvas classification over the same final layout.
+    ctx.offCanvas = collectOffCanvasDiagnostics(
+      collided,
+      ctx.scene.zones ?? [],
+      ctx.scene.scene_bounds,
+      ctx.scene.scene_name,
+    );
     return ctx;
   },
 };

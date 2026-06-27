@@ -26,5 +26,19 @@ export type {
 export { buildActionablePayload } from "./payload.js";
 export type { ActionablePayload, AttemptedMove } from "./payload.js";
 
+export {
+  OFFCANVAS_TIERS,
+  offCanvasTier,
+  classifyItemOffCanvas,
+  collectOffCanvasDiagnostics,
+} from "./offcanvas.js";
+export type {
+  OffCanvasTier,
+  OffCanvasClass,
+  OffCanvasSeverity,
+  OffCanvasOverflow,
+  OffCanvasDiagnostic,
+} from "./offcanvas.js";
+
 export { buildRowZoneDecision, buildDecisionMetadata } from "./decision_metadata.js";
 export type { ZoneDecision, DecisionMetadata } from "./decision_metadata.js";

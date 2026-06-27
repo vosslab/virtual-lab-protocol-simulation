@@ -863,6 +863,141 @@ per-scene evidence (quantitative columns plus by-eye verdicts) lives in
 
 ---
 
+## 8. Layout health report for scene designers
+
+The layout health report gives scene designers a per-scene readout with
+categories, a severity score, metric evidence, and a suggested authoring
+action. This section explains how to generate the report, what each
+category means, and how to act on findings.
+
+### 8.1 Generating the report
+
+For scene designers, the entry command is:
+
+```bash
+python3 run_scene_health.py
+```
+
+Check a single scene:
+
+```bash
+python3 run_scene_health.py <scene_name>
+```
+
+No npm or node knowledge required -- the script handles the full pipeline.
+For a quickstart, category reference, finding reference, evidence-field
+glossary, and provisional band tables, see
+[docs/specs/SCENE_METRICS.md](specs/SCENE_METRICS.md).
+
+The underlying node commands (for maintainers) are:
+
+```bash
+node --import tsx tools/layout_health_report.mjs --all
+```
+
+Or use the npm alias:
+
+```bash
+npm run layout:health
+```
+
+To run the underlying tool for a single scene: `node --import tsx tools/layout_health_report.mjs --scene <scene_name>`.
+
+Outputs:
+
+- `test-results/layout_health/health_report.md` -- designer-facing summary,
+  worst-first ranked.
+- `test-results/layout_health/health_report.json` -- machine-readable data
+  with per-scene diagnoses, categories, findings, severity scores, and the
+  distribution-derived provisional bands.
+
+The tool source is at `tools/layout_health_report.mjs`.
+
+### 8.2 Categories, findings, and evidence glossary
+
+The canonical category table, finding table, evidence-field glossary, and
+provisional metric bands live in
+[docs/specs/SCENE_METRICS.md](specs/SCENE_METRICS.md).
+
+---
+
+## 9. Provisional metric bands
+
+See [docs/specs/SCENE_METRICS.md](specs/SCENE_METRICS.md) for the canonical
+band tables (fill, largest empty rectangle, shrink, label conflict) with
+distribution-derived values and provisional status notes.
+
+---
+
+## 10. Authoring-problem scenes from the current build
+
+These 16 scenes were classified `authoring` by the health report as of
+the WS-C/WS-D wave (2026-06-26). Each needs a scene YAML edit to reduce
+shrink stress. Scenes are listed worst-first by severity score.
+
+The typical fix is to reduce the object count in the named zone, or to add
+a zone row so the packer has more vertical space. Do not remove pedagogically
+necessary objects without author review and protocol alignment.
+
+Regenerate by running:
+```bash
+node --import tsx tools/layout_health_report.mjs --all
+```
+then reading `test-results/layout_health/health_report.json` for `finding = "authoring"` scenes.
+
+| Scene | Severity | Categories | One-line diagnosis | Authoring target |
+| --- | --- | --- | --- | --- |
+| `passage_hood_detachment_hood_workspace` | 60.3 | shrink-stressed | Content shrunk to floor; too many objects for zones | Reduce count in zone `center` or add a zone row |
+| `extraction_workspace` | 56.3 | shrink-stressed, crowded, label-stressed | Too many objects; overlaps and label conflicts present | Reduce object count or split zone `rear_center` across an added row |
+| `electrophoresis_bench` | 48.3 | shrink-stressed, label-stressed | Content shrunk to floor; label conflicts | Reduce count in zone `rear_center` or add a zone row |
+| `sdspage_attach_lid_and_leads_workspace` | 48.3 | shrink-stressed, label-stressed | Content shrunk to floor; label conflicts | Reduce count in zone `rear_center` or add a zone row |
+| `sdspage_fill_tank_buffer_workspace` | 48.3 | shrink-stressed, label-stressed | Content shrunk to floor; label conflicts | Reduce count in zone `rear_center` or add a zone row |
+| `sdspage_load_sample_single_lane_workspace` | 48.3 | shrink-stressed, label-stressed | Content shrunk to floor; label conflicts | Reduce count in zone `rear_center` or add a zone row |
+| `sdspage_prepare_running_buffer_workspace` | 48.3 | shrink-stressed, label-stressed | Content shrunk to floor; label conflicts | Reduce count in zone `rear_center` or add a zone row |
+| `sdspage_recycle_buffer_workspace` | 48.3 | shrink-stressed, label-stressed | Content shrunk to floor; label conflicts | Reduce count in zone `rear_center` or add a zone row |
+| `sdspage_run_electrophoresis_workspace` | 48.3 | shrink-stressed, label-stressed | Content shrunk to floor; label conflicts | Reduce count in zone `rear_center` or add a zone row |
+| `plate_drug_treatment_media_adjustment_plate_workspace` | 42.3 | shrink-stressed | Content shrunk to floor; too many objects for zones | Reduce count in zone `rear_center` or add a zone row |
+| `hood_workspace` | 41.1 | shrink-stressed | Content shrunk to floor; too many objects for zones | Reduce count in zone `rear_right` or add a zone row |
+| `plate_workspace` | 38.4 | shrink-stressed | Content shrunk to floor; too many objects for zones | Reduce count in zone `rear_right` or add a zone row |
+| `bench_basic` | 36.4 | shrink-stressed | Content shrunk to floor; too many objects for zones | Reduce count in zone `center` or add a zone row |
+| `dilution_workspace` | 33.7 | shrink-stressed | Content shrunk to floor; too many objects for zones | Reduce count in zone `rear_right` or add a zone row |
+| `mtt_reagent_prep_bench_workspace` | 33.2 | shrink-stressed | Content shrunk to floor; too many objects for zones | Reduce count in zone `center` or add a zone row |
+| `centrifuge_workspace` | 33.1 | shrink-stressed | Content shrunk to floor; too many objects for zones | Reduce count in zone `center` or add a zone row |
+
+Cross-references to existing analysis in this document:
+
+- `electrophoresis_bench`: additional detail in section 3.6, including a
+  placeholder asset blocker. Resolve the placeholder before redesigning zones.
+- `bench_basic`: label Error history in section 3.8, now resolved by WP-6.
+
+---
+
+## 11. Engine-fit scenes: authoring remedy (widen packed zone)
+
+These 5 scenes were classified `engine-fit` by the geometry audit (M3/WS-E,
+2026-06-27). In each case the packer fills its assigned zone correctly but the
+zone spans only part of the scene, leaving a large empty region outside it.
+The fix is a scene YAML edit to widen the packed zone so the packer fills more
+of the available space. Do not reduce object count for these scenes.
+
+These are distinct from the 16 `authoring`-class scenes in section 10, which need
+object-count reduction. Engine-fit scenes have adequate objects; the zone geometry
+is too narrow.
+
+| Scene | Audit severity | Remedy |
+| --- | --- | --- |
+| `seeding_workspace` | Flagged (engine-fit) | Widen the packed zone in scene YAML to fill more of the horizontal range; see also section 3.5 for the correctness defect (`unresolved_overlap`) that must be fixed first |
+| `sdspage_destain_gel_rock_workspace` | Flagged (engine-fit) | Widen the packed zone to use more of the scene |
+| `staining_bench` | Flagged (engine-fit) | Widen inter-zone gap region (see section 3.2 for void-collapse analysis); a zone-y edit also resolves the center void |
+| `drug_dilution_setup_bench_setup` | Flagged (engine-fit) | Widen the packed zone in scene YAML |
+| `hood_basic` | Flagged (engine-fit) | Widen the packed zone; see section 3.4 for guidance on the orphan BSC workspace label slot |
+
+Note: `adversarial_overflow_smoke` was also flagged by the audit but is a dev
+fixture intentionally designed to stress overflow paths. It is excluded from
+this table because engine-fit remedies do not apply to adversarial fixtures.
+
+---
+
 ## Appendix: Error diagnostics cross-reference
 
 Full Error table reproduced from

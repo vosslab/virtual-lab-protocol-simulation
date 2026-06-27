@@ -126,6 +126,7 @@ diagnostic stream.
 | `src/scene_runtime/layout/diagnostics/severity_model.ts` | Error / Warning / Review-required severity types |
 | `src/scene_runtime/layout/diagnostics/payload.ts` | Typed diagnostic payload shapes |
 | `src/scene_runtime/layout/diagnostics/decision_metadata.ts` | Per-scene decision metadata type |
+| `src/scene_runtime/layout/diagnostics/offcanvas.ts` | Off-canvas classifier: emits `fully_off_canvas` (error-level) or `partial_overflow` (magnitude-scaled warning) onto `PipelineResult.offCanvasDiagnostics`; report-only, never blocks build gate |
 | `src/scene_runtime/layout/diagnostics/index.ts` | Barrel export |
 
 #### Placement strategies (`src/scene_runtime/layout/strategies/`)
@@ -251,7 +252,8 @@ Three tiers, isolated by [tests/conftest.py](../tests/conftest.py)
 - **Node unit tests** (`tests/test_*.mjs`, run by `node --import tsx --test`):
   layout engine, step machine, structural guards, resolve_entry_scene,
   visual_state_resolver, scene operations, shell signals, walker
-  no-step-branches, and more.
+  no-step-branches, off-canvas classifier (`tests/test_layout_offcanvas.mjs`),
+  config-precedence (`tests/test_layout_config.mjs`), and more.
 - **Playwright browser tests** (`tests/playwright/`): framed-layout evidence,
   initial-scene evidence, interaction attrs, launcher, protocol host, solid walker,
   viewport sweep, and full-path walkthroughs under `tests/playwright/e2e/`.
@@ -278,6 +280,10 @@ Developer-only helpers that do not appear in any build chain.
 | [tools/protocol_to_png.mjs](../tools/protocol_to_png.mjs) | `protocol:png` -- renders a protocol page to PNG; records load outcomes |
 | [tools/scene_stats.mjs](../tools/scene_stats.mjs) | `computeSceneStats` -- shared scene statistics helper |
 | [tools/bbox_helpers.mjs](../tools/bbox_helpers.mjs) | Shared bounding-box helper utilities used by scene tools |
+| `tools/layout_golden_diff.mjs` | `layout:diff` / `layout:refresh` -- ephemeral regression harness; captures and compares a gitignored layout baseline snapshot at `test-results/layout_reference_snapshot.json` with provenance (scene count, generated-layout hash, command, timestamp) and staleness detection |
+| `tools/layout_metrics.mjs` | `layout:metrics` -- raw per-scene geometry metrics (rectangle-union fill, largest-empty-rect, per-zone and per-grid occupancy, per-object scale and floor proxies, label overlaps, AABB overlap graph, balance); per-scene overlay |
+| `tools/layout_health_report.mjs` | `layout:health` -- interprets raw geometry metrics into provisional health categories and a worst-first author scorecard; writes `test-results/layout_health/health_report.{md,json}` |
+| `tools/offcanvas_baseline.mjs` | Reads `PipelineResult.offCanvasDiagnostics` for every scene and writes a baseline report to `docs/active_plans/audits/offcanvas_baseline.md` |
 
 #### SVG ingestion-gate normalizer (`tools/normalize_svg_v3.py`)
 
@@ -312,7 +318,7 @@ all visible geometry on normalized elements is absolute path data in root
 coordinates with no geometry-affecting `transform` remaining.
 `gradientTransform`/`patternTransform` are paint-space exemptions.
 
-**Dependencies** (declared in `pip_requirements.txt`):
+**Dependencies** (declared in `pip_requirements-dev.txt`):
 
 - `lxml`: XML parse and serialize (preferred over ElementTree for namespace control)
 - `tinycss2`: CSS `<style>` block parsing; used to rewrite `url(#id)` refs on ASCII rename (F8) and to detect geometry-affecting CSS rules

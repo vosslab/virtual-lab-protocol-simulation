@@ -226,14 +226,14 @@ async function dispatchAdjust(page, interaction) {
 
   // Step 4: Dispatch input and change events to trigger the adjust dispatch handler
   await page.evaluate(
-    ({ selector, value }) => {
+    ({ selector }) => {
       const input = document.querySelector(selector);
       if (input) {
         input.dispatchEvent(new Event("input", { bubbles: true }));
         input.dispatchEvent(new Event("change", { bubbles: true }));
       }
     },
-    { selector: inputSelector, value: expectedValue },
+    { selector: inputSelector },
   );
 
   // Step 5: Optionally press Enter to commit (handlers may bind to Enter key)
@@ -374,7 +374,10 @@ async function executeStep(page, step, stepIndex, protocol, screenshotDir, verbo
       await executeInteraction(page, interaction, step_name, i + 1, screenshotDir);
       interactionsWalked++;
     } catch (err) {
-      throw new Error(`Failed executing interaction ${i + 1} in step ${step_name}: ${err.message}`);
+      throw new Error(
+        `Failed executing interaction ${i + 1} in step ${step_name}: ${err.message}`,
+        { cause: err },
+      );
     }
   }
 

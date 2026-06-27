@@ -57,7 +57,6 @@ import { REPO_ROOT } from "../repo_root.mjs";
 import {
   waitForExports,
   readGameState,
-  readProgressSnapshot,
   clickTargetAndWaitProgress,
   typeCommitAndWaitProgress,
   pickWrongOrderItem,

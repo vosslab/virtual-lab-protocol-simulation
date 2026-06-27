@@ -55,6 +55,10 @@ export function makePrecomputedResult(scene: SceneA, final: ComputedItem[]): Pip
     final,
     decisionMetadata: buildDecisionMetadata(scene.scene_name, []),
     severityDiagnostics: [],
+    // The renderer reads only `final` and `scene`; the off-canvas report is a
+    // build-time validate-phase artifact, unused at render time, so the
+    // production path fills an explicit empty list.
+    offCanvasDiagnostics: [],
     // The renderer reads only `final` and `scene`; the computed zone bands are a
     // build-time layout-engine artifact consumed at precompute time, unused at
     // render time, so the production path fills an explicit empty map.

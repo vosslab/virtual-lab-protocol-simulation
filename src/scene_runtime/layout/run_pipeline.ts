@@ -1,5 +1,5 @@
 // Top-level pipeline runner, expressed over a phase registry (see phases.ts and
-// docs/active_plans/decisions/layout_model_layer_synthesis.md "Phase model").
+// the phase model documented in docs/specs/LAYOUT_ENGINE.md).
 //
 // Identity resolution (the prepare / resolve-metadata / measure phases:
 // normalize -> inheritance -> bind -> scale) runs once. The placement phases
@@ -271,6 +271,11 @@ export function runPipeline(scene: SceneA, opts: Partial<PipelineInputs> = {}): 
   const packerDiagnostics = lastCtx?.packerSeverity ?? [];
   const severityDiagnostics = [...labelDiagnostics, ...boundsDiagnostics, ...packerDiagnostics];
 
+  // Report-only per-item off-canvas classification from the final pass's validate
+  // phase. Kept SEPARATE from severityDiagnostics and the closed-kind diagnostics
+  // stream: it is purely informational and never fails or blocks the build.
+  const offCanvasDiagnostics = lastCtx?.offCanvas ?? [];
+
   return {
     scene: normalScene,
     sourceScene: scene,
@@ -292,6 +297,7 @@ export function runPipeline(scene: SceneA, opts: Partial<PipelineInputs> = {}): 
     final,
     decisionMetadata,
     severityDiagnostics,
+    offCanvasDiagnostics,
     zoneBands: finalZoneBands,
     reflowOverflow: finalReflowOverflow,
     reflowTotalContent: finalReflowTotalContent,

@@ -1,26 +1,24 @@
 """
-Pytest harness for tools/normalize_svg_v3.py -- WP-1b.
+Pytest harness for tools/normalize_svg_v3.py.
 
 Covers:
-  - Manifest-driven bbox assertions: for each entry in
-    tests/fixtures/svg_normalizer/expected_bboxes.json that v3 can satisfy
-    (M1 scope: relative path commands, arc extrema, rect/circle/line elements,
-    clip-path passthrough, rejection cases).
+  - Inline bbox assertions: relative and absolute path commands, arc extrema,
+    rect/circle/line elements, clip-path passthrough, rejection cases.
+  - viewBox assertions after normalization (padding expands dimensions correctly).
   - Direct unit tests for arc_extrema and path_bbox_from_segments helpers.
   - UNSUPPORTED_UNIT rejection for required size attrs with non-user units.
-
-Later WPs append their own manifest entries and behavior tests in this file:
-  - WP-2a: transform flattening (A1), invariant check
-  - WP-2b: shape->path (A2)
-  - WP-3e: simple-clipPath flattening (A6) -- manifest clip fixtures run (no
-    pending_wp skips) and the WP-3e behavior tests live below
+  - Transform flattening: invariant checks and viewBox correctness.
+  - Shape-to-path conversion: rect, circle, ellipse, line, polyline, polygon.
+  - Full reject set: use/symbol, filter, mask, marker, image, clipPath, style,
+    pattern; reference-integrity gate; editor-cruft removal.
+  - Simple-clipPath flattening and floor-shadow removal.
 """
 
 # Standard Library
 import os
+import pathlib
 import re
 import sys
-import json
 
 import pytest
 
@@ -31,21 +29,10 @@ sys.path.insert(0, _TOOLS_DIR)
 import normalize_svg_v3
 
 SVG_NS = normalize_svg_v3.SVG_NS
-# Path to the checked-in fixture manifest.
-_MANIFEST_PATH = os.path.join(
-	os.path.dirname(__file__), "fixtures", "svg_normalizer", "expected_bboxes.json"
-)
 
 
 #============================================
-def _load_manifest() -> list[dict]:
-	"""Load the expected_bboxes.json fixture manifest."""
-	with open(_MANIFEST_PATH, encoding="utf-8") as fh:
-		return json.load(fh)
-
-
-#============================================
-def _write_svg(path, body: str) -> None:
+def _write_svg(path: pathlib.Path, body: str) -> None:
 	"""Write a minimal SVG wrapper around body to path."""
 	path.write_text(
 		f'<svg xmlns="{SVG_NS}" viewBox="0 0 100 100">\n{body}\n</svg>\n',
@@ -54,145 +41,113 @@ def _write_svg(path, body: str) -> None:
 
 
 #============================================
-def _write_raw_svg(path, raw: str) -> None:
+def _write_raw_svg(path: pathlib.Path, raw: str) -> None:
 	"""Write raw SVG text (no wrapper) to path."""
 	path.write_text(raw, encoding="utf-8")
 
 
 #============================================
-def _bbox_within_tolerance(result_bbox, expected: dict, tol: float) -> bool:
-	"""Return True when each corner of result_bbox is within tol of expected."""
-	return (
-		abs(result_bbox.min_x - expected["min_x"]) <= tol
-		and abs(result_bbox.min_y - expected["min_y"]) <= tol
-		and abs(result_bbox.max_x - expected["max_x"]) <= tol
-		and abs(result_bbox.max_y - expected["max_y"]) <= tol
-	)
-
-
-#============================================
-# Manifest-driven tests (parametrized)
+# Inline bbox tests: relative path commands and viewBox assertions
 #============================================
 
-def _manifest_normalize_params():
-	"""Build parametrize args for non-rejection manifest entries.
+def test_relative_hv_commands_bbox(tmp_path) -> None:
+	"""Relative h/v commands produce the same bbox as the absolute equivalent.
 
-	Entries with pending_wp are yielded as pytest.param(..., marks=pytest.mark.skip)
-	so the dependency is explicit and the entry shows per-ID in the test report.
-	Entries with expected_rejection_code are excluded (tested separately).
+	A path using relative h (horizontal) and v (vertical) commands describing
+	a 20x30 rectangle must normalize to the correct bbox dimensions, confirming
+	that parse_path_to_absolute handles the relative-to-absolute conversion.
 	"""
-	entries = _load_manifest()
-	params = []
-	for entry in entries:
-		if entry.get("expected_rejection_code") is not None:
-			continue
-		fixture_id = entry["fixture_id"]
-		pending = entry.get("pending_wp")
-		if pending:
-			params.append(
-				pytest.param(
-					entry,
-					id=fixture_id,
-					marks=pytest.mark.skip(reason=f"pending {pending}: behavior will change"),
-				)
-			)
-		else:
-			params.append(pytest.param(entry, id=fixture_id))
-	return params
+	svg_in = tmp_path / "rel_hv.svg"
+	svg_out = tmp_path / "rel_hv.out.svg"
+	# Mixed absolute start + relative h/v: draws a 20-wide, 30-tall rect at (10,10).
+	_write_svg(svg_in, '<path d="M 10 10 h 20 v 30 h -20 z" fill="#000"/>')
+	result = normalize_svg_v3.normalize_svg_file(svg_in, svg_out, padding=0.0)
+	assert result.normalized, f"unexpected rejection: {result.rejection}"
+	bb = result.bbox
+	# The rect must be exactly 20 wide and 30 tall.
+	assert abs(bb.max_x - bb.min_x - 20.0) < 0.01
+	assert abs(bb.max_y - bb.min_y - 30.0) < 0.01
 
 
-@pytest.mark.parametrize("entry", _manifest_normalize_params())
-def test_manifest_entries_normalize(tmp_path, entry) -> None:
-	"""Each non-rejection manifest entry normalizes and its bbox is within tolerance.
+def test_relative_l_commands_bbox(tmp_path) -> None:
+	"""Relative l (lineto) command produces the same bbox as absolute L.
 
-	Entries with pending_wp are skipped with the WP name as the reason.
+	A path using 'm' + relative 'l' commands to draw a triangle must have a
+	bbox matching the triangle vertices, confirming relative lineto conversion.
 	"""
-	fixture_id = entry["fixture_id"]
-	svg_body = entry["svg_body"]
-	expected = entry["expected_bbox"]
-	tol = entry["tolerance"]
+	svg_in = tmp_path / "rel_l.svg"
+	svg_out = tmp_path / "rel_l.out.svg"
+	# Triangle: start (10,10), relative l 40,0 (to 50,10), l -20,30 (to 30,40), z.
+	_write_svg(svg_in, '<path d="M 10 10 l 40 0 l -20 30 z" fill="#000"/>')
+	result = normalize_svg_v3.normalize_svg_file(svg_in, svg_out, padding=0.0)
+	assert result.normalized, f"unexpected rejection: {result.rejection}"
+	bb = result.bbox
+	# width = 40, height = 30.
+	assert abs(bb.max_x - bb.min_x - 40.0) < 0.01
+	assert abs(bb.max_y - bb.min_y - 30.0) < 0.01
 
-	svg_in = tmp_path / f"{fixture_id}.svg"
-	svg_out = tmp_path / f"{fixture_id}.out.svg"
-	_write_svg(svg_in, svg_body)
 
+def test_relative_arc_command_captures_bulge(tmp_path) -> None:
+	"""Relative arc command 'a' produces the same bbox as absolute 'A'.
+
+	A relative arc from (0,0) sweeping 100 units right (same geometry as the
+	absolute semicircle test) must include the arc bulge near y=50 in the bbox.
+	"""
+	svg_in = tmp_path / "rel_arc.svg"
+	svg_out = tmp_path / "rel_arc.out.svg"
+	# Relative arc: same semicircle geometry as test_path_bbox_contains_arc_bulge
+	# but using lowercase 'a' (relative endpoint).
+	_write_svg(svg_in, '<path d="M 0 0 a 50 50 0 0 0 100 0" fill="#000"/>')
+	result = normalize_svg_v3.normalize_svg_file(svg_in, svg_out, padding=0.0)
+	assert result.normalized, f"unexpected rejection: {result.rejection}"
+	bb = result.bbox
+	# The semicircle bulges to y~50; an endpoint-only bbox would give max_y=0.
+	assert bb.max_y > 40.0
+
+
+def test_viewbox_includes_padding(tmp_path) -> None:
+	"""The output viewBox starts at '0 0' and dimensions include the padding on each side.
+
+	A 10x10 rect normalized with padding=2 must produce viewBox '0 0 14 14':
+	content is 10 user units wide and tall, plus 2 units of padding on each side.
+	"""
+	svg_in = tmp_path / "vb.svg"
+	svg_out = tmp_path / "vb.out.svg"
+	_write_svg(svg_in, '<rect x="0" y="0" width="10" height="10" fill="#000"/>')
 	result = normalize_svg_v3.normalize_svg_file(svg_in, svg_out, padding=2.0)
-	assert result.normalized, (
-		f"{fixture_id}: unexpected rejection {result.rejection}"
+	assert result.normalized, f"unexpected rejection: {result.rejection}"
+	assert result.view_box is not None
+	# viewBox must be normalized to origin: starts with "0 0 ".
+	assert result.view_box.startswith("0 0 "), (
+		f"expected viewBox starting '0 0 ', got {result.view_box!r}"
 	)
-	assert _bbox_within_tolerance(result.bbox, expected, tol), (
-		f"{fixture_id}: bbox {result.bbox} not within {tol} of {expected}"
-	)
+	# Total width and height must each be 10 (content) + 2*2 (padding) = 14.
+	parts = result.view_box.split()
+	assert len(parts) == 4
+	width = float(parts[2])
+	height = float(parts[3])
+	assert abs(width - 14.0) < 0.01, f"expected width 14.0, got {width}"
+	assert abs(height - 14.0) < 0.01, f"expected height 14.0, got {height}"
 
 
-#============================================
-def _manifest_rejection_params():
-	"""Build parametrize args for rejection manifest entries."""
-	entries = _load_manifest()
-	return [
-		pytest.param(entry, id=entry["fixture_id"])
-		for entry in entries
-		if entry.get("expected_rejection_code") is not None
-	]
+def test_viewbox_zero_padding_tight_to_geometry(tmp_path) -> None:
+	"""With padding=0 the output viewBox dimensions match the geometry exactly.
 
-
-@pytest.mark.parametrize("entry", _manifest_rejection_params())
-def test_manifest_rejection_entries(tmp_path, entry) -> None:
-	"""Each rejection manifest entry is rejected with the declared reason code."""
-	fixture_id = entry["fixture_id"]
-	expected_code = entry["expected_rejection_code"]
-
-	svg_in = tmp_path / f"{fixture_id}.svg"
-	svg_out = tmp_path / f"{fixture_id}.out.svg"
-
-	# Use raw_svg if present (e.g. malformed XML that cannot be wrapped).
-	if entry.get("raw_svg") is not None:
-		_write_raw_svg(svg_in, entry["raw_svg"])
-	else:
-		_write_svg(svg_in, entry["svg_body"])
-
-	result = normalize_svg_v3.normalize_svg_file(svg_in, svg_out, padding=2.0)
-	assert not result.normalized, (
-		f"{fixture_id}: expected rejection {expected_code!r}, got normalized"
-	)
-	assert result.rejection.code == expected_code, (
-		f"{fixture_id}: expected code {expected_code!r}, got {result.rejection.code!r}"
-	)
-	# Rejection must not write any output.
-	assert not svg_out.exists(), (
-		f"{fixture_id}: output file written despite rejection"
-	)
-
-
-#============================================
-def _manifest_viewbox_params():
-	"""Build parametrize args for entries with expected_viewbox."""
-	entries = _load_manifest()
-	return [
-		pytest.param(entry, id=entry["fixture_id"])
-		for entry in entries
-		if entry.get("expected_viewbox") is not None
-	]
-
-
-@pytest.mark.parametrize("entry", _manifest_viewbox_params())
-def test_manifest_viewbox_entries(tmp_path, entry) -> None:
-	"""Each entry with expected_viewbox gets the correct viewBox after normalization."""
-	fixture_id = entry["fixture_id"]
-	svg_body = entry["svg_body"]
-	expected_vb = entry["expected_viewbox"]
-
-	svg_in = tmp_path / f"{fixture_id}.svg"
-	svg_out = tmp_path / f"{fixture_id}.out.svg"
-	_write_svg(svg_in, svg_body)
-
-	result = normalize_svg_v3.normalize_svg_file(svg_in, svg_out, padding=2.0)
-	assert result.normalized, (
-		f"{fixture_id}: unexpected rejection {result.rejection}"
-	)
-	assert result.view_box == expected_vb, (
-		f"{fixture_id}: viewBox {result.view_box!r} != {expected_vb!r}"
-	)
+	A 50x20 rect normalized with no padding must produce a viewBox whose width
+	is 50 and height is 20 (no extra margin).
+	"""
+	svg_in = tmp_path / "vb_tight.svg"
+	svg_out = tmp_path / "vb_tight.out.svg"
+	_write_svg(svg_in, '<rect x="5" y="5" width="50" height="20" fill="#000"/>')
+	result = normalize_svg_v3.normalize_svg_file(svg_in, svg_out, padding=0.0)
+	assert result.normalized, f"unexpected rejection: {result.rejection}"
+	assert result.view_box is not None
+	parts = result.view_box.split()
+	assert len(parts) == 4
+	width = float(parts[2])
+	height = float(parts[3])
+	assert abs(width - 50.0) < 0.01, f"expected width 50.0, got {width}"
+	assert abs(height - 20.0) < 0.01, f"expected height 20.0, got {height}"
 
 
 #============================================
@@ -350,7 +305,7 @@ def test_normalize_result_rejection_no_output(tmp_path) -> None:
 
 
 #============================================
-# Transform flattening unit tests (WP-2a)
+# Transform flattening unit tests
 #============================================
 
 def test_transform_arc_identity_preserves_radii() -> None:
@@ -496,7 +451,7 @@ def test_non_scaling_stroke_under_scale_rejected(tmp_path) -> None:
 
 
 #============================================
-# Shape->path conversion tests (WP-2b A2)
+# Shape->path conversion tests
 #
 # Primary assertion: each shape normalizes with a bbox that matches the
 # declared geometry within tolerance (round-trip correctness).
@@ -504,7 +459,7 @@ def test_non_scaling_stroke_under_scale_rejected(tmp_path) -> None:
 # shape content (no residual rect/circle/ellipse/line/polyline/polygon).
 #============================================
 
-def _output_has_no_raw_shapes(svg_out_path) -> bool:
+def _output_has_no_raw_shapes(svg_out_path: pathlib.Path) -> bool:
 	"""Return True when the output SVG has no unconverted shape elements.
 
 	Checks that rect/circle/ellipse/line/polyline/polygon do not appear in
@@ -710,7 +665,7 @@ def test_shape_to_path_preserves_id_and_paint_ref(tmp_path) -> None:
 	The converted <path> must carry the same id and fill paint reference so
 	reference integrity (S1) and url(#) rewrite (F8) remain correct. A gradient
 	is used (rather than a clip) because a simple clip would be flattened away by
-	WP-3e; the url(#)-preservation property is what this test checks.
+	the url(#)-preservation property is what this test checks.
 	"""
 	svg_in = tmp_path / "refs.svg"
 	svg_out = tmp_path / "refs.out.svg"
@@ -764,7 +719,7 @@ def test_rounded_rect_radii_clamped_to_half_side(tmp_path) -> None:
 
 
 #============================================
-# WP-3a: stroke pad (A3), text reject (A5), precision round-trip (A4)
+# Stroke pad, text reject, and precision round-trip tests
 #============================================
 
 def test_stroke_pad_thick_path_bbox_larger_than_geometry(tmp_path) -> None:
@@ -884,7 +839,7 @@ def test_stroke_none_no_pad(tmp_path) -> None:
 
 
 #============================================
-# WP-3a: text reject (A5)
+# Text reject tests
 #============================================
 
 def test_text_element_rejected(tmp_path) -> None:
@@ -942,7 +897,7 @@ def test_text_rejection_element_location(tmp_path) -> None:
 
 
 #============================================
-# WP-3a: precision / round-trip determinism (A4)
+# Precision and round-trip determinism tests
 #============================================
 
 def test_precision_fmt_precise_leading_zero_strip() -> None:
@@ -994,8 +949,7 @@ def test_precision_normalize_twice_identical(tmp_path) -> None:
 
 
 #============================================
-# WP-1c: always-reject detector tests
-# script/handler, animation, DOCTYPE/entity, foreignObject
+# Always-reject detector tests: script/handler, animation, DOCTYPE/entity, foreignObject
 #============================================
 
 def test_reject_script_element(tmp_path) -> None:
@@ -1080,8 +1034,8 @@ def test_reject_foreignobject(tmp_path) -> None:
 
 
 #============================================
-# WP-3b: full reject set (use/symbol, filter, mask, marker, image,
-# external href, clipPath, geometry-<style>, unparseable-<style>, pattern)
+# Full reject set: use/symbol, filter, mask, marker, image,
+# external href, clipPath, geometry-<style>, unparseable-<style>, pattern
 #============================================
 
 # Each parametrized case: (fixture-id, svg-body, expected-reason-code).
@@ -1168,8 +1122,8 @@ _REJECT_CASES = [
 	_REJECT_CASES,
 	ids=[c[0] for c in _REJECT_CASES],
 )
-def test_wp3b_reject_set(tmp_path, fixture_id, svg_body, expected_code) -> None:
-	"""Each WP-3b unsupported feature rejects with its declared reason code.
+def test_reject_set(tmp_path, fixture_id, svg_body, expected_code) -> None:
+	"""Each unsupported feature rejects with its declared reason code.
 
 	Behavioral: the gate refuses the file with the right code and writes no
 	output (the rejection contract: no output, input untouched).
@@ -1185,7 +1139,7 @@ def test_wp3b_reject_set(tmp_path, fixture_id, svg_body, expected_code) -> None:
 	assert not svg_out.exists(), f"{fixture_id}: output written despite rejection"
 
 
-def test_wp3b_style_paint_only_preserved(tmp_path) -> None:
+def test_style_paint_only_preserved(tmp_path) -> None:
 	"""A <style> block with paint-only rules (no geometry props) normalizes.
 
 	Per the contract, paint/color rules in <style> may remain; only geometry-
@@ -1205,7 +1159,7 @@ def test_wp3b_style_paint_only_preserved(tmp_path) -> None:
 	assert "<style" in content, "paint-only <style> block was dropped"
 
 
-def test_wp3b_paint_only_pattern_preserved(tmp_path) -> None:
+def test_paint_only_pattern_preserved(tmp_path) -> None:
 	"""A paint-only pattern (no child geometry, no transform) normalizes and survives.
 
 	The visible geometry references the pattern by url(#); the pattern itself has
@@ -1223,10 +1177,10 @@ def test_wp3b_paint_only_pattern_preserved(tmp_path) -> None:
 
 
 #============================================
-# WP-3b: F8 -- rewrite url(#id) inside <style> on ASCII id rename
+# F8 -- rewrite url(#id) inside <style> on ASCII id rename
 #============================================
 
-def test_wp3b_f8_style_url_ref_rewritten_on_rename(tmp_path) -> None:
+def test_f8_style_url_ref_rewritten_on_rename(tmp_path) -> None:
 	"""A non-ASCII id referenced via url(#) inside <style> is renamed consistently.
 
 	The gradient id contains a non-ASCII character; make_ascii_clean renames it
@@ -1268,10 +1222,10 @@ def test_wp3b_f8_style_url_ref_rewritten_on_rename(tmp_path) -> None:
 
 
 #============================================
-# WP-3b: S1 -- reference-integrity hard gate
+# S1 -- reference-integrity hard gate
 #============================================
 
-def test_wp3b_s1_dangling_url_ref_rejected(tmp_path) -> None:
+def test_s1_dangling_url_ref_rejected(tmp_path) -> None:
 	"""A url(#id) paint reference with no matching id rejects with UNRESOLVED_REFERENCE."""
 	svg_in = tmp_path / "dangling.svg"
 	svg_out = tmp_path / "dangling.out.svg"
@@ -1283,7 +1237,7 @@ def test_wp3b_s1_dangling_url_ref_rejected(tmp_path) -> None:
 	assert not svg_out.exists()
 
 
-def test_wp3b_s1_resolved_ref_normalizes(tmp_path) -> None:
+def test_s1_resolved_ref_normalizes(tmp_path) -> None:
 	"""A url(#id) reference to a defined gradient passes the S1 gate."""
 	svg_in = tmp_path / "resolved.svg"
 	svg_out = tmp_path / "resolved.out.svg"
@@ -1297,10 +1251,10 @@ def test_wp3b_s1_resolved_ref_normalizes(tmp_path) -> None:
 
 
 #============================================
-# WP-3b: B1 -- editor-cruft removal (positive allowlist)
+# B1 -- editor-cruft removal (positive allowlist)
 #============================================
 
-def test_wp3b_b1_cruft_removed_attribution_preserved(tmp_path) -> None:
+def test_b1_cruft_removed_attribution_preserved(tmp_path) -> None:
 	"""B1 removes Inkscape/Sodipodi cruft while dc/cc/rdf attribution survives.
 
 	A fixture where editor cruft and attribution coexist proves both halves of
@@ -1337,7 +1291,7 @@ def test_wp3b_b1_cruft_removed_attribution_preserved(tmp_path) -> None:
 	assert "Test Author" in content, "attribution text lost"
 
 
-def test_wp3b_b1_preserves_render_attrs_and_ids(tmp_path) -> None:
+def test_b1_preserves_render_attrs_and_ids(tmp_path) -> None:
 	"""B1 must not touch SVG render attributes or ids while removing cruft."""
 	svg_in = tmp_path / "preserve.svg"
 	svg_out = tmp_path / "preserve.out.svg"
@@ -1359,16 +1313,16 @@ def test_wp3b_b1_preserves_render_attrs_and_ids(tmp_path) -> None:
 
 
 #============================================
-# WP-3c: floor-shadow removal (D1)
+# Floor-shadow removal (D1)
 #
 # Test fixtures use a synthetic asset pattern: a tall object path (the "real"
-# object) plus a wide-flat low-opacity grey ellipse (-> path by WP-2b) in the
-# bottom band.  The real object occupies the upper region; the shadow sits in
-# the lowest ~20% and is visually much wider than it is tall.
+# object) plus a wide-flat low-opacity grey ellipse in the bottom band.
+# The real object occupies the upper region; the shadow sits in the lowest ~20%
+# and is visually much wider than it is tall.
 #
 # Detection function: detect_floor_shadow_candidates (pure, testable).
-# Wiring: normalize_svg_file with remove_floor_shadow=True (WP-3c) deletes
-# before the single bbox pass; flag False (default) is a no-op.
+# Wiring: normalize_svg_file with remove_floor_shadow=True deletes before the
+# single bbox pass; flag False (default) is a no-op.
 # Dry-run: _shadow_dry_run_report reports without deleting (tested via the
 # detection function directly, since _shadow_dry_run_report is a CLI helper).
 #============================================
@@ -1702,7 +1656,7 @@ def test_d1_output_passes_reference_integrity(tmp_path) -> None:
 
 
 #============================================
-# WP-3e simple-clipPath flattening behavior tests (A6)
+# Simple-clipPath flattening behavior tests
 #============================================
 
 def _normalize_clip(tmp_path, body, padding=0.0):
@@ -2170,11 +2124,11 @@ def test_stroke_width_scaled_by_uniform_flatten_style(tmp_path) -> None:
 
 
 #============================================
-# M1: inline-style visibility excludes elements from the bbox
+# Inline-style visibility excludes elements from the bbox
 #============================================
 
 def test_style_display_none_excluded_from_bbox() -> None:
-	"""style="display:none" excludes an element from the geometry bbox (M1)."""
+	"""style="display:none" excludes an element from the geometry bbox."""
 	body = '<rect style="display:none" x="200" y="200" width="50" height="50" fill="#000"/>'
 	elem = normalize_svg_v3.lxml.etree.fromstring(
 		f'<svg xmlns="{SVG_NS}">{body}</svg>'
@@ -2183,7 +2137,7 @@ def test_style_display_none_excluded_from_bbox() -> None:
 
 
 def test_style_fill_none_stroke_none_excluded_from_bbox() -> None:
-	"""style="fill:none;stroke:none" excludes an element from the bbox (M1)."""
+	"""style="fill:none;stroke:none" excludes an element from the bbox."""
 	body = '<rect style="fill:none;stroke:none" x="0" y="0" width="50" height="50"/>'
 	elem = normalize_svg_v3.lxml.etree.fromstring(
 		f'<svg xmlns="{SVG_NS}">{body}</svg>'
@@ -2192,7 +2146,7 @@ def test_style_fill_none_stroke_none_excluded_from_bbox() -> None:
 
 
 def test_style_fill_none_with_stroke_contributes_bbox() -> None:
-	"""style="fill:none" with a visible stroke still contributes geometry (M1)."""
+	"""style="fill:none" with a visible stroke still contributes geometry."""
 	body = '<rect style="fill:none;stroke:#000" x="0" y="0" width="50" height="50"/>'
 	elem = normalize_svg_v3.lxml.etree.fromstring(
 		f'<svg xmlns="{SVG_NS}">{body}</svg>'

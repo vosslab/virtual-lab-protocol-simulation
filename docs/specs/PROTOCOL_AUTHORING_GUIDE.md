@@ -19,6 +19,9 @@ Related references:
   protocol's `target` names resolve against.
 - [WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md): the YAML-driven UI walker
   (canonical real-UI regression test).
+- [SCENE_METRICS.md](SCENE_METRICS.md): layout health report quickstart and
+  metric reference for scene writers (categories, findings, evidence glossary,
+  provisional bands).
 
 ## Terminology
 

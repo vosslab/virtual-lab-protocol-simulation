@@ -1,8 +1,8 @@
 // Screenshot pipeline for walker: captures before/after and summary screenshots.
 // Organizes screenshots by protocol, step, and action for easy review.
-// @ts-ignore: Node module types require @types/node
+// @ts-expect-error: Node module types require @types/node
 import fs from "node:fs";
-// @ts-ignore: Node module types require @types/node
+// @ts-expect-error: Node module types require @types/node
 import path from "node:path";
 //============================================
 // Directory and filename helpers

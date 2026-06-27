@@ -50,6 +50,40 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ["dist/**", "node_modules/**"],
+    // Browser-context files: Playwright test runners and tools that use page.evaluate()
+    // run in Node but embed browser callbacks that reference browser globals (window,
+    // document, CSS, getComputedStyle, XMLSerializer, MouseEvent, DOMParser, etc.).
+    // tools/svg_picker/** are genuine browser-served files so they need browser globals
+    // directly. Supply globals.browser as readonly here so no-undef does not flag them.
+    // Scoped narrowly to confirmed browser-context surfaces only; does not affect src/.
+    files: [
+      "tests/playwright/**",
+      "tests/e2e/**",
+      "tests/test_walker_debug.mjs",
+      "tools/scene_to_png.mjs",
+      "tools/protocol_to_png.mjs",
+      "tools/scorecard_m2.mjs",
+      "tools/svg_picker/**",
+    ],
+    languageOptions: {
+      globals: { ...globals.browser },
+    },
+  },
+  {
+    // Repo-wide: allow underscore-prefixed identifiers to suppress unused-var errors.
+    // Callback params and WIP stubs use _ or __ prefix by convention across this repo.
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+    },
+  },
+  {
+    ignores: ["dist/**", "node_modules/**", "OTHER_REPOS/**"],
   },
 );

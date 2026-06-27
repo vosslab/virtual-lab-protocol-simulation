@@ -165,7 +165,7 @@ async function renderAndTestScene(sceneName, page, server) {
       await page.waitForSelector("#scene-root [data-placement-name]", {
         timeout: 5000,
       });
-    } catch (e) {
+    } catch (_e) {
       console.error(`FAIL: No placements found for ${sceneName}`);
       return {
         scene: sceneName,

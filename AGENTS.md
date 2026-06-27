@@ -64,6 +64,7 @@ Specification surfaces live under `docs/specs/`:
 - Scene: `SCENE_*`
 - Object: `OBJECT_*`
 - QTI reference: `QTI_v3_SPEC.md`
+- Scene layout metrics and author scorecard: [docs/specs/SCENE_METRICS.md](docs/specs/SCENE_METRICS.md)
 
 ## Editing behavior
 

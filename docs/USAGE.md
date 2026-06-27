@@ -107,3 +107,55 @@ Run a single E2E test:
 ```bash
 source source_me.sh && python3 tests/meta/e2e/e2e_reset_routing.py
 ```
+
+## Layout regression harness
+
+`tools/layout_golden_diff.mjs` rebuilds layout for every scene and compares the result
+against a reference snapshot. It is the M4/M5 tripwire: any geometry change is detected
+before it reaches the consolidation or structural-refactor milestone.
+
+The snapshot is an ephemeral, gitignored baseline stored at
+`test-results/layout_reference_snapshot.json`. It is never committed to version control.
+
+### Prerequisites
+
+The `generated/` artifacts must exist. Run the pipeline first if they are missing:
+
+```bash
+bash pipeline/build_generated.sh
+```
+
+### Refactor session workflow
+
+Start a refactor session by capturing a baseline from the clean engine, then compare
+after making changes:
+
+```bash
+# Step 1: capture baseline from clean engine (before any M4/M5 changes)
+node --import tsx tools/layout_golden_diff.mjs --refresh
+
+# Step 2: make your refactor changes, then compare
+node --import tsx tools/layout_golden_diff.mjs
+```
+
+Via npm:
+
+```bash
+npm run layout:refresh   # capture baseline
+npm run layout:diff      # compare against baseline
+```
+
+### Compare mode
+
+Exit 0 when all scenes match the snapshot. Exit 1 when any scene differs, with a
+per-scene delta report printed to stdout. If the snapshot file is absent, the tool
+exits non-zero and instructs you to run `--refresh` first.
+
+### Snapshot lifecycle
+
+- The snapshot lives under `test-results/` (gitignored) and is never committed.
+- Capture it with `--refresh` from a clean engine state at the start of a refactor session.
+- Compare after making changes to detect geometry regressions.
+- If the snapshot is stale or missing, re-run `--refresh` from the current clean state.
+- Do not run `--refresh` mid-refactor: that silently accepts in-flight changes as the
+  new baseline, defeating the regression check.

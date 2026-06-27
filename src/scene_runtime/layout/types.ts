@@ -15,6 +15,7 @@ import type {
   LABEL_PLACEMENTS,
 } from "./constants.js";
 import type { DecisionMetadata } from "./diagnostics/decision_metadata.js";
+import type { OffCanvasDiagnostic } from "./diagnostics/offcanvas.js";
 import type { SeverityDiagnostic } from "./diagnostics/severity_model.js";
 
 export type Workspace = (typeof WORKSPACES)[number];
@@ -450,6 +451,14 @@ export interface PipelineResult {
   // set; this carries the actionable severity payloads. Empty when nothing is
   // unresolved.
   severityDiagnostics: SeverityDiagnostic[];
+  // Report-only per-item off-canvas classification from the validate phase (WS-F).
+  // One entry per item whose artwork box escapes scene_bounds: fully_off_canvas
+  // (error class) or partial_overflow (warning, magnitude-scaled). This is a
+  // SEPARATE informational stream from severityDiagnostics: it never fails or
+  // blocks a build, it only reports. Audit tooling and the committed off-canvas
+  // baseline read it. Empty when every item sits inside scene_bounds. Not
+  // serialized into the precompute (the artifact serializes only `final`).
+  offCanvasDiagnostics: OffCanvasDiagnostic[];
   // Computed zone bands from the reflow-zones stage, keyed by zone id. The band
   // reflows the scene's vertical range from measured per-tier content; place-vertical
   // consumes it to space tier rows. It is NOT serialized into

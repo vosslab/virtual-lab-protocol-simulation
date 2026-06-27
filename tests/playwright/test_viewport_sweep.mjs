@@ -288,7 +288,6 @@ function generateMarkdownReport(allResults) {
   }
 
   // Screenshot file sizes
-  const avgSizes = {};
   const sceneGroups = {};
   for (const result of allResults) {
     if (result.status === "OK") {

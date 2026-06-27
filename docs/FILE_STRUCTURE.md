@@ -20,6 +20,7 @@
 | [pip_requirements-dev.txt](../pip_requirements-dev.txt) | Python dev dependencies (pytest, pyflakes) |
 | [eslint.config.js](../eslint.config.js) | ESLint flat config |
 | [REPO_TYPE](../REPO_TYPE) | Repo type marker (`typescript`) |
+| [run_scene_health.py](../run_scene_health.py) | Visible author entry point: run the layout health check for one or all scenes |
 
 ## Key subtrees
 
@@ -58,6 +59,7 @@ src/
 |  |  |  +- severity_model.ts   -- Error / Warning / Review-required severity types
 |  |  |  +- payload.ts          -- typed diagnostic payload shapes
 |  |  |  +- decision_metadata.ts -- per-scene decision metadata (strategy, packer, shrink, config)
+|  |  |  +- offcanvas.ts        -- off-canvas classifier: fully_off_canvas / partial_overflow (report-only, never gates)
 |  |  |  `- index.ts            -- barrel export
 |  |  +- strategies/            -- PlacementStrategy seam and implementations
 |  |  |  +- placement_strategy.ts -- PlacementStrategy interface
@@ -225,6 +227,8 @@ Key Node test files:
 | `test_subpart_visual_state_renderer.mjs` | Subpart material-tint renderer: dispatch predicate, fill, transparent empty, degrade path |
 | [tests/test_scene_store.mjs](../tests/test_scene_store.mjs) | Scene store: `getSubpartStateField` accessor, per-well independent reactivity |
 | `test_material_acceptance_cross_layer.mjs` | Cross-layer acceptance: stepper D1 and TS runtime store accept and reject the same material names |
+| `tests/test_layout_offcanvas.mjs` | Off-canvas classifier unit tests (exercises `PipelineResult.offCanvasDiagnostics` fully_off_canvas and partial_overflow paths) |
+| `tests/test_layout_config.mjs` | Config-precedence unit tests: 16 behavioral tests covering zone_gap split, scene-level and zone-level overrides, and strategy-local values |
 
 ### `assets/` - Source SVG art
 
@@ -246,6 +250,10 @@ Key tools:
 | [tools/svg_to_html_render.mjs](../tools/svg_to_html_render.mjs) | Renders an SVG on five color swatches via Playwright Firefox and writes `<stem>_render.{html,png}` to CWD; use `--no-open` to skip auto-open |
 | [tools/svg_identity_sweep.py](../tools/svg_identity_sweep.py) | Perceptual-hash duplicate/mislabel sweep over `assets/**/*.svg`; emits a review report |
 | [tools/svg_feature_census.py](../tools/svg_feature_census.py) | Read-only feature census over the wild SVG corpus (`OTHER_REPOS/`); counts clipPath/transform/text/etc. per file, cross-tabbed against the v3 verdict; emits `docs/active_plans/reports/svg_feature_census.{json,md}` |
+| `tools/layout_golden_diff.mjs` | `layout:diff` / `layout:refresh` -- ephemeral regression harness; captures a gitignored snapshot at `test-results/layout_reference_snapshot.json` with provenance and staleness detection; compares engine output after a change |
+| `tools/layout_metrics.mjs` | `layout:metrics` -- raw per-scene geometry metrics (rectangle-union fill, largest-empty-rect, occupancy, scale proxies, AABB overlap graph, balance) with per-scene overlay |
+| `tools/layout_health_report.mjs` | `layout:health` -- interprets raw geometry metrics into provisional health categories and a worst-first author scorecard; writes `test-results/layout_health/` |
+| `tools/offcanvas_baseline.mjs` | Writes `docs/active_plans/audits/offcanvas_baseline.md` (per-scene off-canvas item counts from `PipelineResult.offCanvasDiagnostics`) |
 
 ### `devel/` - Maintainer scripts
 
@@ -292,6 +300,7 @@ Key tools:
 | [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md) | Canonical scene vocabulary |
 | [specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md) | Scene YAML schema reference |
 | [specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md) | Scene wiring and runtime |
+| [specs/SCENE_METRICS.md](specs/SCENE_METRICS.md) | Scene-author guide to the layout health report |
 | [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) | Canonical object vocabulary |
 | [specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md) | Object-definition YAML schema reference |
 | [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md) | Layout-engine placement reference |

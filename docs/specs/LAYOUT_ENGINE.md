@@ -338,6 +338,31 @@ The vertical layout manager is forgiving, lenient, mutable, and mercurial:
 Avoid changing engine constants for a single scene; constants affect every
 layout-driven scene.
 
+## Off-canvas diagnostic stream (report-only)
+
+The validate phase classifies every placed item against the scene bounds and
+emits findings on `PipelineResult.offCanvasDiagnostics`. This stream is
+report-only: it never blocks the build gate and does not affect placement output.
+
+Two severity levels are used:
+
+| Classification | Condition | Severity |
+| --- | --- | --- |
+| `fully_off_canvas` | Item bounding box lies entirely outside scene bounds. | Error-level (reported, not gating). |
+| `partial_overflow` | Item bounding box partially crosses scene bounds. | Warning; severity scales with overflow magnitude. |
+
+The classifier lives in `src/scene_runtime/layout/diagnostics/offcanvas.ts`.
+`tools/offcanvas_baseline.mjs` writes a baseline report to
+`docs/active_plans/audits/offcanvas_baseline.md` that lists every scene with its
+count of flagged items. Placement byte values are unaffected by the classifier:
+it reads existing `ComputedItem` records and adds diagnostic entries without
+modifying coordinates.
+
+Use `PipelineResult.offCanvasDiagnostics` in tools and tests to surface
+off-canvas items without running a full browser render. The diagnostics are
+separate from `PipelineResult.diagnostics` (severity-graded gate diagnostics) and
+do not appear in the build log unless a tool explicitly surfaces them.
+
 ## Verification for code and YAML changes
 
 For layout code or scene YAML changes:

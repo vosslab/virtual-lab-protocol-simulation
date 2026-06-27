@@ -59,6 +59,10 @@ export {
   buildActionablePayload,
   buildRowZoneDecision,
   buildDecisionMetadata,
+  OFFCANVAS_TIERS,
+  offCanvasTier,
+  classifyItemOffCanvas,
+  collectOffCanvasDiagnostics,
 } from "./diagnostics/index.js";
 // SEVERITY_DIAGNOSTIC_CODES omitted: no external consumer (grep confirmed zero imports).
 // SeverityDiagnosticCode kept as a discriminant type for test assertions.
@@ -74,4 +78,9 @@ export type {
   AttemptedMove,
   ZoneDecision,
   DecisionMetadata,
+  OffCanvasTier,
+  OffCanvasClass,
+  OffCanvasSeverity,
+  OffCanvasOverflow,
+  OffCanvasDiagnostic,
 } from "./diagnostics/index.js";
