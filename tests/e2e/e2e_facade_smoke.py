@@ -21,7 +21,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-import git_file_utils
+import file_utils
 
 
 #============================================
@@ -114,7 +114,7 @@ def main():
 	"""
 	Main entry point for e2e facade smoke test.
 	"""
-	repo_root = git_file_utils.get_repo_root()
+	repo_root = file_utils.get_repo_root()
 
 	print("Running facade smoke test...")
 

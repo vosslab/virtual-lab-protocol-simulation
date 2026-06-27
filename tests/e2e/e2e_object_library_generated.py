@@ -21,13 +21,13 @@ Exits 0 on success, nonzero on first failure.
 import os
 import sys
 
-# tests/git_file_utils.py is the shared repo-root helper. This e2e script runs
+# tests/file_utils.py is the shared repo-root helper. This e2e script runs
 # standalone (not under pytest), so add tests/ to the path before importing it.
 _TESTS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _TESTS_DIR not in sys.path:
 	sys.path.insert(0, _TESTS_DIR)
 
-import git_file_utils
+import file_utils
 
 
 #============================================
@@ -48,7 +48,7 @@ def check_generated_visual_states(repo_root: str) -> None:
 #============================================
 
 def main() -> None:
-	repo_root = git_file_utils.get_repo_root()
+	repo_root = file_utils.get_repo_root()
 	check_generated_visual_states(repo_root)
 	print("PASS: generated/object_library.ts carries aspirating_pipette visual_states")
 

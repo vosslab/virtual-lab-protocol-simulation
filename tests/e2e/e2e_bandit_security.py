@@ -14,11 +14,11 @@ import subprocess
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-import git_file_utils
+import file_utils
 
 
 SKIP_ENV = "SKIP_REPO_HYGIENE"
-REPO_ROOT = git_file_utils.get_repo_root()
+REPO_ROOT = file_utils.get_repo_root()
 SKIP_DIRS = [".git", ".venv", "old_shell_folder"]
 
 
@@ -40,7 +40,7 @@ def list_python_files(repo_root: str) -> list[str]:
 	List tracked Python files, excluding skipped directories.
 	"""
 	paths = []
-	for rel_path in git_file_utils.list_tracked_files(
+	for rel_path in file_utils.list_tracked_files(
 		repo_root,
 		patterns=["*.py"],
 		error_message="Failed to list tracked Python files.",
