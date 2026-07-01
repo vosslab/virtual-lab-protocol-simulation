@@ -5,6 +5,11 @@ import globals from "globals";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
+// Consumer-owned local overrides. Ships once via the noexist bucket and is never
+// overwritten by propagation, so repo-specific config (extra browser-context
+// globs, per-tool globals, local rule tweaks) survives. Default export is [].
+import localConfig from "./eslint.config.local.js";
+
 // Avoid Node-version coupling: import.meta.dirname needs Node >=20.11.
 // Use fileURLToPath + path.dirname to stay compatible with Node 18 LTS.
 const __filename = fileURLToPath(import.meta.url);
@@ -50,28 +55,21 @@ export default tseslint.config(
     },
   },
   {
-    // Browser-context files: Playwright test runners and tools that use page.evaluate()
-    // run in Node but embed browser callbacks that reference browser globals (window,
-    // document, CSS, getComputedStyle, XMLSerializer, MouseEvent, DOMParser, etc.).
-    // tools/svg_picker/** are genuine browser-served files so they need browser globals
-    // directly. Supply globals.browser as readonly here so no-undef does not flag them.
-    // Scoped narrowly to confirmed browser-context surfaces only; does not affect src/.
-    files: [
-      "tests/playwright/**",
-      "tests/e2e/**",
-      "tests/test_walker_debug.mjs",
-      "tools/scene_to_png.mjs",
-      "tools/protocol_to_png.mjs",
-      "tools/scorecard_m2.mjs",
-      "tools/svg_picker/**",
-    ],
+    // Browser-context test runners: Playwright (tests/playwright/**) and non-browser
+    // e2e (tests/e2e/**) .mjs files embed browser callbacks (page.evaluate) that
+    // reference browser globals (window, document, getComputedStyle, etc.). Supply
+    // globals.browser as readonly so no-undef does not flag them. Scoped to the test
+    // trees only; node-only tools keep no-undef so real bugs still surface. Repo-specific
+    // browser-context tool files belong in eslint.config.local.js, not here.
+    files: ["tests/playwright/**", "tests/e2e/**"],
     languageOptions: {
       globals: { ...globals.browser },
     },
   },
   {
-    // Repo-wide: allow underscore-prefixed identifiers to suppress unused-var errors.
-    // Callback params and WIP stubs use _ or __ prefix by convention across this repo.
+    // Repo-wide: allow underscore-prefixed identifiers to mark intentionally unused
+    // args, vars, and caught errors. A visible, deliberate opt-out marker, not a silent
+    // default. Overrides the no-unused-vars setting above for every file.
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "error",
@@ -84,6 +82,10 @@ export default tseslint.config(
     },
   },
   {
+    // OTHER_REPOS/ is the universal sibling-repo checkout dir (gitignored repo-wide);
+    // never lint sibling repos checked out there.
     ignores: ["dist/**", "node_modules/**", "OTHER_REPOS/**"],
   },
+  // Consumer-owned overrides last so they can refine or override the canonical config.
+  ...localConfig,
 );

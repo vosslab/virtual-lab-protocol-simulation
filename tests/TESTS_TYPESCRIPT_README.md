@@ -1,37 +1,89 @@
-# TypeScript test suite
+# TypeScript app quickstart
 
-These tests ship to every `REPO_TYPE=typescript` consumer via `propagate_style_guides.py`. The canonical correctness gate for the TS toolchain (typecheck, lint, format, Node tests) is `bash check_codebase.sh` -- pytest under `tests/` is reserved for cross-ecosystem checks (markdown links, ASCII compliance, etc.) propagated from the template root, not for shadowing the JS/TS toolchain.
+## What this repo is
 
-## History
+This is a TypeScript browser app. You write code in `src/`, bundle it into
+`dist/`, and ship `dist/` to GitHub Pages. A small set of named shell scripts
+is the whole interface: drive the repo through them and you never need to open
+`package.json`. The npm aliases (`npm run build`, `serve`, `check`, `clean`,
+`test:playwright`) mirror the scripts one to one as an optional convenience.
 
-Earlier revisions of this folder shipped pytest mirrors of the JS/TS toolchain (`test_typescript_tsc.py`, `test_typescript_eslint.py`, `test_tsconfig_canonical.py`, `test_package_json_schema.py`, `test_eslint_config_present.py`, `test_smoke.mjs`). Those were removed in the 2026-05-24 sweep: each one either invoked `npx` via subprocess inside the pytest fast lane (PYTEST_STYLE.md violation), asserted hardcoded tsconfig defaults, or duplicated a check that `check_codebase.sh` already runs natively. Using a Python test runner to assert TS-ecosystem shape routed verification through the wrong tool. The TS ecosystem owns its own gates: `tsc`, `eslint`, `prettier`, `node --test`. `check_codebase.sh` wires them all together.
+## Front door shell scripts
 
-## Run the gate
+| Script | What it does |
+| --- | --- |
+| `./check_codebase.sh` | Fast gate: typecheck, lint, format check, Node unit tests. |
+| `./build_github_pages.sh` | Bundle `src/` into `dist/` (the Pages artifact). |
+| `./run_web_server.sh` | Build `dist/`, serve a local preview on a random port. |
+| `./run_playwright_tests.sh` | Run browser tests; builds `dist/` as needed. |
+| `./dist_clean.sh` | Wipe `dist/`. |
 
-From a TS-typed consumer repo:
+Run `./check_codebase.sh --help` for usage. `./run_web_server.sh` picks a
+random port each run so the browser cache stays fresh; set `PORT` to override.
+`./run_playwright_tests.sh` lets Playwright's own `webServer` config start the
+test server, and accepts `--build` to force a rebuild first.
 
-```bash
-bash check_codebase.sh          # typecheck, typecheck:lint, lint, format:check, css:policy (if present), test:node (if present)
-bash check_codebase.sh --help   # usage
-```
+## Repo layout you edit
 
-Playwright walkthroughs are not part of `check_codebase.sh`; run them manually with `npm run test:playwright` after `bash run_web_server.sh`.
+- `src/main.ts` is the entry point (use `src/main.tsx` for JSX or Solid).
+- `src/index.html` is the page shell that loads `dist/main.js`.
+- `src/style.css` holds the styles, copied into `dist/` at build time.
+- `dist/` is the generated bundle; treat it as build output, not source.
+- `tests/` holds every test tier described below.
 
-## Adding a Node test
+## Test tiers and homes
 
-Drop a `test_<name>.mjs` in this folder. Step 6 of `check_codebase.sh` picks them up automatically (`node --import tsx --test 'tests/test_*.mjs'`) when at least one matches.
+The repo has four test tiers. Pick the home by what you are testing.
 
-## Adding a Python test
+- Fast pytest hygiene under `tests/` covers markdown links, ASCII compliance,
+  and file naming. These are cross-ecosystem checks, not the TypeScript
+  toolchain. Run them with `pytest tests/`. One guard, the test naming check,
+  enforces test file naming under `tests/e2e/` and `tests/playwright/`.
+- Node unit tests live in `tests/test_*.mjs`. Add one by dropping a
+  `test_<name>.mjs` into `tests/`; `./check_codebase.sh` picks it up
+  automatically through `node --import tsx --test 'tests/test_*.mjs'`.
+- Browser tests live under `tests/playwright/`. Run them with
+  `./run_playwright_tests.sh`. See [../docs/PLAYWRIGHT_USAGE.md](../docs/PLAYWRIGHT_USAGE.md)
+  for the browser test conventions.
+- Whole-system E2E lives under `tests/e2e/` and runs directly, excluded from
+  pytest. See `E2E_TESTS.md` for the non-browser E2E conventions.
 
-Resist. If the check belongs to the JS/TS ecosystem, extend `check_codebase.sh` instead. Pytest in a typescript consumer is intentionally thin.
+## Daily run order
 
-## Vendored Python tests in this overlay
+A typical edit loop runs the tiers in this order:
 
-`test_test_naming_conventions.py` -- enforces naming conventions for `tests/e2e/` and
-`tests/playwright/` subtrees. Five rules: no `test_*.py` under `tests/playwright/` or
-`tests/e2e/` (since `collect_ignore` would silently skip them, mismatching the name);
-Python files in `tests/e2e/` must use the `e2e_*.py` prefix; shell files there must use
-`e2e_*.sh`; any `.mjs` file with a Playwright import must live under `tests/playwright/`.
-On failure, writes `report_test_naming_conventions.txt` at the repo root.
-This test ships only to TypeScript repos because `tests/e2e/` and `tests/playwright/` exist
-only in those repos; the checks early-skip when neither directory is present.
+- Edit files under `src/`.
+- Run `./check_codebase.sh` for the fast gate.
+- Run `./run_web_server.sh` and eyeball the app in a browser.
+- Run `./run_playwright_tests.sh` to confirm browser behavior.
+
+## Ship to GitHub Pages
+
+- Run `./build_github_pages.sh` to emit `dist/`, including `dist/.nojekyll` so
+  Pages serves files whose names start with an underscore.
+- Deploy runs as a GitHub Action from `dist/`. The seed workflow ships as a
+  root-level `deploy-pages.yml`; move it into your repository workflows
+  directory to activate it.
+- Once the site is live, link `https://<owner>.github.io/<repo>/` near the top
+  of `README.md` so readers can open the app in one click.
+
+## Common first run failures
+
+- `npx tsc -p tsconfig.lint.json` exits with TS18003 when `tests/` and `tools/`
+  contain no `.ts` files. Seed a small `.ts` stub or narrow the include list in
+  the consumer-owned `tsconfig.lint.json`.
+- Playwright needs `dist/` built before it serves the app. The runner
+  auto-builds when `dist/` is missing, or pass `--build` to force a rebuild.
+- A fresh `npm install` must run esbuild's postinstall step. The `allowScripts`
+  block in `package.json` already permits it, so let the install complete.
+
+## Where to add tests
+
+Keep the TypeScript toolchain checks (typecheck, lint, format, Node tests)
+inside `./check_codebase.sh`, and keep the pytest tier under `tests/` thin and
+cross-ecosystem. That split keeps each ecosystem verified by its own tools.
+
+## Where to read more
+
+For build-system, dependency, and style conventions in depth, see
+[../docs/TYPESCRIPT_STYLE.md](../docs/TYPESCRIPT_STYLE.md).

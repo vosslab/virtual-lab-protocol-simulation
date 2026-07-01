@@ -33,6 +33,7 @@ tests/playwright/artifacts/
 
 
 # === UNIVERSAL ===
+output*/
 _temp*.?*
 OTHER_REPOS/
 # === TYPESCRIPT ===
