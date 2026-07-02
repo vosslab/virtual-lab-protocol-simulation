@@ -34,11 +34,7 @@ export type StepOutcomeResolution = "complete" | "retry";
 // Scene operation primitives per PROTOCOL_VOCABULARY.md
 // "scene_operation primitives".
 export type SceneOperationType =
-  | "ObjectStateChange"
-  | "CursorAttach"
-  | "SceneChange"
-  | "LayoutMove"
-  | "TimedWait";
+  "ObjectStateChange" | "CursorAttach" | "SceneChange" | "LayoutMove" | "TimedWait";
 
 //============================================
 // Snapshot consumed by Solid shell signals
@@ -168,10 +164,7 @@ export interface InteractionRejectedEvent {
 }
 
 export type InteractionRejectReason =
-  | "wrong_target"
-  | "wrong_value"
-  | "out_of_order"
-  | "no_active_step";
+  "wrong_target" | "wrong_value" | "out_of_order" | "no_active_step";
 
 // Scene side-effects emitted after the runtime calls into the renderer.
 
@@ -310,11 +303,7 @@ export interface TimedWaitOp {
 
 // Discriminated union of scene operation primitives.
 export type SceneOperation =
-  | ObjectStateChangeOp
-  | CursorAttachOp
-  | SceneChangeOp
-  | LayoutMoveOp
-  | TimedWaitOp;
+  ObjectStateChangeOp | CursorAttachOp | SceneChangeOp | LayoutMoveOp | TimedWaitOp;
 
 // Interaction feedback (optional).
 export interface InteractionFeedback {

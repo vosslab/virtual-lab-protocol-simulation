@@ -140,15 +140,14 @@ export function runPipeline(scene: SceneA, opts: Partial<PipelineInputs> = {}): 
       if (d.zone !== undefined) zonesToShrink.add(d.zone);
     }
     passRecord.zones_shrunk = [...zonesToShrink];
-    scaled = scaled.map(
-      (p): ScaledPlacement =>
-        zonesToShrink.has(p.zone)
-          ? {
-              ...p,
-              _width_scale: p._width_scale * shrinkFactor,
-              _shrunk_passes: (p._shrunk_passes ?? 0) + 1,
-            }
-          : p,
+    scaled = scaled.map((p): ScaledPlacement =>
+      zonesToShrink.has(p.zone)
+        ? {
+            ...p,
+            _width_scale: p._width_scale * shrinkFactor,
+            _shrunk_passes: (p._shrunk_passes ?? 0) + 1,
+          }
+        : p,
     );
   }
 

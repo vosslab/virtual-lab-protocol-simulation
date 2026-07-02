@@ -67,6 +67,22 @@ export default tseslint.config(
     },
   },
   {
+    // Node unit tests written in TypeScript (tests/**/*.{ts,mts}) drive the
+    // node:test runner, whose test()/describe()/it() calls return promises the
+    // runner awaits internally, so an unawaited call is the intended usage, not
+    // a floating-promise bug. Tests also log progress freely. Relax these two
+    // rules for the TypeScript test tree so node:test TS tests lint as tests,
+    // not as production async code. Source under src/ and tools/ stays strict.
+    // The canonical .mjs test path already skips typed rules via the
+    // disableTypeChecked block above; this block gives the .ts test variant the
+    // same treatment.
+    files: ["tests/**/*.{ts,mts}"],
+    rules: {
+      "@typescript-eslint/no-floating-promises": "off",
+      "no-console": "off",
+    },
+  },
+  {
     // Repo-wide: allow underscore-prefixed identifiers to mark intentionally unused
     // args, vars, and caught errors. A visible, deliberate opt-out marker, not a silent
     // default. Overrides the no-unused-vars setting above for every file.

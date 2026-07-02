@@ -102,9 +102,7 @@ export interface VisualStateCase {
 
 // Output shapes for a visual state case
 export type VisualStateOutput =
-  | { asset_name: string }
-  | { overlay_name: string }
-  | { composite: VisualStateOutput[] };
+  { asset_name: string } | { overlay_name: string } | { composite: VisualStateOutput[] };
 
 // Render-effect tokens (MATERIAL_CONVENTION.md, D12). A material-driven visual
 // state may declare a render_effect + target instead of svg/overlay/composite

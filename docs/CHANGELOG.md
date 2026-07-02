@@ -1,5 +1,59 @@
 # Changelog
 
+## 2026-07-02
+
+### Additions and New Features
+
+- Added `devel/clean_build.sh`, the light build cleaner wired to the `npm run clean` target. It
+  wipes build output, tool caches, and test artifacts while keeping `node_modules` (and Rust
+  `target/`) intact, so the next build is ab initio with no reinstall.
+- Updated `devel/dist_clean.sh` (the deep reset) to keep the committed `package-lock.json`, so a
+  distribution-clean checkout still drives a reproducible `npm ci`.
+- Repointed the `clean` npm alias in `package.json` from `./dist_clean.sh` to
+  `./devel/clean_build.sh`.
+- Started tracking `package-lock.json` (removed it from `.gitignore`) so this GitHub Pages repo
+  carries a reproducible lockfile.
+
+### Removals and Deprecations
+
+- Removed the root `dist_clean.sh`; both cleaners now live only under `devel/`
+  (`devel/clean_build.sh` light, `devel/dist_clean.sh` deep).
+
+## 2026-07-01
+
+### Additions and New Features
+
+- Added a light root `dist_clean.sh` (`rm -rf dist _site *.tsbuildinfo .eslintcache`,
+  rooted via `git rev-parse --show-toplevel`), modeled on `sports-life-game/dist_clean.sh`.
+  Repointed `npm run clean` to `./dist_clean.sh` so the clean front door removes build
+  output while keeping `node_modules/` and dependency installs intact. `devel/dist_clean.sh`
+  remains in place as the separate deep-reset tool (also removes `node_modules`).
+- Added missing `npm run test:playwright` alias mirroring `./run_playwright_tests.sh`
+  (canonical shell-script/npm-alias pair per `docs/TYPESCRIPT_STYLE.md`).
+
+### Fixes and Maintenance
+
+- Reformatted 7 files with `prettier --write` after the prettier 3.9.4 floor bump. The
+  fleet-wide prettier floor bump changed formatting output such that these previously-clean
+  files failed `prettier --check`. Ran `npx prettier --write
+  '**/*.{ts,tsx,mts,cts,js,mjs,cjs}'` to conform to the canonical `.prettierrc`;
+  whitespace-only, no logic change.
+- Aligned the `build`, `serve`, and `check` `package.json` script aliases to the canonical
+  `./X.sh` front-door form (`./build_github_pages.sh`, `./run_web_server.sh`,
+  `./check_codebase.sh`), matching the other TypeScript repos instead of the outlier
+  `bash X.sh` form.
+- Set `tsconfig.json` `jsx` to `preserve` to match the Solid convention used by the sibling
+  Solid repos (`concept-map-maker`, `pseudo-code-mapper`); `jsxImportSource: solid-js` is
+  unchanged. `tsc` runs `--noEmit` (typecheck only) and `esbuild-plugin-solid` performs the
+  actual JSX transform, so this affects only how tsc type-checks JSX, not the emitted bundle.
+- Fixed `./check_codebase.sh` lint gate: added browser-context globals in
+  `eslint.config.local.js` for `tools/protocol_to_png.mjs`, `tools/scene_to_png.mjs`,
+  `tools/scorecard_m2.mjs`, `tools/svg_picker/**`, and `tests/test_walker_debug.mjs`.
+  These files reference `window`/`document` inside Playwright `page.evaluate` /
+  `page.waitForFunction` browser callbacks (or, for the test file, a `globalThis.window`
+  stub), not real Node globals, so `no-undef` was flagging correct code. Mechanical fix
+  per the documented pattern; gate now passes clean (typecheck, lint, format, unit tests).
+
 ## 2026-06-27
 
 ### Additions and New Features

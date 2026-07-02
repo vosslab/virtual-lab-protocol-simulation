@@ -1,39 +1,40 @@
 {
-  "name": "virtual-lab-protocol-simulation",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "setup": "./devel/setup_typescript.sh",
-    "setup:playwright": "./devel/setup_playwright.sh",
-    "build": "bash build_github_pages.sh",
-    "serve": "bash run_web_server.sh",
-    "check": "bash check_codebase.sh",
-    "clean": "bash devel/dist_clean.sh",
-    "protocol:png": "node tools/protocol_to_png.mjs",
-    "scene:png": "node tools/scene_to_png.mjs",
-    "layout:diff": "node --import tsx tools/layout_golden_diff.mjs",
-    "layout:refresh": "node --import tsx tools/layout_golden_diff.mjs --refresh",
-    "layout:metrics": "node --import tsx tools/layout_metrics.mjs --all",
-    "layout:health": "node --import tsx tools/layout_health_report.mjs --all"
-  },
-  "devDependencies": {
-    "@eslint/js": ">=10.0.1",
-    "@playwright/test": ">=1.61.0",
-    "@types/node": ">=25.9.3",
-    "esbuild": ">=0.28.1",
-    "esbuild-plugin-solid": ">=0.6.0",
-    "eslint": ">=10.5.0",
-    "globals": ">=17.6.0",
-    "playwright": ">=1.61.0",
-    "prettier": ">=3.8.4",
-    "solid-js": ">=1.9.13",
-    "tsx": ">=4.22.4",
-    "typescript": ">=6.0.3",
-    "typescript-eslint": ">=8.61.1"
-  },
-  "allowScripts": {
-    "esbuild@0.28.1": true,
-    "fsevents@2.3.2": true,
-    "fsevents@2.3.3": true
-  }
+	"name": "virtual-lab-protocol-simulation",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"setup": "./devel/setup_typescript.sh",
+		"setup:playwright": "./devel/setup_playwright.sh",
+		"build": "./build_github_pages.sh",
+		"serve": "./run_web_server.sh",
+		"check": "./check_codebase.sh",
+		"clean": "./devel/clean_build.sh",
+		"test:playwright": "./run_playwright_tests.sh",
+		"protocol:png": "node tools/protocol_to_png.mjs",
+		"scene:png": "node tools/scene_to_png.mjs",
+		"layout:diff": "node --import tsx tools/layout_golden_diff.mjs",
+		"layout:refresh": "node --import tsx tools/layout_golden_diff.mjs --refresh",
+		"layout:metrics": "node --import tsx tools/layout_metrics.mjs --all",
+		"layout:health": "node --import tsx tools/layout_health_report.mjs --all"
+	},
+	"devDependencies": {
+		"@eslint/js": ">=10.0.1",
+		"@playwright/test": ">=1.61.1",
+		"@types/node": ">=26.1.0",
+		"esbuild": ">=0.28.1",
+		"esbuild-plugin-solid": ">=0.6.0",
+		"eslint": ">=10.6.0",
+		"globals": ">=17.7.0",
+		"playwright": ">=1.61.1",
+		"prettier": ">=3.9.4",
+		"solid-js": ">=1.9.14",
+		"tsx": ">=4.22.4",
+		"typescript": ">=6.0.3",
+		"typescript-eslint": ">=8.62.1"
+	},
+	"allowScripts": {
+		"esbuild@0.28.1": true,
+		"fsevents@2.3.2": true,
+		"fsevents@2.3.3": true
+	}
 }

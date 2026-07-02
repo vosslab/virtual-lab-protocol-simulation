@@ -8,7 +8,6 @@ test-results/
 
 # Dependencies
 node_modules/
-package-lock.json
 OTHER_REPOS/*/
 
 # Tooling caches (recreated on next lint/format run)

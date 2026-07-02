@@ -48,12 +48,7 @@ export type DiagnosticSeverity = "Error" | "Warning" | "Review-required";
 // The party most able to act. The build operator may not own pedagogy, so the
 // owner routes a diagnostic to the right person.
 export type DiagnosticOwner =
-  | "author"
-  | "author/asset"
-  | "author/engine"
-  | "engine/author"
-  | "pedagogy author"
-  | "reviewer";
+  "author" | "author/asset" | "author/engine" | "engine/author" | "pedagogy author" | "reviewer";
 
 // The YAML granularity a diagnostic's pointer can name.
 export type YamlPointerLevel = "scene" | "zone" | "placement" | "scene/zone";

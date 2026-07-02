@@ -373,16 +373,14 @@ function layoutRow(
     cursor += fw + gap;
   }
 
-  const finalItems: ComputedItem[] = out.map(
-    (it): ComputedItem => ({
-      ...it,
-      _top: 0,
-      _height: 0,
-      _labelX: 0,
-      _labelY: 0,
-      _labelLines: [],
-    }),
-  );
+  const finalItems: ComputedItem[] = out.map((it): ComputedItem => ({
+    ...it,
+    _top: 0,
+    _height: 0,
+    _labelX: 0,
+    _labelY: 0,
+    _labelLines: [],
+  }));
   return finalItems;
 }
 

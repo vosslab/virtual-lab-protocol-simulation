@@ -13,13 +13,11 @@ export function resolveInheritance(
   baseSceneMap: Record<string, SceneA> = {},
 ): InheritanceResolution {
   if (!scene.extends) {
-    const placements = (scene.placements ?? []).map(
-      (p): PlacementAuthored => ({
-        ...p,
-        active: true,
-        _from: "own",
-      }),
-    );
+    const placements = (scene.placements ?? []).map((p): PlacementAuthored => ({
+      ...p,
+      active: true,
+      _from: "own",
+    }));
     return {
       placements,
       provenance: placements.map((p) => ({
@@ -32,13 +30,11 @@ export function resolveInheritance(
 
   const base = baseSceneMap[scene.extends];
   if (!base) {
-    const placements = (scene.placements ?? []).map(
-      (p): PlacementAuthored => ({
-        ...p,
-        active: true,
-        _from: "own",
-      }),
-    );
+    const placements = (scene.placements ?? []).map((p): PlacementAuthored => ({
+      ...p,
+      active: true,
+      _from: "own",
+    }));
     return {
       placements,
       provenance: placements.map((p) => ({
