@@ -2,6 +2,8 @@
 
 Browser-based virtual lab protocol games for biology students. Authors compose scenes, objects, and workflows in YAML; the pipeline compiles them to interactive TypeScript simulations with SVG-backed objects laid out by a scene engine.
 
+Try it live: [vosslab.github.io/virtual-lab-protocol-simulation](https://vosslab.github.io/virtual-lab-protocol-simulation/)
+
 ## Quick start
 
 ```bash
