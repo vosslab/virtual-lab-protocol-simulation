@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-03
+
+### Behavior or Interface Changes
+
+- `docs/COLOR_CONTRAST_ACCESSIBILITY.md` reduced to the generic WCAG contrast method; the
+  previously bundled concept-map palette tables were re-homed to `concept-map-maker`'s new
+  `docs/PALETTE_CONTRAST_AUDIT.md`.
+
 ## 2026-07-02
 
 ### Additions and New Features
