@@ -5,6 +5,7 @@ generated/
 *.tsbuildinfo
 *.pyc
 test-results/
+deploy-pages.yml
 
 # Dependencies
 node_modules/
