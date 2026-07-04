@@ -21,7 +21,7 @@
 // only come from the resolver-promotion path -- and the FIRST-RENDER assertion
 // below proves it lands without any state write.
 //
-// The harness (_degrade_harness.tsx) injects two synthetic objects into
+// The harness (helper_degrade_harness.tsx) injects two synthetic objects into
 // OBJECT_LIBRARY at runtime:
 //   - test_degrade_obj: valid state_schema but unknown formula token ("badtoken")
 //     that causes parse_formula_expr to throw.
@@ -54,7 +54,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 //============================================
 
 async function build_harness() {
-  const entry = path.join(__dirname, "_degrade_harness.tsx");
+  const entry = path.join(__dirname, "helper_degrade_harness.tsx");
   const result = await esbuild.build({
     entryPoints: [entry],
     bundle: true,

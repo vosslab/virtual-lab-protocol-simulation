@@ -21,7 +21,7 @@ add_placements:
   # depth_tier 0, sitting on the microscope base as art-on-art) onto the rear
   # right shelf where it reads as a staging reagent with a clear label and
   # does not crowd the left bench tubes.
-  - placement_name: staining_bottles
+  - placement_name: staining_tubes
     object_name: trypan_blue_tube
     zone: rear_right
     depth_tier: 1

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# run_all_checks.sh - single umbrella verification gate.
+# run_fast_checks.sh - single umbrella fast verification gate.
 #
-# Front door: run this directly as ./run_all_checks.sh. It is the one
-# always-run local gate: regenerate generated/, then run every fast check
-# in sequence. It does not run the browser walker sweep (that stays a
+# Front door: run this directly as ./run_fast_checks.sh. It is the one
+# always-run local FAST gate: regenerate generated/, then run every fast
+# check in sequence. It does not run the browser walker sweep (that stays a
 # separate, slower step run via ./run_playwright_tests.sh).
 #
 # Runs (in order):
@@ -35,7 +35,7 @@ set -eo pipefail
 # Usage
 usage() {
 	cat <<'USAGE'
-Usage: run_all_checks.sh [-h|--help]
+Usage: run_fast_checks.sh [-h|--help]
 
   -h, --help          Print this help and exit 0.
 

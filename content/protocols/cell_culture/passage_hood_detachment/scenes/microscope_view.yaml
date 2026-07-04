@@ -1,17 +1,15 @@
 scene_name: passage_hood_detachment_microscope_view
 extends: microscope_basic
 
-scene_notes: "Microscope workspace for confluence inspection (A1) and detachment confirmation (A9) in passage_hood_detachment mini-protocol."
+scene_notes: "Microscope workspace for confluence inspection (A1) and detachment confirmation (A9) in passage_hood_detachment mini-protocol. The inherited hemocytometer slide and microtube are removed as non-targets: confluence inspection uses neither (the slide belongs to cell counting in trypan_blue_counting), and the slide previously occluded the rear_right_hood_return click target."
 
 remove_placements:
-  # The inherited hemocytometer slide (a magenta bottle asset) is align_stop
-  # left in right_bench, which lands it at the left edge of the bench
-  # abutting the microscope base in instrument_area (art-on-art). Re-add it
-  # below at the right align stop so it clears the microscope.
+  # The inherited hemocytometer slide is a non-target for confluence
+  # inspection (it belongs to cell counting in trypan_blue_counting).
+  # Removed outright rather than re-added; it is not re-placed below.
   - right_hemocytometer_slide
-  # The inherited microtube is align_stop right in right_bench; move it to the
-  # left stop (re-added below) so the two right_bench items do not collide once
-  # the slide takes the right stop.
+  # The inherited microtube is likewise a non-target for confluence
+  # inspection. Removed outright rather than re-added.
   - right_microtube
   # Ethanol is a non-target in the microscope view (it is clicked back in the
   # hood scene, not here). Remove the inherited rear_right ethanol so the
@@ -32,26 +30,3 @@ add_placements:
     zone: rear_right
     depth_tier: 1
     align_stop: center
-
-  # Hemocytometer slide pushed to the far-right of the right bench, clear of
-  # the microscope base on the left edge of the zone.
-  - placement_name: right_hemocytometer_slide_clear
-    object_name: hemocytometer_slide
-    zone: right_bench
-    depth_tier: 1
-    align_stop: right
-    # right_bench sits below the rear_right shelf (now holding the hood-return
-    # surface); the default top label rises into that band and collides. This
-    # re-added placement needs its own label fix (the base label_placement does
-    # not carry to a re-added placement).
-    layout:
-      label_placement: bottom
-
-  # Microtube shares the right stop with the slide so the two pack sequentially
-  # along the right edge of the bench, both clear of the microscope base on the
-  # left side of the zone.
-  - placement_name: right_microtube_left
-    object_name: microtube
-    zone: right_bench
-    depth_tier: 2
-    align_stop: right

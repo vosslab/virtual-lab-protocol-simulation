@@ -359,10 +359,6 @@ steps:
               target: incubator
               state:
                 door_open: false
-            - type: ObjectStateChange
-              target: well_plate_96.all_wells
-              state:
-                material_name: media
     step_validator:
       preset: sequence_complete
     outcome:

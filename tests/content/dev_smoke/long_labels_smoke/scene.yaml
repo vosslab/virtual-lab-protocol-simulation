@@ -46,7 +46,7 @@ placements:
     object_name: dmf_bottle
     zone: rear
     depth_tier: 1
-  - placement_name: rear_dmso_bottle
+  - placement_name: rear_dmso_tube
     object_name: dmso_tube
     zone: rear
     depth_tier: 1

@@ -4,7 +4,7 @@ import fs from "node:fs";
 import { spawn } from "node:child_process";
 
 import { REPO_ROOT } from "./repo_root.mjs";
-import { discoverBaseSceneNames } from "./_scene_discovery.mjs";
+import { discoverBaseSceneNames } from "./helper_scene_discovery.mjs";
 
 //============================================
 // Test configuration

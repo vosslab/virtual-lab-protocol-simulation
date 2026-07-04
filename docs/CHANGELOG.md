@@ -2,12 +2,58 @@
 
 ## 2026-07-04
 
+### Additions and New Features
+
+- Adopted the Playwright test-runner model (`@playwright/test` +
+  `playwright.config.ts` + `.spec.ts`) as this repo's single Playwright model.
+  Phase 1 landed the config plus one real smoke spec, proven green end to end
+  through the config's managed `webServer`. Added `playwright.config.ts` at the
+  repo root: `testDir: tests/playwright`, `testMatch: **/*.spec.ts`, a single
+  headless chromium project, `reporter: list`, and a `webServer` block whose
+  command BUILDS then SERVES (`bash build_github_pages.sh && python3 -m
+  http.server <port> --bind 127.0.0.1 --directory dist`) so every worker shares
+  one built-artifact server. Port honors the repo random-port convention
+  (`8000 + rand(0..999)`, `PORT`-env overridable); the chosen port is persisted
+  into `process.env.PORT` so the main runner and worker processes agree, pinned
+  into both the `webServer` url and `use.baseURL`, and a bind collision fails
+  loud (no free-port scan). Added `tests/playwright/smoke.spec.ts` (converted
+  from `test_protocol_selector.mjs`): loads the launcher over HTTP, asserts the
+  "Virtual Lab Protocols" heading via `getByRole`, that protocol cards render,
+  that a real click on the `mtt_reagent_prep` card navigates to its page, and
+  that `#scene-root` mounts a clickable `[data-item-id]` object; web-first
+  `expect` replaces fixed sleeps; screenshots numbered into `test-results/`.
+  The already-runner-shaped `run_playwright_tests.sh` now works unchanged
+  (`1 passed`).
+- Completed the runner-model migration (Phases 2-4). Converted the remaining
+  23 library-model `.mjs` tests to `tests/playwright/*.spec.ts`, and the
+  custom worker-pool walker sweep to
+  `tests/playwright/e2e/protocol_walkthrough.spec.ts`: it discovers every
+  `content/protocols/**/protocol.yaml` id (`helper_protocol_discovery.mjs`),
+  emits one `test()` per protocol inside a `test.describe.configure({ mode:
+  "parallel" })` block so native Playwright workers replace the old
+  `--jobs`/`--server-url` pool, and adds a wrong-object-click negative test
+  (`sdspage_heat_denature_samples`). Renamed non-test support files to a
+  `helper_` prefix (`helper_scene_discovery.mjs`/`.d.mts`,
+  `helper_degrade_harness.tsx`, `helper_scene_reactivity_harness.tsx`,
+  `helper_subpart_render_harness.tsx`, `helper_protocol_discovery.mjs`/`.d.mts`,
+  `helper_walker.mjs`/`.d.mts`) per `PLAYWRIGHT_TEST_STYLE.md`'s reserved
+  bare-underscore-for-scratch convention.
+
 ### Behavior or Interface Changes
 
 - Standardized liquid-container sizes to a discrete 6-bucket capacity+width
   ladder in `docs/specs/SCALING_MODEL.md`; set discrete `display_width_cm` on
   the true bottles (M=10, L=12, XL=14; the `running_buffer_1x_carboy` carboy
   kept at 18).
+- `run_all_checks.sh` renamed to `run_fast_checks.sh` to state its fast-gate
+  scope (it does not run the browser walker sweep); repointed the
+  `package.json` `check:all` alias and updated `docs/FILE_STRUCTURE.md` and
+  `docs/CODE_ARCHITECTURE.md` references. The `git mv` completing the on-disk
+  rename is a follow-up human action.
+- `run_playwright_tests.sh` is now the single front door for every browser
+  test (`npx playwright test` against `playwright.config.ts`); `super_all_tests.sh`'s
+  browser step collapsed from a hand-maintained list of individual `.mjs`
+  invocations to one call to `run_playwright_tests.sh`.
 
 ### Fixes and Maintenance
 
@@ -55,6 +101,59 @@
   `electrophoresis_bench` tank: landscape 114x99 asset in a portrait placement
   box, art preserved via default `xMidYMid meet`). After the fix, 8 of 9 base
   scenes reach 11/11.
+- The Phase 2-3 `.spec.ts` conversion surfaced and fixed real test rot the
+  library-model scripts had been carrying: `test_protocol_host` was
+  permanently SKIP (bare `npx esbuild` cannot transform Solid JSX; the
+  converted spec builds through the esbuild JS API with
+  `esbuild-plugin-solid`, the same plugin path `pipeline/build.mjs` already
+  uses); `test_scene_degrade` fake-passed (its throwaway fake server returned
+  200 HTML for every SVG fetch, so the degrade path it claimed to exercise
+  never actually ran); `test_generalization_render` exited 0 while its own
+  assertions failed (see the honest-exit-code fix above); several specs used
+  stale `placement_name`-vs-`object_name` selectors left over from earlier
+  scene refactors; and one spec navigated to a page `build_github_pages.sh`
+  no longer emits. Each is fixed in its `.spec.ts`, not papered over with a
+  skip.
+
+### Decisions and Failures
+
+- Playwright runner adoption is intentional: it reverses an earlier
+  library-model resolution per owner decision, aligning this repo with sibling
+  repos under `~/nsh/TYPESCRIPT/` (concept-map-maker is the house template).
+  Phase 1 ships config + smoke spec TOGETHER to avoid a vacuous green: a config
+  with zero specs makes `npx playwright test` exit 0 on an empty run. The spec
+  was proven non-vacuous by temporarily breaking its heading assertion
+  (confirmed RED, `1 failed`, exit 1) then restoring it (`1 passed`).
+- Two deviations from the concept-map-maker template, both driven by real
+  needs: (1) the `webServer` command builds then serves (the template serves a
+  prebuilt dist only), so a bare `npx playwright test` is self-sufficient and
+  matches the PLAYWRIGHT_TEST_STYLE build-first-then-serve load model; (2)
+  `baseURL` and the server bind to `127.0.0.1` rather than `localhost` (the
+  template uses `localhost`), because on this host `localhost` resolves to IPv6
+  `::1` while python's `http.server` listens on IPv4, so chromium refused the
+  connection. The repo's own library tests already standardized on `127.0.0.1`.
+- Random-port persistence was required, not optional: the config is evaluated
+  in both the main runner process and each worker process, so a bare
+  `Math.random()` picks a different port per process and the browser targets a
+  dead port (observed as `ERR_CONNECTION_REFUSED` after the readiness probe
+  passed). Persisting the port into `process.env.PORT` on first evaluation makes
+  workers inherit the main process's port.
+- The 23 remaining library-model `.mjs` tests and the walker sweep
+  (`walk_all_protocols.mjs`, `protocol_walkthrough_yaml.mjs`) are staged for a
+  later batch phase; `test_protocol_selector.mjs` (the smoke source) stays in
+  place this phase and must not be double-converted.
+- The completed runner-sweep spec matches the library sweep verdict-for-verdict
+  against the same `dist/` build (29 pass / 2 fail of 31), so the conversion
+  changed execution model, not acceptance outcome. The remaining reds are
+  routed honestly rather than hidden by the migration: the `microscope_basic`
+  base-scene overlap (register item O6, routed to scene-manager);
+  the `tube_A` dotted-subpart click in `per_well_drug` and
+  `plate_drug_treatment_drug_addition` (register item OP1, pedagogy-held,
+  needs an architect ruling); and the `cell_culture_full` mp5 material-quadrant
+  gap (a known scene-manager item already tracked in memory). Separately,
+  `test_decoration_noninteractive.spec.ts` is marked `test.fixme` because its
+  source dev-smoke fixture content was removed elsewhere in the repo; it is a
+  retire candidate, not a migration regression.
 
 ### Developer Tests and Notes
 
@@ -877,6 +976,42 @@
   (hood pointer-overlap: `right_hemocytometer_slide_clear` over
   `rear_right_hood_return`), pending scene-manager confirmation before opening a
   separate investigation.
+
+- SCENE-LINT non-determinism (the reported 0/7/9 error-count flip between
+  identical runs) root-caused as a cross-process render-evidence race, not a
+  scene-lint rule bug: `pipeline/build_generated.sh` unconditionally
+  `rm -rf generated`s the whole `generated/` tree (including
+  `generated/scene_render_stats/`) early in `build_github_pages.sh`, while
+  `tools/scene_to_png.mjs` is the only writer of that evidence and runs near
+  the end of the same build, one scene at a time. A `validate.py` run
+  concurrent with a build observes anywhere from 0 to 9 spurious
+  `missing_render_evidence` findings purely from timing. Reproduced
+  (5x direct scene_lint runs at 0 errors, 5x aggregate validate runs at 9
+  errors, confirmed a live disappearance of `generated/scene_render_stats/`
+  mid-run) and documented with pinned file:line evidence and three candidate
+  durable fixes in `docs/active_plans/audits/scene_lint_nondeterminism.md`
+  (new, not yet git-tracked; link added once committed).
+  Routed jointly to the validation owner (`validation/scene_calc/dump.py`,
+  `validation/scene_lint/cli.py`) and the pipeline owner
+  (`pipeline/build_generated.sh`, `build_github_pages.sh`,
+  `tools/scene_to_png.mjs`); no fix applied by this audit.
+
+### Removals and Deprecations
+
+- `tests/playwright/test_viewport_sweep.mjs` was already removed from the
+  repo (confirmed absent from the working tree, from `HEAD`, and from
+  `git ls-files`; it was deleted in the same commit that landed the
+  content-derived base-scene discovery helper, see the "Base-scene test
+  sets" entry above). It was dead (`rewriteMainTsForScene` read the
+  removed `src/main.ts`, ENOENT on every scene) and redundant with
+  `tests/playwright/test_generalization_render.mjs` (covers all 9 base
+  scenes) and `tests/playwright/test_letterbox_16x9.mjs` (covers
+  viewport-aspect/letterbox behavior); the layout engine is aspect-only, so
+  a multi-viewport-size sweep tested a dimension the product already
+  collapses. No further removal action is needed; a repo-wide grep found no
+  live reference in `package.json`, `run_playwright_tests.sh`, or any
+  `.sh`/`.mjs`/`.json` file, only historical mentions in `docs/CHANGELOG.md`,
+  its dated archive, and `docs/archive/`.
 
 ## 2026-07-03
 

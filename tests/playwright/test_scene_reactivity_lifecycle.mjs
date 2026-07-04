@@ -3,7 +3,7 @@
 // WS-M3-C runtime acceptance (browser): proves the Solid scene renderer's
 // keyed/localized updates and lifecycle ownership against a real DOM.
 //
-// Bundles tests/playwright/_scene_reactivity_harness.tsx on the fly with
+// Bundles tests/playwright/helper_scene_reactivity_harness.tsx on the fly with
 // esbuild + esbuild-plugin-solid (same transform as the production build),
 // serves it, and drives the harness with Playwright. Production code is
 // untouched; the harness mounts the SAME mountScene + scene_store.
@@ -44,7 +44,7 @@ const BBOX_TOL_PX = 1.0;
 //============================================
 
 async function build_harness() {
-  const entry = path.join(__dirname, "_scene_reactivity_harness.tsx");
+  const entry = path.join(__dirname, "helper_scene_reactivity_harness.tsx");
   const result = await esbuild.build({
     entryPoints: [entry],
     bundle: true,

@@ -261,9 +261,19 @@ Three tiers, isolated by [conftest.py](../tests/conftest.py)
   visual_state_resolver, scene operations, shell signals, walker
   no-step-branches, off-canvas classifier (`tests/test_layout_offcanvas.mjs`),
   config-precedence (`tests/test_layout_config.mjs`), and more.
-- **Playwright browser tests** (`tests/playwright/`): framed-layout evidence,
-  initial-scene evidence, interaction attrs, launcher, protocol host, solid walker,
-  viewport sweep, and full-path walkthroughs under `tests/playwright/e2e/`.
+- **Playwright browser tests** (`tests/playwright/`), runner model
+  (`@playwright/test` + `playwright.config.ts` + `*.spec.ts`): framed-layout
+  evidence, initial-scene evidence, interaction attrs, launcher, protocol host,
+  solid walker, viewport sweep, and non-test `helper_*.mjs`/`.tsx` support
+  files. `playwright.config.ts` owns the shared `webServer` (builds then
+  serves `dist/` on one random port for every worker), so specs navigate
+  against `baseURL` rather than each managing its own server. The full-path
+  walkthrough lives under `tests/playwright/e2e/protocol_walkthrough.spec.ts`:
+  one `test()` per curriculum protocol, discovered from
+  `content/protocols/**/protocol.yaml` and driven by native Playwright workers
+  (replacing the earlier custom worker-pool sweep), plus a wrong-order
+  negative test. `run_playwright_tests.sh` is the front door for the whole
+  suite (`npx playwright test`).
 - **Non-browser E2E** (`tests/e2e/`): `e2e_*.py` runners for bandit security,
   facade smoke, gen_protocols, gen_scene_index, and scene_design CLI.
 
@@ -507,17 +517,15 @@ npm run pretest:node && node --import tsx --test tests/test_*.mjs
 # Codebase check gate (typecheck, lint, format, node tests)
 bash check_codebase.sh
 
-# Umbrella gate (build, check_codebase.sh, pytest, content validation)
-bash run_all_checks.sh
+# Umbrella fast gate (build, check_codebase.sh, pytest, content validation)
+bash run_fast_checks.sh
 
-# Browser walker sweep (builds dist/ as needed, then walks every protocol)
+# Browser test suite (builds dist/ as needed, then runs every *.spec.ts,
+# including the protocol walker sweep spec, through the Playwright runner)
 bash run_playwright_tests.sh
 
-# Individual Playwright browser tests (requires built dist/)
-bash build_github_pages.sh && bash run_web_server.sh
-# then in another shell:
-node tests/playwright/test_framed_layout_m2.mjs
-node tests/playwright/test_initial_scene_evidence_m1.mjs
+# A single spec, or a subset, via the same front door
+bash run_playwright_tests.sh tests/playwright/smoke.spec.ts
 ```
 
 What each gate checks:
@@ -530,14 +538,17 @@ What each gate checks:
   protocol emitter, shell signals, walker no-step-branches.
 - **check_codebase.sh**: TypeScript typecheck (tsconfig.json + tsconfig.lint.json),
   ESLint zero warnings, Prettier format check, CSS content policy, node unit tests.
-- **Playwright**: framed-layout measurable evidence, initial-scene rendering
-  evidence, single canonical YAML walker under `tests/playwright/e2e/`.
-- **run_all_checks.sh**: umbrella gate that runs the build, `check_codebase.sh`,
-  `pytest tests/`, and content validation; it excludes the slower browser walker
-  sweep, which runs separately through `run_playwright_tests.sh`.
+- **Playwright** (runner model, `playwright.config.ts` + `*.spec.ts`):
+  framed-layout measurable evidence, initial-scene rendering evidence, and the
+  full-path walker sweep under `tests/playwright/e2e/protocol_walkthrough.spec.ts`
+  (one `test()` per curriculum protocol, native Playwright workers, plus a
+  wrong-order negative test), all served by the config's shared `webServer`.
+- **run_fast_checks.sh**: umbrella fast gate that runs the build, `check_codebase.sh`,
+  `pytest tests/`, and content validation; it excludes the slower browser test
+  suite, which runs separately through `run_playwright_tests.sh`.
 - **run_playwright_tests.sh**: builds `dist/` as needed, then runs
-  `tests/playwright/e2e/walk_all_protocols.mjs` (the all-protocols sweep) and
-  prints a final PASS/FAIL line.
+  `npx playwright test` against `playwright.config.ts`, which covers every
+  `.spec.ts` file including the walker sweep, and prints a final PASS/FAIL line.
 
 See [E2E_TESTS.md](E2E_TESTS.md) and [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md)
 for browser-test conventions.

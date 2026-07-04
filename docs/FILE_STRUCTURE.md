@@ -13,12 +13,13 @@
 | [build_github_pages.sh](../build_github_pages.sh) | Canonical production build into `dist/` |
 | [run_web_server.sh](../run_web_server.sh) | Build then serve `dist/` on local network |
 | [check_codebase.sh](../check_codebase.sh) | Aggregate lint, typecheck, and test gate |
-| `run_all_checks.sh` | Umbrella gate: build, `check_codebase.sh`, `pytest`, content validation (no browser sweep) |
-| [run_playwright_tests.sh](../run_playwright_tests.sh) | Build as needed, then run the browser walker sweep (`walk_all_protocols.mjs`) |
+| `run_fast_checks.sh` | Umbrella fast gate: build, `check_codebase.sh`, `pytest`, content validation (no browser sweep) |
+| [run_playwright_tests.sh](../run_playwright_tests.sh) | Front door for every browser test: build as needed, then run `npx playwright test` against `playwright.config.ts` (`.spec.ts` files, including the protocol walker sweep spec) |
 | [source_me.sh](../source_me.sh) | Bash environment for Python 3.12 |
 | [package.json](../package.json) | Node dev dependencies and npm scripts |
 | [tsconfig.json](../tsconfig.json) | Repo-root TypeScript compiler config (strict) |
 | [tsconfig.lint.json](../tsconfig.lint.json) | Wider typecheck covering `tests/` and `tools/` |
+| `playwright.config.ts` | Playwright test-runner config: `testDir: tests/playwright`, `testMatch: **/*.spec.ts`, single chromium project, `webServer` builds then serves `dist/` on one shared random port for every worker |
 | [pip_requirements-dev.txt](../pip_requirements-dev.txt) | Python dev dependencies (pytest, pyflakes) |
 | [eslint.config.js](../eslint.config.js) | ESLint flat config |
 | [REPO_TYPE](../REPO_TYPE) | Repo type marker (`typescript`) |
@@ -199,14 +200,21 @@ tests/
 |  `- dev_smoke/               -- dev-smoke protocol fixtures (same schema as content/)
 +- data/                       -- baseline snapshots used by pytest fixtures
 +- e2e/                        -- non-browser E2E runners (e2e_*.py, e2e_*.sh)
-`- playwright/                 -- browser-driven tests
+`- playwright/                 -- browser-driven tests, runner model (@playwright/test)
    +- repo_root.mjs            -- shared REPO_ROOT resolver
-   +- test_*.mjs               -- browser tests (framed layout, initial scene, etc.)
-   `- e2e/                     -- the single canonical YAML walker
-      +- protocol_walkthrough_yaml.mjs -- schema-driven single-protocol walker
-      +- walk_all_protocols.mjs        -- all-protocols sweep runner (npm run walk:all)
-      `- walker_helpers.mjs            -- selector resolution + gesture-commit-and-wait drivers
+   +- smoke.spec.ts            -- broadest test: launcher loads, a protocol card opens a scene
+   +- test_*.spec.ts           -- runner specs (framed layout, initial scene, etc.)
+   +- helper_*.mjs / .tsx      -- non-test support (scene discovery, render harnesses)
+   `- e2e/                     -- full-path walkthroughs
+      `- protocol_walkthrough.spec.ts  -- one test() per curriculum protocol (native
+                                          Playwright workers) plus a wrong-order negative test
 ```
+
+`playwright.config.ts` (repo root) owns `testDir: tests/playwright`, `testMatch:
+**/*.spec.ts`, and the shared `webServer` (builds then serves `dist/` on one
+random port for every worker). `run_playwright_tests.sh` is the front door for
+every browser test (`npx playwright test`); `super_all_tests.sh`'s browser
+step is a single call to it.
 
 Key pytest files:
 
@@ -383,8 +391,8 @@ build. Do not place authored files there.
 | New validation rule | `validation/yaml_schema/` or `validation/scene_lint/` |
 | Fast pytest test | `tests/test_*.py` |
 | Node unit test | `tests/test_*.mjs` |
-| Playwright browser test | `tests/playwright/test_*.mjs` |
-| Full-path walkthrough | `tests/playwright/e2e/` |
+| Playwright browser test | `tests/playwright/*.spec.ts` (runner model; see `playwright.config.ts`) |
+| Full-path walkthrough | `tests/playwright/e2e/*.spec.ts` |
 | Non-browser E2E | `tests/e2e/e2e_*.py` or `tests/e2e/e2e_*.sh` |
 | Developer utility | `tools/` (never `pipeline/`) |
 | Documentation | `docs/` with SCREAMING_SNAKE_CASE filename |

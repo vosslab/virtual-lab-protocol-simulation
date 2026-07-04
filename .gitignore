@@ -6,6 +6,7 @@ generated/
 *.pyc
 test-results/
 deploy-pages.yml
+SUPER_LOG.txt
 
 # Dependencies
 node_modules/
