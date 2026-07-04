@@ -67,7 +67,7 @@ steps:
               target: micropipette
               state:
                 set_volume: 10
-      - target: trypan_blue_bottle
+      - target: trypan_blue_tube
         gesture: click
         validator:
           preset: correct_target

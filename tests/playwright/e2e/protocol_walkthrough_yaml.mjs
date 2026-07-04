@@ -43,9 +43,29 @@
 //   --wrong-order          Negative mode: inject a wrong visible click before
 //                          each correct one and assert the runtime rejects it.
 //   --screenshots MODE     per-step (default) | per-interaction | per-click.
+//   --server-url URL       Injected-server mode: navigate against an already
+//                          running static server at URL (e.g.
+//                          http://127.0.0.1:8421) instead of self-serving. The
+//                          walker spawns NO server of its own; the caller owns
+//                          the server's lifetime. The sweep uses this so every
+//                          concurrent walk shares ONE server.
+//   --port N               Self-serve port override. Ignored when --server-url is
+//                          given. Also honors the PORT env var.
+//   --out-dir PATH         Results directory (default test-results/walker). Give
+//                          each concurrent run a distinct out-dir so parallel
+//                          walkers never touch the same report or screenshot.
 //   -h, --help             Show help and exit.
 //
-// Output: test-results/walker/ (screenshots + playthrough_report.json).
+// Server ownership is injectable (fix the design, not the symptom):
+//   - SELF-SERVE (default, no --server-url): the walker picks a random port
+//     8000 + floor(random*1000) -> [8000,8999] (same shape as
+//     run_web_server.sh line 64, overridable by --port or the PORT env var),
+//     spawns its own python3 -m http.server on it, and tears it down at the end.
+//   - INJECTED-SERVER (--server-url URL): the walker does NOT spawn a server; it
+//     navigates against URL/<protocol>.html and uses URL's origin for the
+//     request-failure filter and the readiness wait.
+//
+// Output: <out-dir>/ (screenshots + playthrough_report.json).
 
 import { chromium } from "playwright";
 import { spawn } from "node:child_process";
@@ -68,8 +88,35 @@ import {
 } from "./walker_helpers.mjs";
 
 const DIST_DIR = path.join(REPO_ROOT, "dist");
-const PORT = 8126;
-const RESULTS_DIR = path.join(REPO_ROOT, "test-results", "walker");
+// Single-run default results dir. A no-flag invocation writes here with the
+// historical report filename (playthrough_report.json); parallel callers pass a
+// distinct --out-dir.
+const DEFAULT_RESULTS_DIR = path.join(REPO_ROOT, "test-results", "walker");
+
+// Pick a random static-server port in [8000, 8999]. This mirrors the canonical
+// pattern in run_web_server.sh line 64 (PORT="${PORT:-$((8000 + RANDOM % 1000))}")
+// so every server this repo spins up shares one port convention. There is no
+// free-port scan and no collision-retry loop: a collision means too many servers
+// are running, which is a different problem out of scope here.
+function randomPort() {
+  return 8000 + Math.floor(Math.random() * 1000);
+}
+
+// Resolve the self-serve port: an explicit --port wins, then the PORT env var
+// (the same override run_web_server.sh honors), then a fresh random port.
+function resolveSelfServePort(explicitPort) {
+  if (explicitPort !== null) {
+    return explicitPort;
+  }
+  const envPort = process.env.PORT;
+  if (envPort !== undefined && envPort !== "") {
+    const parsed = Number.parseInt(envPort, 10);
+    if (Number.isInteger(parsed) && parsed >= 1 && parsed <= 65535) {
+      return parsed;
+    }
+  }
+  return randomPort();
+}
 
 // Whole-run budget: 10 minutes.
 const RUN_BUDGET_MS = 600000;
@@ -105,6 +152,12 @@ function parseArgs() {
     protocol: "sdspage_assemble_electrode_module",
     wrongOrder: false,
     screenshotMode: "per-step",
+    // port stays null unless --port is passed; main() resolves the self-serve
+    // port (explicit --port, then PORT env, then random) only in self-serve mode.
+    port: null,
+    // serverUrl null means self-serve; a non-null URL selects injected-server mode.
+    serverUrl: null,
+    outDir: DEFAULT_RESULTS_DIR,
   };
   const VALID_SCREENSHOT_MODES = ["per-step", "per-interaction", "per-click"];
 
@@ -121,6 +174,12 @@ Options:
       --wrong-order        Negative mode: inject a wrong visible click before each
                            correct one and assert the runtime rejects it.
       --screenshots MODE   per-step (default) | per-interaction | per-click.
+      --server-url URL     Injected-server mode: navigate against an already
+                           running static server at URL; spawn no server. The
+                           sweep uses this so all walks share ONE server.
+      --port N             Self-serve port override (ignored with --server-url).
+                           Default: PORT env var, else a random [8000,8999] port.
+      --out-dir PATH       Results directory (default test-results/walker).
   -h, --help               Show this help message and exit.`;
     console.log(usage);
     process.exit(0);
@@ -142,6 +201,23 @@ Options:
       }
       result.screenshotMode = mode;
       i++;
+    } else if (args[i] === "--port" && i + 1 < args.length) {
+      const parsedPort = Number.parseInt(args[i + 1], 10);
+      if (!Number.isInteger(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
+        console.error(`Invalid --port value '${args[i + 1]}'. Expected an integer 1-65535.`);
+        process.exit(1);
+      }
+      result.port = parsedPort;
+      i++;
+    } else if ((args[i] === "--server-url" || args[i] === "--base-url") && i + 1 < args.length) {
+      // Injected-server mode. Strip any trailing slash so URL joins are clean.
+      result.serverUrl = args[i + 1].replace(/\/+$/, "");
+      i++;
+    } else if (args[i] === "--out-dir" && i + 1 < args.length) {
+      // Resolve against REPO_ROOT so a relative --out-dir lands in the repo,
+      // matching how the default results dir is computed.
+      result.outDir = path.resolve(REPO_ROOT, args[i + 1]);
+      i++;
     }
   }
   return result;
@@ -151,8 +227,8 @@ Options:
 // Server
 //============================================
 
-function startServer() {
-  return spawn("python3", ["-m", "http.server", String(PORT), "--directory", DIST_DIR], {
+function startServer(port) {
+  return spawn("python3", ["-m", "http.server", String(port), "--directory", DIST_DIR], {
     stdio: ["ignore", "pipe", "pipe"],
     cwd: REPO_ROOT,
   });
@@ -389,9 +465,28 @@ async function walkActiveStep(page, step, report, opts) {
 
 async function main() {
   const args = parseArgs();
+  const RESULTS_DIR = args.outDir;
+
+  // Injectable server ownership. In injected-server mode the caller (the sweep)
+  // owns a single shared server and passes its URL; the walker spawns nothing.
+  // In self-serve mode the walker owns its own server on a random (or overridden)
+  // port and tears it down at the end.
+  const injectedServer = args.serverUrl !== null;
+  let selfServePort = null;
+  let baseUrl;
+  if (injectedServer) {
+    baseUrl = args.serverUrl;
+  } else {
+    selfServePort = resolveSelfServePort(args.port);
+    baseUrl = `http://127.0.0.1:${selfServePort}`;
+  }
+  // Origin used for the request-failure filter and readiness wait.
+  const originForFilter = new URL(baseUrl).origin;
+
+  const serverDesc = injectedServer ? `injected ${baseUrl}` : `self-serve port ${selfServePort}`;
   console.log(
     `Starting walker: protocol=${args.protocol}, wrongOrder=${args.wrongOrder}, ` +
-      `screenshots=${args.screenshotMode}`,
+      `screenshots=${args.screenshotMode}, server=${serverDesc}, outDir=${RESULTS_DIR}`,
   );
 
   if (!fs.existsSync(RESULTS_DIR)) {
@@ -405,9 +500,10 @@ async function main() {
 
   const runStart = Date.now();
   // The new host serves a per-protocol page at dist/<protocol>.html.
-  const gameUrl = `http://127.0.0.1:${PORT}/${encodeURIComponent(args.protocol)}.html`;
+  const gameUrl = `${baseUrl}/${encodeURIComponent(args.protocol)}.html`;
 
-  const server = startServer();
+  // Self-serve mode owns its server; injected mode leaves server null.
+  const server = injectedServer ? null : startServer(selfServePort);
 
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
@@ -426,7 +522,7 @@ async function main() {
   page.on("requestfailed", (req) => {
     try {
       const url = new URL(req.url());
-      if (url.origin === `http://127.0.0.1:${PORT}`) {
+      if (url.origin === originForFilter) {
         networkErrors.push({
           url: req.url(),
           method: req.method(),
@@ -439,10 +535,15 @@ async function main() {
   });
 
   try {
-    await waitForServer(`http://127.0.0.1:${PORT}/`);
+    // Wait for readiness in both modes: self-serve waits for the child server to
+    // bind; injected mode confirms the shared server is reachable.
+    await waitForServer(`${baseUrl}/`);
   } catch (err) {
     report.error(`Server startup failed: ${err.message}`);
-    server.kill();
+    // Only tear down a server this walker owns; never kill an injected one.
+    if (server !== null) {
+      server.kill();
+    }
     await browser.close();
     process.exit(1);
   }
@@ -586,8 +687,11 @@ async function main() {
     report.save(reportPath);
     console.log(`Report saved to ${reportPath}`);
     await browser.close();
-    server.kill();
-    await new Promise((r) => setTimeout(r, 100));
+    // Only tear down a server this walker owns; the injected server outlives it.
+    if (server !== null) {
+      server.kill();
+      await new Promise((r) => setTimeout(r, 100));
+    }
   }
 }
 

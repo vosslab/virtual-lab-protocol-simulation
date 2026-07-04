@@ -47,4 +47,15 @@ export default [
     // ignored for sibling-repo checkouts.
     ignores: [".claude/**"],
   },
+  {
+    // generated/ is machine-emitted, gitignored build output rebuilt from source
+    // on every run (see generated/precomputed_layout.ts). ESLint source-authoring
+    // rules are mis-scoped here: no-loss-of-precision flags machine-emitted
+    // 16-significant-digit floats that round-trip exactly, which is correct
+    // generated output, not a source-style violation. tsc still type-checks
+    // this tree via tsconfig.json; only ESLint's source-style rules are skipped.
+    // The canonical eslint.config.js already ignores dist/** (another
+    // machine-generated build-output tree); this mirrors that for generated/**.
+    ignores: ["generated/**"],
+  },
 ];

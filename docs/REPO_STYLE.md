@@ -24,7 +24,7 @@ Core principles guide work in this repo. Cite them by name when making judgment 
 
 ## Project type marker
 
-Every repo carries `REPO_TYPE` at the repo root: one lowercase token plus newline. Tokens: `python`, `typescript`, `rust`, `swift`, `other`. Missing marker triggers detection via `tools/detect_repo_type.py`; if detection is unavailable or ambiguous, falls back to `LANG_UNKNOWN`. An unrecognized token in an existing marker (a typo or a not-yet-added type) logs a warning and falls back to `other`, rather than aborting propagation. `LANG_UNKNOWN` repos receive only universal walker-routed files (`docs/`, `tests/`, `devel/`); no `ROUTING_OVERRIDES` `exclude_repos` rule applies. The propagator (`propagate_style_guides.py` entry script + `repolib/` package: `repolib.repo.read_repo_type` reads the marker, `repolib.files.compute_propagation_plan` dispatches overlays) routes files by repo type; `reset_repo.py` writes the marker during bootstrap by calling `repolib` directly (no longer shells out to `propagate_style_guides.py`). `REPO_TYPE` is maintained after bootstrap; it controls future propagation behavior, not just initial scaffolding. File location is the primary routing determinant: every file under `templates/<type>/` ships to that type, files under `docs/`, `tests/`, and `devel/` ship universally. `docs/PYTHON_STYLE.md` ships to all repo types. The only routing exception encoded in `ROUTING_OVERRIDES` is `exclude_repos` (blocks a file from shipping back to its source repo). Conditional overlays (`_folder` convention, see `meta/docs/PROPAGATION_RULES.md`) are selected by a `conditional_overlays` manifest rule. A shared overlay routes one or more files under `templates/shared/<path>` to a chosen SET of repo types via a `shared_overlays` manifest rule (named `paths`, `repo_types`, and an optional `lacks_file` presence condition that ships only when a marker file is absent at the consumer); every `templates/shared/` file must be named by a rule or the shared walk raises. All propagation manifests live in `meta/propagation/manifests.yaml`. `swift` currently ships universal files only (no `templates/swift/` overlay); future swift-specific files are added by folder location (`templates/swift/<path>`) with no code change required.
+Every repo carries `REPO_TYPE` at the repo root: one lowercase token plus newline. Tokens: `python`, `typescript`, `rust`, `swift`, `other`, `all`. `all` means the repo consumes every template family and should receive every typed overlay in addition to universal files. Missing marker triggers detection via `tools/detect_repo_type.py`; if detection is unavailable or ambiguous, falls back to `LANG_UNKNOWN`. An unrecognized token in an existing marker (a typo or a not-yet-added type) logs a warning and falls back to `other`, rather than aborting propagation. `LANG_UNKNOWN` repos receive only universal walker-routed files (`docs/`, `tests/`, `devel/`); no `ROUTING_OVERRIDES` `exclude_repos` rule applies. The propagator (`propagate_style_guides.py` entry script + `repolib/` package: `repolib.repo.read_repo_type` reads the marker, `repolib.files.compute_propagation_plan` dispatches overlays) routes files by repo type; `reset_repo.py` writes the marker during bootstrap by calling `repolib` directly (no longer shells out to `propagate_style_guides.py`). `REPO_TYPE` is maintained after bootstrap; it controls future propagation behavior, not just initial scaffolding. File location is the primary routing determinant: every file under `templates/<type>/` ships to that type, files under `docs/`, `tests/`, and `devel/` ship universally. `docs/PYTHON_STYLE.md` ships to all repo types. The only routing exception encoded in `ROUTING_OVERRIDES` is `exclude_repos` (blocks a file from shipping back to its source repo). Conditional overlays (`_folder` convention, see `meta/docs/PROPAGATION_RULES.md`) are selected by a `conditional_overlays` manifest rule. A shared overlay routes one or more files under `templates/shared/<path>` to a chosen SET of repo types via a `shared_overlays` manifest rule (named `paths`, `repo_types`, and an optional `lacks_file` presence condition that ships only when a marker file is absent at the consumer); every `templates/shared/` file must be named by a rule or the shared walk raises. All propagation manifests live in `meta/propagation/manifests.yaml`. `swift` currently ships universal files only (no `templates/swift/` overlay); future swift-specific files are added by folder location (`templates/swift/<path>`) with no code change required.
 
 ## AGENTS.md files
 
@@ -108,7 +108,7 @@ Preferred structure:
 - Categories are not required when they would be empty, but every changelog entry must belong to one category.
 - Changelog entries are never removed, but they may be rephrased for accuracy and clarity.
 - Legacy archives that use the older `CHANGELOG_ARCHIVE_NN.md` form must be renamed to the documented `CHANGELOG-YYYY-MM[a-z].md` form. The new name follows the most-recent-month-in-range rule above (use the most recent `## YYYY-MM-DD` heading inside the archive). Use `git mv` so history is preserved. Only one archive naming style should exist in the repo at any time.
-- Automation: [rotate_changelog.py](../devel/rotate_changelog.py) enforces this rotation policy (keeps the two newest day blocks, archives the rest into `docs/CHANGELOG-YYYY-MM[a-z].md`, refuses to clobber boundary dates). [query_changelog.py](../devel/query_changelog.py) searches the active changelog and archives by date range, category, keyword, or source. [commit_changelog.py](../devel/commit_changelog.py) drafts the seed commit message from the changelog bullets newly ADDED in the working tree (via `git diff HEAD` on `docs/CHANGELOG.md`), then restricts those to the most recent run of consecutive day-block headings so an edited older bullet does not leak into the seed. All three share [changelog_lib.py](../devel/changelog_lib.py) (parser/serializer, git helpers, console + prompt helpers).
+- Automation: [devel/rotate_changelog.py](../devel/rotate_changelog.py) enforces this rotation policy (keeps the two newest day blocks, archives the rest into `docs/CHANGELOG-YYYY-MM[a-z].md`, refuses to clobber boundary dates). [devel/query_changelog.py](../devel/query_changelog.py) searches the active changelog and archives by date range, category, keyword, or source. [devel/commit_changelog.py](../devel/commit_changelog.py) drafts the seed commit message from the changelog bullets newly ADDED in the working tree (via `git diff HEAD` on `docs/CHANGELOG.md`), then restricts those to the most recent run of consecutive day-block headings so an edited older bullet does not leak into the seed. All three share [devel/changelog_lib.py](../devel/changelog_lib.py) (parser/serializer, git helpers, console + prompt helpers).
 
 ## Active plans folder organization
 - Working planning artifacts under `docs/active_plans/` are filed into a closed set of subdirectories by kind.
@@ -159,6 +159,34 @@ Preferred structure:
   ```
   This module uses `git rev-parse --show-toplevel` and is propagated across repos automatically.
 
+### source_me.sh contract
+
+- `source_me.sh` is a bash script sourced into your shell, not run directly. It
+  enforces bash, sources `~/.bashrc`, and exports the Python runtime flags
+  `PYTHONUNBUFFERED` and `PYTHONDONTWRITEBYTECODE`.
+- It ships as a NOEXIST starter seed: the consumer repo owns its copy after
+  bootstrap, so local edits do not propagate back and are never overwritten.
+- Ordering invariant: `source ~/.bashrc` runs FIRST, before any repo-specific
+  environment extension. `~/.bashrc` applies local shell setup and clears
+  `PYTHONPATH`, so any `PYTHONPATH` line must come after it or be wiped.
+- The seed sets no `PYTHONPATH`. One generic seed is shipped to every repo type;
+  a universal `PYTHONPATH` is intentionally omitted. Most repos need none, and a
+  broad path would mask missing-dependency bugs. `PYTHONPATH` need is per-repo
+  (does the repo ship a repo-root package), which varies within a repo type, so
+  there are no repo_type-specific seeds either.
+- When a repo needs its repo-root modules importable while commands run from a
+  subdirectory without installing the repo -- most commonly a repo-root package
+  imported package-qualified (for example `import repolib.console`), or scripts
+  under `tools/` or `tests/` that import repo-root modules -- uncomment the
+  canonical extension block in that repo's `source_me.sh`. Use exactly this
+  idiom (it assumes the repo is inside a Git work tree):
+  ```bash
+  # Must come after sourcing ~/.bashrc, which clears PYTHONPATH.
+  REPO_ROOT="$(git rev-parse --show-toplevel)"
+  export PYTHONPATH="$REPO_ROOT${PYTHONPATH:+:$PYTHONPATH}"
+  unset REPO_ROOT
+  ```
+
 ## Dependency manifests
 - Store Python standard dependencies in `pip_requirements.txt` at the repo root and developer dependencies, e.g., pytest in `pip_requirements-dev.txt`.
 - Use `pip_requirements.txt` not `requirements.txt` for clarity reasons
@@ -182,7 +210,7 @@ Preferred structure:
 - Choose clear, descriptive names.
 - Keep well-known root-level docs (for example VERSION, README.md, AGENTS.md).
 - I prefer to use social media links instead of hard coding my email in repos. For example, Neil Voss, https://bsky.app/profile/neilvosslab.bsky.social
-- When referencing files, use Markdown links so users can click through. Markdown links are created using the syntax ``URL``, where "link text" is the clickable text that appears in the document, and "URL" is the web address or file path the link points to. This allows users to navigate between different content easily. Use file-path link text so readers know the exact filename (good: `[MARKDOWN_STYLE.md](MARKDOWN_STYLE.md)`, bad: `[Style Guide for Markdown](MARKDOWN_STYLE.md)`). Only include a backticked path when the link text is not the path.
+- When referencing files, use Markdown links so users can click through. Markdown links are created using the syntax `[link text](URL)`, where "link text" is the clickable text that appears in the document, and "URL" is the web address or file path the link points to. This allows users to navigate between different content easily. Use file-path link text so readers know the exact filename (good: `[docs/MARKDOWN_STYLE.md](docs/MARKDOWN_STYLE.md)`, bad: `[Style Guide for Markdown](docs/MARKDOWN_STYLE.md)`). Only include a backticked path when the link text is not the path.
 
 
 ### Recommended common docs
@@ -206,6 +234,7 @@ Preferred structure:
 - `docs/AUTHORS.md`: primary maintainers and notable contributors
 - `docs/CLAUDE_HOOK_USAGE_GUIDE.md`: generated hook behavior reference, not a repo style source of truth. If repo style differs from hook examples, update repo style docs and recommend a hook rule update upstream.
 - `docs/MARKDOWN_STYLE.md`: Markdown writing rules and formatting conventions for this repo.
+- `docs/PLAYWRIGHT_TEST_STYLE.md`: browser test authoring style for repos that serve HTML (typescript and `other`); ships via shared overlay.
 - `docs/PYTEST_STYLE.md`: pytest test-writing rules, commands, fixture policy, and failure triage.
 - `docs/PYTHON_STYLE.md`: Python formatting, linting, and project-specific conventions.
 - `docs/REPO_STYLE.md`: repo-level organization, conventions, and file placement rules.

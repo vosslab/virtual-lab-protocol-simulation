@@ -1,4 +1,4 @@
-object_name: laemmli_4x_bottle
+object_name: laemmli_4x_tube
 kind: bottle
 label: Laemmli 4x
 state_fields:
@@ -8,12 +8,12 @@ state_fields:
       - empty
       - laemmli_4x
     default: empty
-    description: Contents currently in the bottle.
+    description: Contents currently in the tube.
   - field_name: material_volume
     type: float
     unit: ml
     min: 0
-    max: 10
+    max: 15
     default: 10
     description: Volume of Laemmli 4x remaining, in milliliters.
 visual_states:
@@ -22,18 +22,18 @@ visual_states:
     cases:
       - when: empty
         output:
-          asset_name: bottle_green
+          asset_name: falcon_15ml
       - when: laemmli_4x
         output:
-          asset_name: bottle_green
+          asset_name: falcon_15ml
   material_volume:
     kind: composite
-    formula: fill_height(state(material_volume), capacity_ml=10)
+    formula: fill_height(state(material_volume), capacity_ml=15)
 capabilities:
   - clickable
   - material_container
   - cursor_attachable
 layout:
   default_width: 2
-  display_width_cm: 6
+  display_width_cm: 5
   label_width: 6

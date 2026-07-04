@@ -1,4 +1,4 @@
-object_name: bme_bottle
+object_name: bme_tube
 kind: bottle
 label: BME
 state_fields:
@@ -8,12 +8,12 @@ state_fields:
       - empty
       - bme
     default: empty
-    description: Contents currently in the bottle.
+    description: Contents currently in the tube.
   - field_name: material_volume
     type: float
     unit: ml
     min: 0
-    max: 5
+    max: 15
     default: 5
     description: Volume of BME remaining, in milliliters.
 visual_states:
@@ -22,18 +22,18 @@ visual_states:
     cases:
       - when: empty
         output:
-          asset_name: bottle_orange
+          asset_name: falcon_15ml
       - when: bme
         output:
-          asset_name: bottle_orange
+          asset_name: falcon_15ml
   material_volume:
     kind: composite
-    formula: fill_height(state(material_volume), capacity_ml=5)
+    formula: fill_height(state(material_volume), capacity_ml=15)
 capabilities:
   - clickable
   - material_container
   - cursor_attachable
 layout:
   default_width: 2
-  display_width_cm: 8
+  display_width_cm: 5
   label_width: 3

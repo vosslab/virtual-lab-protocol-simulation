@@ -24,7 +24,7 @@ remove_placements:
 add_placements:
   # DMSO bottle at rear left beside waste container
   - placement_name: rear_left_dmso
-    object_name: dmso_bottle
+    object_name: dmso_tube
     zone: rear_left
     depth_tier: 1
     align_stop: right

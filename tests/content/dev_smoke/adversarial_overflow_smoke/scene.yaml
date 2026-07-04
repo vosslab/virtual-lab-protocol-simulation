@@ -71,11 +71,11 @@ placements:
     zone: zone_a
     depth_tier: 1
   - placement_name: b_1
-    object_name: laemmli_4x_bottle
+    object_name: laemmli_4x_tube
     zone: zone_b
     depth_tier: 1
   - placement_name: b_2
-    object_name: bme_bottle
+    object_name: bme_tube
     zone: zone_b
     depth_tier: 1
   - placement_name: b_3

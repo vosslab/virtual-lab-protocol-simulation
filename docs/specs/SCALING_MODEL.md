@@ -109,6 +109,38 @@ Start with rough proportions relative to real-world sizes, then exaggerate for v
 
 Larger items are exaggerated more than smaller items to maintain visibility.
 
+## Liquid-container size ladder
+
+Liquid containers (tubes, bottles, carboys) follow a discrete 6-bucket
+capacity-and-width ladder. This is the anti-drift standard: three fields must
+agree per object, and every object's bucket determines all three together,
+not chosen independently.
+
+| Bucket    | Capacity (mL) | `state_fields.material_volume.max` | `display_width_cm` | Example asset                          |
+| --------- | -------------: | -----------------------------------: | ------------------: | --------------------------------------- |
+| tube S    | 15             | 15                                    | 5                    | `falcon_15ml` (mirrors `conical_15ml`) |
+| tube L    | 50             | 50                                    | 6.5                  | `falcon_50ml`                           |
+| bottle S  | 100            | 100                                   | 8                    | reserved; no members yet                |
+| bottle M  | 250            | 250                                   | 10                   |                                          |
+| bottle L  | 500            | 500                                   | 12                   |                                          |
+| bottle XL | 1000           | 1000                                  | 14                   |                                          |
+
+The three fields that must agree per object:
+
+- `state_fields.material_volume.max` on the object YAML
+- the fill/asset capacity `capacity_ml` used by `fill_height`
+- `layout.display_width_cm`
+
+Rules:
+
+- Bottles are exactly `{100, 250, 500, 1000}` mL. Anything under 100 mL is a
+  15 mL falcon tube or a 50 mL tube, not a bottle.
+- One `display_width_cm` per bucket, applied uniformly across every object in
+  that bucket.
+- `running_buffer_1x_carboy` stays a special case: an 18 cm vessel sized as a
+  1000 mL carboy, not a Duran bottle. It does not join the bottle XL bucket
+  and keeps its own `display_width_cm`.
+
 ## No override escape hatches
 
 There is no per-placement size override. The removed `fudge` multiplier and the

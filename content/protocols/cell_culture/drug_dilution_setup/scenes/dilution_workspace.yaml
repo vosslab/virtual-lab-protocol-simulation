@@ -23,14 +23,14 @@ remove_placements:
 add_placements:
   # Carboplatin stock bottle at rear left
   - placement_name: carb_stock
-    object_name: carboplatin_stock_bottle
+    object_name: carboplatin_stock_tube
     zone: rear_left
     depth_tier: 1
     align_stop: right
 
   # Metformin stock at rear center (left stop)
   - placement_name: met_stock
-    object_name: metformin_stock_bottle
+    object_name: metformin_stock_tube
     zone: rear_center
     depth_tier: 1
     align_stop: left

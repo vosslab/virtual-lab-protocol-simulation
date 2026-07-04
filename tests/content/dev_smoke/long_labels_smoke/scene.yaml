@@ -47,7 +47,7 @@ placements:
     zone: rear
     depth_tier: 1
   - placement_name: rear_dmso_bottle
-    object_name: dmso_bottle
+    object_name: dmso_tube
     zone: rear
     depth_tier: 1
   - placement_name: rear_ethyl_acetate_bottle

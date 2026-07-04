@@ -76,7 +76,7 @@ placements:
     align_stop: left
 
   - placement_name: rear_trypan_blue_bottle
-    object_name: trypan_blue_bottle
+    object_name: trypan_blue_tube
     zone: rear_shelf
     depth_tier: 1
     align_stop: center

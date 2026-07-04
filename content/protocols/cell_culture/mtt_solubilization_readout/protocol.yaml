@@ -48,7 +48,7 @@ steps:
               target: micropipette
               state:
                 set_volume: 200
-      - target: dmso_bottle
+      - target: dmso_tube
         gesture: click
         validator:
           preset: correct_target

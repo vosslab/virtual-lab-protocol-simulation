@@ -23,7 +23,7 @@ def validator():
 def test_collapsed_yaml_passes_vocabulary_rule(validator):
 	"""(a) Collapsed YAML with single asset_name passes vocabulary rule."""
 	obj = {
-		'object_name': 'bme_bottle',
+		'object_name': 'bme_tube',
 		'kind': 'bottle',
 		'label': 'BME',
 		'state_fields': [
@@ -48,8 +48,8 @@ def test_collapsed_yaml_passes_vocabulary_rule(validator):
 			'material_name': {
 				'kind': 'svg',
 				'cases': [
-					{'when': 'empty', 'output': {'asset_name': 'bme_bottle'}},
-					{'when': 'bme', 'output': {'asset_name': 'bme_bottle'}},
+					{'when': 'empty', 'output': {'asset_name': 'falcon_15ml'}},
+					{'when': 'bme', 'output': {'asset_name': 'falcon_15ml'}},
 				],
 			},
 			'material_volume': {
@@ -61,7 +61,7 @@ def test_collapsed_yaml_passes_vocabulary_rule(validator):
 		'layout': {'default_width': 3, 'label_width': 3},
 	}
 
-	findings = validator.validate(obj, 'content/objects/bottle/bme_bottle.yaml')
+	findings = validator.validate(obj, 'content/objects/bottle/bme_tube.yaml')
 
 	# Filter for variant-collapse errors
 	variant_errors = [f for f in findings if 'distinct asset_name' in f.message]

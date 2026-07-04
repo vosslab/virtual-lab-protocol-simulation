@@ -22,7 +22,7 @@ add_placements:
   # right shelf where it reads as a staging reagent with a clear label and
   # does not crowd the left bench tubes.
   - placement_name: staining_bottles
-    object_name: trypan_blue_bottle
+    object_name: trypan_blue_tube
     zone: rear_right
     depth_tier: 1
     align_stop: right

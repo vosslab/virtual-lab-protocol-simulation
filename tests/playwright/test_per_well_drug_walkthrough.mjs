@@ -38,11 +38,43 @@ import { REPO_ROOT } from "./repo_root.mjs";
 
 const PROTOCOL = "plate_drug_treatment_drug_addition";
 const PLATE = "well_plate_96";
-// The registered scalar display_color for carboplatin (generated/protocol_materials.ts,
-// plate_drug_treatment_drug_addition registry). The first step (add_carb_row_b)
+// The registered scalar display_color for carboplatin, read live from
+// generated/protocol_materials.ts (plate_drug_treatment_drug_addition registry) so a
+// content color change flows through automatically. The first step (add_carb_row_b)
 // writes carboplatin to wells B1..B12; the D11 assertion expects this fill.
-const CARBOPLATIN_COLOR = "#a719db";
+const CARBOPLATIN_COLOR = read_material_display_color(PROTOCOL, "carboplatin");
 const TRANSPARENT = "transparent";
+
+//============================================
+// Read a material's display_color straight out of generated/protocol_materials.ts
+//============================================
+
+// Text-parses the generated PROTOCOL_MATERIALS literal (same approach as
+// test_launcher.mjs's load_expected_index for generated/protocols.ts) rather than
+// importing the .ts module, since this script runs under plain node.
+function read_material_display_color(protocol_name, material_name) {
+  const file = path.join(REPO_ROOT, "generated/protocol_materials.ts");
+  const src = fs.readFileSync(file, "utf8");
+  // Find the registry block for this protocol: `protocol_name: { ... },` on its own line.
+  const protocolRe = new RegExp(`\\b${protocol_name}:\\s*\\{`);
+  const protocolMatch = protocolRe.exec(src);
+  if (!protocolMatch) {
+    throw new Error(`Protocol ${protocol_name} not found in generated/protocol_materials.ts`);
+  }
+  // Registry entries are emitted one protocol per line, so the line end closes the block.
+  const lineEnd = src.indexOf("\n", protocolMatch.index);
+  const blob = src.slice(protocolMatch.index, lineEnd);
+  // Match the exact material key (word boundary so "carboplatin" does not match
+  // "carboplatin_200umol"), then pull its display_color.
+  const materialRe = new RegExp(`\\b${material_name}:\\s*\\{[^}]*display_color:\\s*"([^"]+)"`);
+  const materialMatch = materialRe.exec(blob);
+  if (!materialMatch) {
+    throw new Error(
+      `Material ${material_name} not found under ${protocol_name} in generated/protocol_materials.ts`,
+    );
+  }
+  return materialMatch[1];
+}
 
 // The wells the FIRST step targets (row B, cols 1..12), read from the protocol.
 // Listed here as the EXPECTED spatial-correspondence set for the assertion only;

@@ -74,3 +74,15 @@ add_placements:
     zone: center
     depth_tier: 2
     align_stop: center
+
+  # Standalone conical 15ml tube in rear_center (right slot, depth 1). The
+  # transfer_to_conical entry step clicks conical_15ml_rack while in this
+  # scene, but its response writes ObjectStateChange/CursorAttach state onto
+  # the standalone conical_15ml object (the rack is the click target, the
+  # tube is the state-bearing object). rear_center holds only PBS (left) and
+  # waste (center) at depth 1, so the right slot is free and overlap-clean.
+  - placement_name: rear_center_conical_tube
+    object_name: conical_15ml
+    zone: rear_center
+    depth_tier: 1
+    align_stop: right

@@ -664,7 +664,7 @@ async function main() {
       assertionJFailed ||
       assertionKFailed;
 
-    const passCount = [
+    const assertionResults = [
       !assertionAFailed,
       !assertionBFailed,
       !assertionCFailed,
@@ -676,9 +676,10 @@ async function main() {
       !assertionIFailed,
       !assertionJFailed,
       !assertionKFailed,
-    ].filter(Boolean).length;
+    ];
+    const passCount = assertionResults.filter(Boolean).length;
 
-    console.log(`Passed: ${passCount}/11 assertions`);
+    console.log(`Passed: ${passCount}/${assertionResults.length} assertions`);
     console.log("=============================\n");
 
     if (allFailed) {

@@ -87,7 +87,7 @@ steps:
               target: micropipette
               state:
                 set_volume: 7.5
-      - target: laemmli_4x_bottle
+      - target: laemmli_4x_tube
         gesture: click
         validator:
           preset: correct_target
@@ -128,7 +128,7 @@ steps:
               target: micropipette
               state:
                 set_volume: 1.5
-      - target: bme_bottle
+      - target: bme_tube
         gesture: click
         validator:
           preset: correct_target

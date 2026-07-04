@@ -95,5 +95,6 @@ File naming conventions are enforced by `templates/typescript/tests/test_test_na
 
 - [PYTEST_STYLE.md](PYTEST_STYLE.md): fast pytest unit and integration tests under `tests/`.
 - Browser-driven test conventions: TypeScript repos include `PLAYWRIGHT_USAGE.md` in their propagated `docs/` folder for tests under `tests/playwright/`.
+- Browser test authoring style: repos that serve HTML (typescript and `other`) include `PLAYWRIGHT_TEST_STYLE.md` in their propagated `docs/` folder for how to write Playwright tests under `tests/playwright/`.
 - [PYTHON_STYLE.md](PYTHON_STYLE.md): repo-wide Python rules, including
   the `assert`-only-in-tests boundary.

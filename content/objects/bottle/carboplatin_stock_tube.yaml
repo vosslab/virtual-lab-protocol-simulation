@@ -1,12 +1,12 @@
-object_name: metformin_stock_bottle
+object_name: carboplatin_stock_tube
 kind: bottle
-label: Metformin 1 M
+label: Carboplatin 10 mM
 
 state_fields:
   - field_name: material_name
     type: enum
-    allowed: [metformin]
-    default: metformin
+    allowed: [carboplatin]
+    default: carboplatin
     description: Contents currently in this bottle.
   - field_name: material_volume
     type: float
@@ -14,14 +14,14 @@ state_fields:
     min: 0
     max: 50
     default: 50
-    description: Volume of metformin stock remaining, in milliliters.
+    description: Volume of carboplatin stock remaining, in milliliters.
 
 visual_states:
   material_name:
     kind: svg
     cases:
-      - when: metformin
-        output: { asset_name: bottle_green }
+      - when: carboplatin
+        output: { asset_name: falcon_50ml }
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=50)
@@ -30,5 +30,5 @@ capabilities: [clickable, material_container, cursor_attachable]
 
 layout:
   default_width: 3
-  display_width_cm: 8
+  display_width_cm: 6.5
   label_width: 8

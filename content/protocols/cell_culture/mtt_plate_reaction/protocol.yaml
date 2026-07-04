@@ -35,7 +35,7 @@ steps:
       12 mM MTT solution. Ensure the MTT has been freshly prepared and stored at room
       temperature. Place both on the incubator workspace.
     sequence:
-      - target: mtt_solution_bottle
+      - target: mtt_stock_tube
         gesture: click
         validator:
           preset: correct_target
@@ -104,7 +104,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: mtt_solution_bottle
+      - target: mtt_stock_tube
         gesture: click
         validator:
           preset: correct_target

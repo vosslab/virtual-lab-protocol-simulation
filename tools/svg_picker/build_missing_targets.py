@@ -7,7 +7,7 @@ from visual_states.<state>.cases[].output.asset_name. Diffs against the
 set of basenames in assets/equipment/*.svg. Emits missing_targets.json
 grouped by state_family with variant_looking flag.
 
-Reference: content/objects/bottle/bme_bottle.yaml, flask/t75_flask.yaml,
+Reference: content/objects/bottle/bme_tube.yaml, flask/t75_flask.yaml,
 equipment/electrophoresis_tank.yaml
 
 Known variant suffixes (case-insensitive):

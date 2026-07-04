@@ -1,4 +1,4 @@
-object_name: mtt_solution_bottle
+object_name: mtt_stock_tube
 kind: bottle
 label: 12 mM MTT solution
 state_fields:
@@ -22,10 +22,10 @@ visual_states:
     cases:
       - when: empty
         output:
-          asset_name: bottle_orange
+          asset_name: falcon_50ml
       - when: mtt
         output:
-          asset_name: bottle_orange
+          asset_name: falcon_50ml
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=50)
@@ -34,5 +34,5 @@ capabilities:
   - material_container
 layout:
   default_width: 4
-  display_width_cm: 8
+  display_width_cm: 6.5
   label_width: 8

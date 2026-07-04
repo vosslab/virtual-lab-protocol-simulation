@@ -477,7 +477,8 @@ export interface PipelineResult {
   // long-term single source of truth for report tooling, which reads it instead
   // of recomputing per-stream. The build gate stays on `severityDiagnostics`;
   // in this stream `failBuild` is authoritative only on severity-sourced entries.
-  // See diagnostics/unified.ts. Not serialized into the precompute.
+  // See diagnostics/unified.ts. Serialized into the precompute artifact and
+  // rehydrated by precomputed_result.ts, but unused at runtime (report tooling only).
   unifiedDiagnostics: UnifiedDiagnostic[];
   // Computed zone bands from the reflow-zones stage, keyed by zone id. The band
   // reflows the scene's vertical range from measured per-tier content; place-vertical

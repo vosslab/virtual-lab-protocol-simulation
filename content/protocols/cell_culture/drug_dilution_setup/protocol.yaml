@@ -56,7 +56,7 @@ steps:
               target: micropipette
               state:
                 set_volume: 40
-      - target: carboplatin_stock_bottle
+      - target: carboplatin_stock_tube
         gesture: click
         validator:
           preset: correct_target
@@ -613,7 +613,7 @@ steps:
               target: micropipette
               state:
                 set_volume: 60
-      - target: metformin_stock_bottle
+      - target: metformin_stock_tube
         gesture: click
         validator:
           preset: correct_target

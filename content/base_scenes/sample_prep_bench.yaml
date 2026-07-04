@@ -97,7 +97,7 @@ placements:
     depth_tier: 1
     align_stop: right
   - placement_name: rear_center_laemmli
-    object_name: laemmli_4x_bottle
+    object_name: laemmli_4x_tube
     zone: rear_center
     depth_tier: 1
     align_stop: left
@@ -107,7 +107,7 @@ placements:
     depth_tier: 1
     align_stop: center
   - placement_name: rear_right_bme
-    object_name: bme_bottle
+    object_name: bme_tube
     zone: rear_right
     depth_tier: 1
     align_stop: left
@@ -144,8 +144,8 @@ placements:
     zone: center
     depth_tier: 1
     align_stop: left
-  # laemmli_4x_bottle is already placed once on the rear reagent shelf
-  # (rear_center_laemmli). A second placement here made a bare laemmli_4x_bottle
+  # laemmli_4x_tube is already placed once on the rear reagent shelf
+  # (rear_center_laemmli). A second placement here made a bare laemmli_4x_tube
   # target ambiguous, so the working-surface duplicate is removed; the reagent
   # keeps its single shelf placement.
   # Right tool area: general tip box

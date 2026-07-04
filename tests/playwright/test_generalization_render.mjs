@@ -1,33 +1,27 @@
 import { chromium } from "playwright";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import fs from "node:fs";
 import { spawn } from "node:child_process";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = path.resolve(__dirname, "../../");
+import { REPO_ROOT } from "./repo_root.mjs";
+import { discoverBaseSceneNames } from "./_scene_discovery.mjs";
 
 //============================================
 // Test configuration
 //============================================
 
 const VIEWPORT = { width: 1920, height: 1080 };
-const ASPECT_TOLERANCE = 0.05; // 5% deviation allowed
 const OVERLAP_TOLERANCE = 1; // 1px jitter tolerance
 const MIN_FONT_SIZE = 6; // pixels
 const ARTIFACT_DIR = path.join(REPO_ROOT, "tests/playwright/artifacts");
 
-// Scenes to render (all 6 D2 scenes after content fixes from task #76)
-const SCENES_TO_RENDER = [
-  "bench_basic",
-  "sample_prep_bench",
-  "staining_bench",
-  "cell_counter_basic",
-  "hood_basic",
-];
+// Scenes to render: discovered from content/base_scenes/ so every base scene
+// that exists is exercised, not a stale hand-maintained list.
+const SCENES_TO_RENDER = discoverBaseSceneNames();
 
-// Scenes that failed preflight (will be included in contact sheet as blocked)
-// After task #76 content fixes, all 6 scenes now pass preflight.
+// Scenes intentionally excluded from rendering (e.g. known-blocked preflight).
+// Empty: every discovered base scene is rendered and must pass. A real render
+// failure surfaces as a PARTIAL/FAIL result below, never a silent skip.
 const SCENES_BLOCKED = [];
 
 //============================================
@@ -55,20 +49,6 @@ function bboxsOverlap(bbox1, bbox2, tolerance = 0) {
   return overlapWidth > tolerance && overlapHeight > tolerance;
 }
 
-function getBboxDeviationRatio(renderedWidth, renderedHeight, vbWidth, vbHeight) {
-  const renderedAspect = renderedWidth / renderedHeight;
-  const naturalAspect = vbWidth / vbHeight;
-  const deviation = Math.abs(renderedAspect - naturalAspect) / naturalAspect;
-  return deviation;
-}
-
-function extractViewBoxDimensions(viewBoxStr) {
-  if (!viewBoxStr) return null;
-  const parts = viewBoxStr.trim().split(/\s+/).map(Number);
-  if (parts.length !== 4) return null;
-  return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
-}
-
 async function checkComputedStyles(locator, _page) {
   const styles = await locator.evaluate((el) => {
     const computed = window.getComputedStyle(el);
@@ -87,6 +67,46 @@ async function checkComputedStyles(locator, _page) {
     };
   });
   return styles;
+}
+
+// Gather the asset-render facts a placement exposes, covering BOTH renderer
+// modes. The renderer (src/scene_runtime/renderer/scene_item.tsx:273-308) picks
+// a mode from the asset's declared requires_dom_svg: DOM-SVG assets inject an
+// inline <svg> (dom-svg host), static assets render as an opaque
+// <img data-svg-render-mode="img"> with object-fit:contain. A load failure is
+// the loud fallback: a data-svg-load-error stamp plus a "SVG load failed" text
+// span (scene_item.tsx:245,251-262). Reading both modes here is what makes the
+// B/C assertions honest instead of null-failing every img-mode asset.
+async function gatherPlacementAssetInfo(placementLocator) {
+  const info = await placementLocator.evaluate((el) => {
+    const loadErrEl = el.querySelector("[data-svg-load-error]");
+    const errAttr = loadErrEl ? loadErrEl.getAttribute("data-svg-load-error") : null;
+    const hasLoadError = errAttr !== null && errAttr.length > 0;
+    const textContent = el.textContent || "";
+    const failText = textContent.includes("SVG load failed");
+    // Inline <svg> assets (dom-svg render mode). preserveAspectRatio is the
+    // distortion switch: absent/null defaults to "xMidYMid meet" (art aspect
+    // preserved, letterboxed into its box), only "none" stretches the art.
+    const svgEls = Array.from(el.querySelectorAll("svg"));
+    const svgs = svgEls.map((s) => {
+      return {
+        hasContent: s.innerHTML.trim().length > 0,
+        preserveAspectRatio: s.getAttribute("preserveAspectRatio"),
+      };
+    });
+    // <img> assets (static img render mode).
+    const imgEls = Array.from(el.querySelectorAll('img[data-svg-render-mode="img"]'));
+    const imgs = imgEls.map((im) => {
+      const computed = window.getComputedStyle(im);
+      return {
+        naturalWidth: im.naturalWidth,
+        naturalHeight: im.naturalHeight,
+        objectFit: computed.objectFit,
+      };
+    });
+    return { hasLoadError, failText, svgs, imgs };
+  });
+  return info;
 }
 
 //============================================
@@ -266,17 +286,27 @@ async function renderAndTestScene(sceneName, page, server) {
     results.A = !aFailed;
     console.log(`${results.A ? "PASS" : "FAIL"}: No clipping/cropping`);
 
-    // B: No fallback/placeholder SVG
+    // B: No fallback/placeholder SVG.
+    // The real fallback is the renderer's loud load-error state (a
+    // data-svg-load-error stamp plus a "SVG load failed" text span,
+    // scene_item.tsx:245,251-262) OR a placement that rendered no asset at all.
+    // A placement passes when it rendered a real asset in EITHER render mode:
+    // an inline <svg> with content (dom-svg) OR a loaded <img> (img mode). The
+    // old check required an inline <svg> on every placement, so every img-mode
+    // equipment asset null-failed even though it rendered a valid asset -- a
+    // false negative this replaces.
     console.log("Assertion B: No fallback/placeholder SVG...");
     let bFailed = false;
     for (const placement of placements) {
-      if (!placement.svgBbox || !placement.viewBox) {
-        bFailed = true;
-        break;
-      }
-      // Use .first() because structured objects (e.g. well_plate_96) may have multiple SVGs
-      const svgContent = await placement.locator.locator("svg").first().innerHTML();
-      if (!svgContent || svgContent.trim().length === 0) {
+      const info = await gatherPlacementAssetInfo(placement.locator);
+      const hasContentSvg = info.svgs.some((s) => s.hasContent);
+      const hasLoadedImg = info.imgs.some((im) => im.naturalWidth > 0 && im.naturalHeight > 0);
+      if (info.hasLoadError || info.failText || (!hasContentSvg && !hasLoadedImg)) {
+        console.error(
+          `FAIL: placement ${placement.name} rendered no valid asset ` +
+            `(loadError=${info.hasLoadError}, failText=${info.failText}, ` +
+            `svgs=${info.svgs.length}, imgs=${info.imgs.length})`,
+        );
         bFailed = true;
         break;
       }
@@ -284,29 +314,57 @@ async function renderAndTestScene(sceneName, page, server) {
     results.B = !bFailed;
     console.log(`${results.B ? "PASS" : "FAIL"}: No fallback/placeholder SVG`);
 
-    // C: Aspect ratio preserved
+    // C: Aspect ratio preserved (real artwork distortion, not layout letterbox).
+    // The renderer preserves art aspect BY CONSTRUCTION in both modes, per
+    // PRIMARY_DESIGN "never crop/distort" and the fix-direction it mandates:
+    //   dom-svg: preserveAspectRatio must not be "none" (absent == default
+    //     "xMidYMid meet", which letterboxes without distorting). Only "none"
+    //     stretches the art to fill its box.
+    //   img: object-fit must be contain/scale-down (PRIMARY_DESIGN: use
+    //     object-fit: contain, never cover), which fits the natural image
+    //     without stretch or crop.
+    // Measuring the <svg> ELEMENT box against its viewBox (the old check) flags
+    // a placement box whose shape differs from the asset -- pure letterboxing,
+    // which is NOT distortion -- so that measure produced false positives and is
+    // replaced. A vacuous scene (zero aspect-bearing assets) loud-fails.
     console.log("Assertion C: Aspect ratio preserved...");
     let cFailed = false;
+    let cEvaluated = 0;
     for (const placement of placements) {
-      if (!placement.svgBbox || !placement.viewBox) {
-        cFailed = true;
-        break;
+      const info = await gatherPlacementAssetInfo(placement.locator);
+      for (const svgAsset of info.svgs) {
+        if (!svgAsset.hasContent) continue;
+        cEvaluated++;
+        const par = (svgAsset.preserveAspectRatio ?? "").trim().toLowerCase();
+        // Absent/empty defaults to "xMidYMid meet" (aspect preserved). Only an
+        // explicit "none" stretches the artwork.
+        if (par === "none") {
+          console.error(
+            `FAIL: placement ${placement.name} inline SVG has ` +
+              `preserveAspectRatio="none" (stretches artwork).`,
+          );
+          cFailed = true;
+          break;
+        }
       }
-      const vbDims = extractViewBoxDimensions(placement.viewBox);
-      if (!vbDims) {
-        cFailed = true;
-        break;
+      if (cFailed) break;
+      for (const imgAsset of info.imgs) {
+        cEvaluated++;
+        const fitOk = imgAsset.objectFit === "contain" || imgAsset.objectFit === "scale-down";
+        if (!fitOk) {
+          console.error(
+            `FAIL: placement ${placement.name} img asset object-fit=` +
+              `${imgAsset.objectFit} (not contain/scale-down; distorts or crops).`,
+          );
+          cFailed = true;
+          break;
+        }
       }
-      const deviation = getBboxDeviationRatio(
-        placement.svgBbox.width,
-        placement.svgBbox.height,
-        vbDims.width,
-        vbDims.height,
-      );
-      if (deviation > ASPECT_TOLERANCE) {
-        cFailed = true;
-        break;
-      }
+      if (cFailed) break;
+    }
+    if (!cFailed && cEvaluated === 0) {
+      console.error("FAIL: Assertion C evaluated 0 aspect-bearing assets (vacuous match).");
+      cFailed = true;
     }
     results.C = !cFailed;
     console.log(`${results.C ? "PASS" : "FAIL"}: Aspect ratio preserved`);
@@ -450,12 +508,17 @@ async function renderAndTestScene(sceneName, page, server) {
     await page.screenshot({ path: screenshotPath, fullPage: false });
     console.log(`Screenshot saved: ${screenshotPath}`);
 
+    // Total is the number of assertions actually run (keys A..K in results),
+    // derived rather than a hardcoded 11 so adding or removing an assertion
+    // keeps the pass gate honest.
+    const assertionTotal = Object.keys(results).length;
     const passCount = Object.values(results).filter(Boolean).length;
     return {
       scene: sceneName,
-      status: passCount === 11 ? "PASS" : "PARTIAL",
+      status: passCount === assertionTotal ? "PASS" : "PARTIAL",
       assertions: results,
       passCount,
+      assertionTotal,
     };
   }
 }
@@ -464,15 +527,31 @@ async function renderAndTestScene(sceneName, page, server) {
 // Generate contact sheet HTML
 //============================================
 
+// A scene fully passes when it recorded at least one assertion and every
+// recorded assertion passed. The guard excludes ERROR/blocked scenes (zero
+// assertions), which must not count as a full pass.
+function countFullPass(renderResults) {
+  return renderResults.filter((r) => {
+    const total = Object.keys(r.assertions).length;
+    return total > 0 && r.passCount === total;
+  }).length;
+}
+
 function generateContactSheet(renderResults, blockedScenes) {
   const sceneCards = [];
+  // Total base scenes considered = those rendered plus those intentionally blocked.
+  const totalScenes = renderResults.length + blockedScenes.length;
 
   // Add rendered scenes
   for (const result of renderResults) {
     const asserts = result.assertions;
     const passCount = result.passCount;
-    const badgeColor = passCount === 11 ? "#4CAF50" : "#FF9800";
-    const badgeText = `${passCount}/11`;
+    // Derive the assertion total from the assertions actually recorded for this
+    // scene. An ERROR/blocked scene records zero assertions, so guard on > 0 so
+    // an empty result never reads as a green "all passed".
+    const assertTotal = Object.keys(asserts).length;
+    const badgeColor = assertTotal > 0 && passCount === assertTotal ? "#4CAF50" : "#FF9800";
+    const badgeText = `${passCount}/${assertTotal}`;
 
     sceneCards.push(`
     <div class="scene-card rendered">
@@ -673,7 +752,7 @@ function generateContactSheet(renderResults, blockedScenes) {
 <body>
   <div class="container">
     <h1>M2c Generalization Gallery</h1>
-    <p class="subtitle">Render status and assertion results for all 6 D2 scenes (all rendered after task #76 fixes)</p>
+    <p class="subtitle">Render status and assertion results for all ${totalScenes} base scenes discovered under content/base_scenes/</p>
 
     <div class="gallery">
       ${sceneCards.join("")}
@@ -683,15 +762,15 @@ function generateContactSheet(renderResults, blockedScenes) {
       <h2>Summary</h2>
       <div class="summary-row">
         <strong>Rendered (D3 pass):</strong>
-        <span>${renderResults.length} / 6</span>
+        <span>${renderResults.length} / ${totalScenes}</span>
       </div>
       <div class="summary-row">
         <strong>Blocked (D3 fail):</strong>
-        <span>${blockedScenes.length} / 6</span>
+        <span>${blockedScenes.length} / ${totalScenes}</span>
       </div>
       <div class="summary-row">
-        <strong>All assertions pass (11/11):</strong>
-        <span>${renderResults.filter((r) => r.passCount === 11).length} / ${renderResults.length}</span>
+        <strong>All assertions pass:</strong>
+        <span>${countFullPass(renderResults)} / ${renderResults.length}</span>
       </div>
     </div>
   </div>
@@ -763,19 +842,44 @@ async function main() {
 
     // Summary
     console.log("\n========== FINAL SUMMARY ==========");
-    console.log(`Total scenes: 6`);
+    console.log(`Total scenes: ${SCENES_TO_RENDER.length + SCENES_BLOCKED.length}`);
     console.log(`  Rendered: ${renderResults.length}`);
     console.log(`  Blocked: ${SCENES_BLOCKED.length}`);
-    console.log(
-      `All assertions pass (11/11): ${renderResults.filter((r) => r.passCount === 11).length}`,
-    );
+    const fullPass = countFullPass(renderResults);
+    console.log(`All assertions pass: ${fullPass}`);
     for (const result of renderResults) {
-      console.log(`  ${result.scene}: ${result.passCount}/11`);
+      const total = Object.keys(result.assertions).length;
+      // Name every failing assertion so a red run is diagnosable at a glance.
+      const failing = Object.keys(result.assertions)
+        .filter((key) => !result.assertions[key])
+        .sort();
+      const failNote =
+        result.status === "PASS"
+          ? ""
+          : failing.length > 0
+            ? ` (FAIL: ${failing.join(", ")})`
+            : ` (${result.status}: ${result.message ?? "no assertions recorded"})`;
+      console.log(`  ${result.scene}: ${result.passCount}/${total}${failNote}`);
     }
+
+    // Honest gate: the run is green only when every discovered scene rendered
+    // and reached a full assertion pass. A scene that failed any assertion,
+    // failed to render (FAIL), or errored (ERROR) leaves at least one non-full
+    // result, so success is false and the process exits non-zero.
+    const expectedScenes = SCENES_TO_RENDER.length;
+    const success = renderResults.length === expectedScenes && fullPass === expectedScenes;
+    console.log(
+      `\nRESULT: ${success ? "PASS" : "FAIL"} ` +
+        `(${fullPass}/${expectedScenes} scenes fully passed)`,
+    );
+    // Single pass/fail signal: 0 only when every rendered scene is a full
+    // assertion pass; any assertion failure, render FAIL, or ERROR yields 1.
+    return success ? 0 : 1;
   } catch (error) {
     console.error("Test error:", error);
-    process.exit(1);
+    return 1;
   } finally {
+    // Cleanup always runs before the return completes.
     if (browser) {
       await browser.close();
     }
@@ -785,4 +889,7 @@ async function main() {
   }
 }
 
-main();
+// Single top-level exit path: main() returns the run's exit code and this is the
+// only place the process exits, keeping one signaling style for the whole file.
+const finalExitCode = await main();
+process.exit(finalExitCode);

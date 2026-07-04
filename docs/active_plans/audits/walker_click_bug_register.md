@@ -209,6 +209,22 @@ O5. **`gel_cassette` / `dilution_tube_rack_8` per-subpart material has no
     owner (architect / scene-manager territory) -- NOT the walker plan (the
     walker only reads; this is a renderer/object change).
 
+O6. **`microscope_basic` base scene fails generalization assertions F (item
+    overlap) and I (label-label overlap), scoring 7/11.** Surfaced by the
+    content-derived base-scene discovery widening in
+    `tests/playwright/test_generalization_render.mjs` (see the 2026-07-04
+    "Base-scene test sets" entry in
+    [docs/CHANGELOG.md](../../CHANGELOG.md)); `microscope_basic` was one of
+    the 4 base scenes the stale hand list had never exercised. Possibly the
+    same base-zone family as O4 (`right_hemocytometer_slide_clear` over
+    `rear_right_hood_return` -- shared-base-zone / instrument-band placement
+    overlap), not a fresh isolated bug; confirm before opening a separate
+    investigation. Clearing action: scene-manager reviews `microscope_basic`
+    placements for the same shared-base-zone overlap class as O4 and either
+    consolidates the fix with O4's re-place/re-zone action or, if the root
+    cause differs, splits this into its own tracked item. Owner:
+    scene-manager plan.
+
 ### Currently open (content, walker plan)
 
 OC1. **`sdspage_prepare_sample_mix_single_lane` ambiguous `microtube_rack_24` at

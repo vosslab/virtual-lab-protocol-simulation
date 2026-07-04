@@ -12,7 +12,7 @@
 //
 // Real object names are used so the test exercises the generated schemas:
 //   - "centrifuge": object-level "running" (bool) + "set_rpm" (float)
-//   - "bme_bottle": object-level "material_name" (enum) + "material_volume" (float)
+//   - "bme_tube": object-level "material_name" (enum) + "material_volume" (float)
 //   - "conical_15ml_rack": subpart "material_name" (enum) + "material_volume" (float)
 
 import { test, describe } from "node:test";
@@ -82,7 +82,7 @@ function seeded_store() {
   const store = create_scene_store(FIXTURE_REGISTRY);
   store.seed_from_scene([
     { target: "centrifuge", object_name: "centrifuge" },
-    { target: "bme_bottle", object_name: "bme_bottle" },
+    { target: "bme_tube", object_name: "bme_tube" },
     { target: "conical_15ml_rack.slot_0", object_name: "conical_15ml_rack" },
   ]);
   return store;
@@ -139,10 +139,10 @@ describe("scene_store object-level partial merge", () => {
 
   test("material fields merge on a material container", () => {
     const store = seeded_store();
-    store.set_object_state("bme_bottle", { material_volume: 2.5 });
-    assert.strictEqual(store.state["bme_bottle"].state.material_volume, 2.5);
+    store.set_object_state("bme_tube", { material_volume: 2.5 });
+    assert.strictEqual(store.state["bme_tube"].state.material_volume, 2.5);
     // material_name stays at its seeded default.
-    assert.strictEqual(store.state["bme_bottle"].state.material_name, "empty");
+    assert.strictEqual(store.state["bme_tube"].state.material_name, "empty");
   });
 });
 
@@ -227,12 +227,12 @@ describe("scene_store schema validation", () => {
 describe("scene_store cursor", () => {
   test("attach carries the held material", () => {
     const store = seeded_store();
-    store.set_cursor("bme_bottle", {
+    store.set_cursor("bme_tube", {
       attach: true,
       held_material_name: "bme",
       held_material_volume: 1.0,
     });
-    const flags = store.state["bme_bottle"].flags;
+    const flags = store.state["bme_tube"].flags;
     assert.strictEqual(flags.cursor_attached, true);
     assert.strictEqual(flags.held_material_name, "bme");
     assert.strictEqual(flags.held_material_volume, 1.0);
@@ -240,9 +240,9 @@ describe("scene_store cursor", () => {
 
   test("detach clears the held material", () => {
     const store = seeded_store();
-    store.set_cursor("bme_bottle", { attach: true, held_material_name: "bme" });
-    store.set_cursor("bme_bottle", { attach: false });
-    const flags = store.state["bme_bottle"].flags;
+    store.set_cursor("bme_tube", { attach: true, held_material_name: "bme" });
+    store.set_cursor("bme_tube", { attach: false });
+    const flags = store.state["bme_tube"].flags;
     assert.strictEqual(flags.cursor_attached, false);
     assert.strictEqual(flags.held_material_name, null);
     assert.strictEqual(flags.held_material_volume, null);
@@ -259,7 +259,7 @@ describe("scene_store reset", () => {
     store.set_object_state("centrifuge", { running: true });
     store.reset();
     assert.strictEqual(store.state["centrifuge"], undefined);
-    assert.strictEqual(store.state["bme_bottle"], undefined);
+    assert.strictEqual(store.state["bme_tube"], undefined);
   });
 
   test("the store is reusable after reset", () => {
@@ -289,10 +289,10 @@ describe("scene_store seed_target", () => {
 
   test("seed_target is a no-op for an already-seeded target", () => {
     const store = seeded_store();
-    store.set_object_state("bme_bottle", { material_name: "bme" });
+    store.set_object_state("bme_tube", { material_name: "bme" });
     // Re-seeding the same target must NOT reset its written state.
-    store.seed_target({ target: "bme_bottle", object_name: "bme_bottle" });
-    assert.strictEqual(store.state["bme_bottle"].state.material_name, "bme");
+    store.seed_target({ target: "bme_tube", object_name: "bme_tube" });
+    assert.strictEqual(store.state["bme_tube"].state.material_name, "bme");
   });
 });
 
@@ -303,27 +303,27 @@ describe("scene_store seed_target", () => {
 describe("scene_store enum membership", () => {
   test("an enum value outside the allowed set throws", () => {
     const store = seeded_store();
-    // bme_bottle.material_name allowed is ['empty', 'bme']; trypan_blue is not.
+    // bme_tube.material_name allowed is ['empty', 'bme']; trypan_blue is not.
     assert.throws(
-      () => store.set_object_state("bme_bottle", { material_name: "trypan_blue" }),
+      () => store.set_object_state("bme_tube", { material_name: "trypan_blue" }),
       /not in allowed/,
     );
   });
 
   test("an enum value inside the allowed set is accepted", () => {
     const store = seeded_store();
-    store.set_object_state("bme_bottle", { material_name: "bme" });
-    assert.strictEqual(store.state["bme_bottle"].state.material_name, "bme");
+    store.set_object_state("bme_tube", { material_name: "bme" });
+    assert.strictEqual(store.state["bme_tube"].state.material_name, "bme");
   });
 
   test("a rejected enum write leaves the target untouched", () => {
     const store = seeded_store();
     try {
-      store.set_object_state("bme_bottle", { material_name: "not_real" });
+      store.set_object_state("bme_tube", { material_name: "not_real" });
     } catch {
       // expected
     }
-    assert.strictEqual(store.state["bme_bottle"].state.material_name, "empty");
+    assert.strictEqual(store.state["bme_tube"].state.material_name, "empty");
   });
 });
 

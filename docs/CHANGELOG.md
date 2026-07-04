@@ -2,6 +2,79 @@
 
 ## 2026-07-04
 
+### Behavior or Interface Changes
+
+- Standardized liquid-container sizes to a discrete 6-bucket capacity+width
+  ladder in `docs/specs/SCALING_MODEL.md`; set discrete `display_width_cm` on
+  the true bottles (M=10, L=12, XL=14; the `running_buffer_1x_carboy` carboy
+  kept at 18).
+
+### Fixes and Maintenance
+
+- Re-typed 7 sub-100 mL reagents from bottle to tube and renamed
+  `*_bottle` -> `*_tube` (`bme`, `laemmli_4x`, `trypan_blue` -> 15 mL falcon;
+  `dmso`, `carboplatin_stock`, `metformin_stock` -> 50 mL;
+  `mtt_solution_bottle` -> `mtt_stock_tube`), atomically across object, scene,
+  and protocol surfaces; protocol target names moved with authored volumes
+  preserved.
+- Normalized and declared the previously-orphaned `falcon_50ml` SVG asset
+  (added the missing `anchor_liquid_clip` clipPath, mirroring `falcon_15ml`).
+- Swept old-name references in `tests/` and `tools/`; excluded `generated/**`
+  from ESLint in `eslint.config.local.js` (machine-emitted build output,
+  mirroring the `dist/**` ignore).
+- Base-scene test sets and their counts now derive from content discovery
+  instead of stale hand-maintained lists. Added
+  `tests/playwright/_scene_discovery.mjs` (`discoverBaseSceneNames`, reads
+  `content/base_scenes/*.yaml`, the definitional base-scene directory; the
+  generated `SCENES` map mixes base + protocol + smoke scenes so it is not a
+  clean base-only authority). `tests/playwright/test_viewport_sweep.mjs` and
+  `tests/playwright/test_generalization_render.mjs` now build `SCENES_TO_TEST` /
+  `SCENES_TO_RENDER` from the helper, and their pass gates and report counts are
+  derived (`SCENES_TO_TEST.length * VIEWPORTS.length` replaces the hardcoded
+  `18`; per-scene assertion totals replace the hardcoded `11`/`6`). The prior
+  hand lists already missed 4 of the 9 real base scenes
+  (`electrophoresis_bench`, `heat_block_bench`, `imaging_bench`,
+  `microscope_basic`).
+- `test_generalization_render.mjs` now exits non-zero honestly: the process
+  exit code reflects the per-scene assertion outcomes instead of always exiting
+  0. `main()` returns 0 only when every discovered base scene reaches a full
+  assertion pass; any assertion failure, render FAIL, or ERROR returns 1, read
+  by a single top-level `process.exit`. The final summary now names each
+  scene's failing assertions and prints a `RESULT: PASS/FAIL` line. Diagnosed
+  and fixed the previously fake-green assertions B and C, which were BROKEN
+  ASSERTIONS (false negatives), not real defects: both only inspected inline
+  `<svg>` and null-failed every img-mode asset. The renderer
+  (`src/scene_runtime/renderer/scene_item.tsx:273-308`) has two valid render
+  modes -- inline dom-svg and `<img data-svg-render-mode="img">` for static
+  assets. B now passes when a placement rendered a real asset in either mode
+  (inline `<svg>` with content OR a loaded `<img>`) and has no
+  `data-svg-load-error` fallback; C now checks the real distortion switch per
+  mode (inline svg `preserveAspectRatio !== "none"`, img
+  `object-fit` contain/scale-down) instead of comparing the `<svg>` element box
+  to its viewBox, a measure that wrongly flagged plain letterboxing (e.g.
+  `electrophoresis_bench` tank: landscape 114x99 asset in a portrait placement
+  box, art preserved via default `xMidYMid meet`). After the fix, 8 of 9 base
+  scenes reach 11/11.
+
+### Developer Tests and Notes
+
+- Widening the base-scene test set surfaced findings the stale hand lists hid.
+  In `test_generalization_render.mjs`, assertions B (no fallback/placeholder
+  SVG) and C (aspect ratio preserved) fail on ALL 9 base scenes, including the
+  5 originally listed; this is pre-existing and systemic (the render/assertion
+  logic was untouched, the test exits 0 regardless). The newly-covered
+  `microscope_basic` additionally fails F (no item overlap) and I (no
+  label-label overlap) at 7/11 -- a real layout coverage gap the 5-scene list
+  was hiding; left failing for the owner to route. Separately,
+  `test_viewport_sweep.mjs` errors on every scene because its
+  `rewriteMainTsForScene` mechanism reads `src/main.ts`, which no longer exists
+  (the entry point moved to `src/*_entry.tsx` and the per-scene render path
+  migrated to `scene_viewer.html?scene=`); this ENOENT is pre-existing and
+  independent of the scene list (the old 5-scene version fails identically at
+  line 32 before any scene logic). The scene-list refactor is correct
+  (9 scenes discovered, gate derived as `9 * 3 = 27`); repairing the dead
+  rewrite-rebuild mechanism is a separate owner decision, out of scope here.
+
 ### Additions and New Features
 
 - Generic structured material-area verification in the general walker. The
@@ -26,6 +99,53 @@
 
 ### Behavior or Interface Changes
 
+- The all-protocols walker sweep (`tests/playwright/e2e/walk_all_protocols.mjs`)
+  now runs protocols through a bounded concurrent worker pool served by ONE
+  shared static server, replacing the earlier rejected design that spawned N
+  per-slot servers derived from a hardcoded base port 8126. Server ownership is
+  now injectable: the sweep starts a single read-only `python -m http.server`
+  on ONE random port `8000 + floor(random*1000)` (the canonical repo pattern
+  from `run_web_server.sh` line 64, `PORT="${PORT:-$((8000 + RANDOM % 1000))}"`,
+  overridable by the `PORT` env var), waits for it, injects its URL into every
+  walker child via a new `--server-url` flag, and kills it once at the end
+  (including on error paths). A static serve is read-only, so all concurrent
+  walks safely share the one server; per-walk isolation comes from each walker
+  running as its own child process (fresh browser context, fresh
+  gameState/localStorage) writing into its own `--out-dir`
+  (`test-results/walker/runs/<id>/`). There is no free-port scan and no
+  collision-retry loop: one random port is picked and used. Default job count is
+  now `min(8, max(1, os.cpus().length - 2))` (the shared server is one process,
+  not one-per-walk, so the browser-child bound is what matters); override with
+  `--jobs N` (forwarded through `run_playwright_tests.sh`). The single-protocol
+  walker (`tests/playwright/e2e/protocol_walkthrough_yaml.mjs`) is now injectable
+  too: with `--server-url URL` it spawns no server and navigates against the
+  injected origin; without it (SELF-SERVE default) it picks its own random
+  `8000 + floor(random*1000)` port (overridable by `--port` or `PORT`), spawns
+  its own server, and tears it down. The old hardcoded 8126 default is gone. The
+  sweep still archives each run's report to the stable
+  `test-results/walker/reports/<id>.json` path and writes the worst-first
+  `test-results/walker/sweep_summary.json`, so every downstream reader (the
+  click-bug register) is unchanged. Exit-code contract preserved: nonzero if any
+  FAIL or error. Verified parallel vs serial (`--jobs 1`) verdicts match exactly
+  across all 31 protocols (0 mismatches; PASS=27 / FAIL=4). The 4 reds are the
+  known owned/held set (`plate_drug_treatment_drug_addition` pedagogy-held
+  subpart-click, `passage_hood_detachment` transit-scene target, and the
+  `cell_culture_full` / `routine_passage` sequence-runner timeouts); no protocol
+  went newly red under concurrency.
+
+- Sweep output is now colorized and gated. Verdicts print green (PASS), red
+  (FAIL / error), and yellow (unsupported_gesture) ANSI codes ONLY when
+  `process.stdout.isTTY` is true AND `NO_COLOR` is unset (https://no-color.org);
+  piped/CI output and `sweep_summary.json` stay plain text and parseable. A live
+  line prints as each protocol FINISHES (interleaved under concurrency) with its
+  verdict, id, and duration, and the worst-first summary table plus Totals line
+  are retained. Column padding is applied to the visible verdict text before the
+  color codes are added, so alignment is unaffected by the invisible escape bytes.
+  The sweep also now strips any SGR ANSI a walker child's failure reason embeds
+  (Playwright's own dim-styled locator-timeout text) before printing the reason
+  column or writing `sweep_summary.json`, so a piped sweep emits zero escape
+  bytes and file output stays plain regardless of the child's formatting.
+
 - The general walker now reds a protocol whose subpart material write silently
   no-ops or leaks to the wrong subpart (previously only progress signals were
   asserted). Full sweep after the change: 26 PASS / 5 FAIL (of 31), the SAME 5
@@ -40,6 +160,14 @@
 
 ### Fixes and Maintenance
 
+- Corrected the `unifiedDiagnostics` field doc-comment in
+  `src/scene_runtime/layout/types.ts`, which wrongly claimed the field is "not
+  serialized into the precompute". It IS serialized
+  (`pipeline/precompute_layout.mjs:118`) and rehydrated
+  (`src/scene_runtime/layout/precomputed_result.ts:71`), just unused at
+  runtime (report tooling only). Comment-only, no behavior change;
+  `./check_codebase.sh` green (504 tests pass).
+
 - Confirmed the per-subpart material overlay (the `data-subpart-overlay` /
   `data-subpart-name` / `data-material-name` DOM stamping) is rendered only for
   objects declaring the material-tint contract (`subpart_geometry` + a
@@ -53,7 +181,62 @@
   no proven visible per-area rendering), surfaced by the generic verifier as a gap
   rather than fixed here; a per-area gel/tube render is a separate renderer change.
 
+- Seeded a standalone `conical_15ml` tube placement (`rear_center_conical_tube`,
+  rear_center) in
+  `content/protocols/cell_culture/passage_pellet_reseed/scenes/hood_workspace.yaml`.
+  The entry step `transfer_to_conical` writes `ObjectStateChange`/`CursorAttach`
+  state onto the `conical_15ml` object while in this scene, but the scene
+  previously seeded only `conical_15ml_rack`, causing
+  `UnseededSceneOpTargetError: conical_15ml` at protocol load. Mirrors the
+  existing standalone tube in the sibling `centrifuge_workspace.yaml`. Fixes the
+  load failure for `passage_pellet_reseed` and the two runners that flatten it
+  (`cell_culture_full`, `routine_passage`).
+
+- Investigated the reported `passage_hood_detachment` walker regression
+  (microscope click timeout in step `inspect_confluence`): traced it to STALE
+  gitignored build artifacts (`generated/`, `test-results/layout_metrics/`)
+  predating the committed `microscope_basic.yaml` fix, not a source defect. A
+  clean rebuild of current committed source produces `main_microscope` with
+  zero overlap edges and the walker clicks the microscope successfully; no
+  source change was made. A residual non-blocking `hood_return` <->
+  hemocytometer-slide cross-zone occlusion in
+  `passage_hood_detachment_microscope_view` is routed to the architect as a
+  shared `microscope_basic` base-zone decision.
+
+- Removed test magic-counts and a duplicated color literal that could silently
+  drift from content. `tests/playwright/test_bench_basic_render.mjs` now derives
+  its `Passed: N/M assertions` denominator from the length of the assertion
+  results array instead of a hardcoded `11`. `tests/playwright/
+  test_per_well_drug_walkthrough.mjs` and `tests/playwright/
+  test_subpart_well_plate_render.mjs` both read `CARBOPLATIN_COLOR` live from
+  `generated/protocol_materials.ts` (the `plate_drug_treatment_drug_addition`
+  registry's `carboplatin.display_color`) instead of hardcoding `#a719db`.
+  `tests/test_scene_op_deps.mjs` derives its expected well count from
+  `OBJECT_LIBRARY["well_plate_96"].subpart_geometry`'s key count instead of the
+  literal `96`, so the assertion no longer just re-reads the array under test.
+
 ### Decisions and Failures
+
+- Making `test_generalization_render.mjs` honest surfaced one real layout defect
+  that the fake-green exit had hidden: `microscope_basic` fails F (no item
+  overlap) and I (no label-label overlap) with genuine, substantial overlaps
+  (`left_microtube_rack` over `rear_slide_cartridge` ~171x111px, over
+  `rear_tip_box` ~53x130px; `rear_ethanol_bottle` over `right_hemocytometer_slide`
+  ~67x181px; and the "Microtube rack (24-slot)" / "Cell counter slide cartridge"
+  labels overlap ~72x23px). These are keep-red-correctly failures, routed to the
+  scene-manager for microscope_basic layout/overlap; F/I logic was left intact
+  (not weakened). The test now exits 1 on the current tree for exactly this real
+  defect. Advisory for the same owner: the `electrophoresis_bench` tank is
+  letterboxed (landscape asset in a portrait placement box); art aspect is
+  preserved (not a contract violation), but the box shape could be sized to the
+  asset to reduce whitespace.
+- Added `docs/active_plans/decisions/subpart_and_layout_design_calls.md`, packaging
+  three held architect design calls into one brief: (a) discrimination-bearing
+  subpart click Direction-B RFC (pedagogy, needs human sign-off, clears register
+  row OP1); (b) D2 unfittable-asset WARNING -> failBuild promotion (engine/layout,
+  defaulted keep-WARNING); (c) centrifuge crowd=4 per-zone density (scene-manager
+  YAML plus architect ruling, defaulted accept-as-is). `pytest
+  tests/test_markdown_links.py`: 520 passed.
 
 - The single-subpart, single-lane, and single-tube writes remain unexercised
   end-to-end by the generic verifier: single-well writes live only in
@@ -568,6 +751,20 @@
 
 ### Developer Tests and Notes
 
+- Verified the parallel sweep against a serial baseline. `./check_codebase.sh`
+  green (`PASS: 5 checks passed`). Single-walker back-compat: `node
+  tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol
+  trypan_blue_counting` (no new flags) logged `port=8126,
+  outDir=.../test-results/walker` and wrote `test-results/walker/
+  playthrough_report.json` exactly as before. Ran the full sweep both ways:
+  `./run_playwright_tests.sh` (parallel, default 4 jobs) in 42s and
+  `./run_playwright_tests.sh --jobs 1` (serial) in 2m41s; a per-protocol verdict
+  diff across all 31 protocols showed 0 mismatches (PASS=27 / FAIL=4 in both).
+  Color gating checked both ways: under a pseudo-TTY (`script -q /dev/null
+  ./run_playwright_tests.sh`) PASS lines carry `\x1b[32m` (green) and FAIL lines
+  `\x1b[31m` (red); piped through `tee`/`grep` the sweep emits no escape codes
+  from its own output and `sweep_summary.json` has zero escape bytes.
+
 - M16 walker-scope closeout: recorded the scene-manager handshake in
   `docs/active_plans/audits/walker_click_bug_register.md`. Marked the `drug_dilution_setup` /
   `media_bottle` register row RESOLVED/STALE (the scene's `remove_placements` now documents
@@ -668,6 +865,18 @@
   This is the last entry for the trustworthy-walker/layout-gate release; the
   in-progress material-oracle general-walker verification work (WP2-4) is a separate,
   later milestone and gets its own changelog entry when it lands.
+
+### Decisions and Failures
+
+- `microscope_basic` base scene fails generalization assertions F (item overlap) and
+  I (label-label overlap), 7/11, surfaced by the content-derived base-scene discovery
+  widening (see the "Base-scene test sets" entry above). Routed to the scene-manager
+  plan as a new owned row (O6 in
+  [docs/active_plans/audits/walker_click_bug_register.md](active_plans/audits/walker_click_bug_register.md)),
+  tagged as possibly the same shared-base-zone / instrument-band overlap family as O4
+  (hood pointer-overlap: `right_hemocytometer_slide_clear` over
+  `rear_right_hood_return`), pending scene-manager confirmation before opening a
+  separate investigation.
 
 ## 2026-07-03
 

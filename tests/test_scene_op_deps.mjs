@@ -36,12 +36,12 @@ import { OBJECT_LIBRARY } from "../generated/object_library.js";
 
 // Seed a store with the bench-like fixture set used across the suite.
 //   micropipette: cursor-attachable tool with held_material_name + set_volume
-//   bme_bottle:   material container (material_name enum + material_volume)
+//   bme_tube: material container (material_name enum + material_volume)
 //   centrifuge:   instrument (running bool + set_rpm float)
 function seed_scene(store) {
   store.seed_from_scene([
     { target: "micropipette", object_name: "micropipette" },
-    { target: "bme_bottle", object_name: "bme_bottle" },
+    { target: "bme_tube", object_name: "bme_tube" },
     { target: "centrifuge", object_name: "centrifuge" },
   ]);
 }
@@ -134,9 +134,13 @@ describe("scene_op_deps ObjectStateChange group fan-out", () => {
       target: "well_plate_96.all_wells",
       state: { material_name: "cells", material_volume: 100 },
     });
-    // Every declared member (all 96 wells) received the write to its own slot.
+    // Every declared member well received the write to its own slot. The expected
+    // count comes from the object's own declared subpart_geometry (one entry per
+    // physical well position), not from the all_wells group under test, so this
+    // does not just re-read the array being asserted.
     const members = OBJECT_LIBRARY["well_plate_96"].subpart_groups["all_wells"];
-    assert.strictEqual(members.length, 96);
+    const wellCount = Object.keys(OBJECT_LIBRARY["well_plate_96"].subpart_geometry).length;
+    assert.strictEqual(members.length, wellCount);
     for (const well of members) {
       const entry = store.state[`well_plate_96.${well}`];
       assert.ok(entry !== undefined, `well ${well} should be seeded by the fan-out`);
@@ -250,17 +254,17 @@ describe("scene_op_deps SceneChange reset matrix", () => {
   test("scene-local vessel state clears on SceneChange", () => {
     const store = create_scene_store();
     seed_scene(store);
-    // The next scene re-seeds bme_bottle fresh (same object placed again).
-    const deps = deps_with_next_scene(store, [{ target: "bme_bottle", object_name: "bme_bottle" }]);
+    // The next scene re-seeds bme_tube fresh (same object placed again).
+    const deps = deps_with_next_scene(store, [{ target: "bme_tube", object_name: "bme_tube" }]);
     // Read the schema default so this assertion stays valid if the YAML default changes.
-    const vol_default = OBJECT_LIBRARY["bme_bottle"].state_schema["material_volume"].default;
+    const vol_default = OBJECT_LIBRARY["bme_tube"].state_schema["material_volume"].default;
     // Dirty the vessel in the current scene.
-    store.set_object_state("bme_bottle", { material_name: "bme", material_volume: 2 });
+    store.set_object_state("bme_tube", { material_name: "bme", material_volume: 2 });
     deps.apply_scene_change({ type: "SceneChange", to_scene: "next" });
     // After the transition the vessel is back at its seeded defaults.
-    assert.strictEqual(store.state["bme_bottle"].state.material_name, "empty");
-    assert.notStrictEqual(store.state["bme_bottle"].state.material_volume, undefined);
-    assert.strictEqual(store.state["bme_bottle"].state.material_volume, vol_default);
+    assert.strictEqual(store.state["bme_tube"].state.material_name, "empty");
+    assert.notStrictEqual(store.state["bme_tube"].state.material_volume, undefined);
+    assert.strictEqual(store.state["bme_tube"].state.material_volume, vol_default);
   });
 
   test("cursor-held tool and material persist across SceneChange", () => {
