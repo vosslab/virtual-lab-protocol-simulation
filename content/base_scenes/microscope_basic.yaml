@@ -101,6 +101,13 @@ placements:
     zone: left_bench
     depth_tier: 1
     align_stop: left
+    # left_bench sits directly below the rear_left shelf. With the default top
+    # label, the rack's label rises into the rear shelf band and collides with
+    # the rear_slide_cartridge label above it (unresolved_label_overlap Error).
+    # The bench has room below (baseline 86, zone bottom 92), so place the label
+    # under the rack, clear of the rear shelf.
+    layout:
+      label_placement: bottom
 
   - placement_name: left_cell_suspension
     object_name: cell_suspension_tube
@@ -114,6 +121,11 @@ placements:
     zone: right_bench
     depth_tier: 1
     align_stop: left
+    # right_bench sits directly below the rear_right shelf. Same conflict as the
+    # left bench: the slide's default top label rises into the rear shelf band
+    # and collides with the rear_ethanol_bottle label. Place it below the slide.
+    layout:
+      label_placement: bottom
 
   - placement_name: right_microtube
     object_name: microtube

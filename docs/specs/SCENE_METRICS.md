@@ -3,7 +3,7 @@
 Canonical reference for the layout health report. Written for scene YAML authors
 who edit scene files but are not engine developers. For scene-by-scene analysis
 and priority work lists, see
-[docs/LAYOUT_REMAINING_WORK.md](../LAYOUT_REMAINING_WORK.md).
+[LAYOUT_REMAINING_WORK.md](../LAYOUT_REMAINING_WORK.md).
 
 ---
 

@@ -365,7 +365,7 @@
   - Canonical format is unpadded: `<uppercase row A-H><bare integer col 1-12>` (e.g., `B1`, `B12`, `H6`).
   - This is the shared contract between walker engine, all adapters (well_plate and others), and scene runtime dispatch/highlight systems.
 
-- Reverted [index.js](../tests/playwright/walker/index.js):
+- Reverted `tests/playwright/walker/index.js`:
   - Removed `.padStart(2, '0')` from well-id generation in `plateTargets` handling (lines 59, 71).
   - Walker now generates unpadded well IDs from protocol `plateTargets` exactly as it did before step-5 work.
 
@@ -443,7 +443,7 @@
   - Updated `completeStep()` to transition from step 4 to step 5 (added `prep_metformin_dilution` -> `add_media_cols_1_6` branch).
   - Updated header description to indicate "Steps 1-5" support.
 
-- Fixed [index.js](../tests/playwright/walker/index.js):
+- Fixed `tests/playwright/walker/index.js`:
   - Updated `plateTargets` well ID generation to zero-pad column numbers (e.g., `B1` -> `B01`).
   - Matches render function's well ID format exactly for selector resolution.
 

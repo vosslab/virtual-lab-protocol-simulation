@@ -14,6 +14,12 @@ remove_placements:
   # of the rear_left and rear_right zones, clear of the other shelf items.
   - base_rear_center_pbs
   - rear_center_waste
+  # The drug-addition protocol pipettes exclusively with the micropipette. The
+  # two inherited base pipettes are non-targets that crowd the right tool band,
+  # so remove them (fully, not deactivate: a deactivated placement is still laid
+  # out and rendered) to make the micropipette the lone, unambiguous tool.
+  - right_aspirating_pipette
+  - base_right_serological_pipette
 
 add_placements:
   # PBS re-added at the rear_left center stop (context decoration), between the

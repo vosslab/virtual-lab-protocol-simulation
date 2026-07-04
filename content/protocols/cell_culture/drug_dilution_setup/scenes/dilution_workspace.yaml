@@ -8,9 +8,17 @@ scene_notes: |
   pen are at right tool area.
 
 remove_placements:
-  - rear_left_media_bottle
+  # Keep the inherited rear_left_media_bottle: the protocol clicks media_bottle as
+  # the diluent in every dilution step, so it must stay placed (was a
+  # target_missing bug when removed and only sterile_water was staged).
   - rear_center_pbs
   - rear_right_heat_block
+  # Center instruments and ethanol are never targeted here; remove so the center
+  # band holds the serial dilution rack, not idle instruments.
+  - rear_center_ethanol
+  - center_water_bath
+  - center_centrifuge
+  - center_well_plate_96
 
 add_placements:
   # Carboplatin stock bottle at rear left
@@ -33,13 +41,6 @@ add_placements:
     zone: rear_center
     depth_tier: 2
     align_stop: center
-
-  # Sterile water bottle at rear right (left stop) for dilutions
-  - placement_name: water_source
-    object_name: sterile_water_bottle
-    zone: rear_right
-    depth_tier: 1
-    align_stop: left
 
   # Metformin working stock tube at rear right (right stop)
   - placement_name: met_working_tube

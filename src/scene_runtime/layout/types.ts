@@ -17,6 +17,7 @@ import type {
 import type { DecisionMetadata } from "./diagnostics/decision_metadata.js";
 import type { OffCanvasDiagnostic } from "./diagnostics/offcanvas.js";
 import type { SeverityDiagnostic } from "./diagnostics/severity_model.js";
+import type { UnifiedDiagnostic } from "./diagnostics/unified.js";
 
 export type Workspace = (typeof WORKSPACES)[number];
 export type AlignMode = (typeof ALIGN_MODES)[number];
@@ -177,6 +178,19 @@ export interface ObjectDef {
   // The base-art coordinate frame subpart_geometry is expressed in (asset SVG
   // viewBox). Present iff subpart_geometry is present.
   view_box?: ViewBox;
+  // Full declared subpart-instance vocabulary for a structured object, in
+  // row-major order (tube_A..tube_H, lane_1..lane_10, A1..H12). This is the
+  // authoritative set the runtime validates an authored "<object>.<subpart>"
+  // target against; unlike subpart_geometry it is present for every structured
+  // object, not only the rendered-geometry grids. Absent for non-structured
+  // objects.
+  subparts?: string[];
+  // Declared subpart groups flattened to {group_name: [member subpart names]}
+  // (all_wells, row_A, col_1, all_lanes, ...). A group write
+  // (ObjectStateChange target "<object>.<group>") fans out to every member.
+  // Group names are disjoint from subpart names and every member is a declared
+  // subpart. Absent when the object declares no groups.
+  subpart_groups?: Record<string, string[]>;
 }
 
 export interface AssetSpec {
@@ -457,6 +471,14 @@ export interface PipelineResult {
   // baseline read it. Empty when every item sits inside scene_bounds. Not
   // serialized into the precompute (the artifact serializes only `final`).
   offCanvasDiagnostics: OffCanvasDiagnostic[];
+  // Unified diagnostics stream (M17): the four parallel streams above
+  // (`diagnostics`, `passes[].diagnostics`, `severityDiagnostics`,
+  // `offCanvasDiagnostics`) folded into one flat, normalized array. This is the
+  // long-term single source of truth for report tooling, which reads it instead
+  // of recomputing per-stream. The build gate stays on `severityDiagnostics`;
+  // in this stream `failBuild` is authoritative only on severity-sourced entries.
+  // See diagnostics/unified.ts. Not serialized into the precompute.
+  unifiedDiagnostics: UnifiedDiagnostic[];
   // Computed zone bands from the reflow-zones stage, keyed by zone id. The band
   // reflows the scene's vertical range from measured per-tier content; place-vertical
   // consumes it to space tier rows. It is NOT serialized into

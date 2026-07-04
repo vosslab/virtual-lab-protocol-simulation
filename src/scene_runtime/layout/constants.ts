@@ -77,6 +77,15 @@ export const MIN_SCALE = 0.55;
 // through the uniform rescale without overflow. The horizontal stage keeps its own
 // 0.55 floor untouched.
 export const UNIFORM_RESCALE_MIN_SCALE = 0.27;
+// The readable-size floor for the D2 "unfittable asset" WARNING (unfittable_asset).
+// An item whose final rendered scale falls BELOW this value only reaches that state
+// through the terminal uniform rescale (the horizontal stage floors at MIN_SCALE),
+// so it signals an object shrunk past a comfortably readable size. It is tied to
+// MIN_SCALE on purpose: MIN_SCALE is the largest shrink the horizontal packer will
+// apply, so anything below it is a sub-floor rescale, i.e. the asset could not be
+// fit at a readable size. The signal is advisory only (failBuild false); it makes
+// the degradation legible without blocking the build on the dense shrink scenes.
+export const READABLE_FLOOR_SCALE = MIN_SCALE;
 // labelDominant review threshold. After the uniform rescale, a scene is
 // flagged labelDominant when its label strip is at least this fraction of the
 // scaled object height (labelBoxHeight / scaledObjectHeight >= ratio). A label

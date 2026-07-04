@@ -12,7 +12,7 @@
 // Output is byte-identical to the prior inline 10-stage pipeline: same phase
 // order, same per-pass diagnostics, same shrink step, same final assembly.
 
-import { DEFAULT_VIEWPORT, WORKSPACE_PX_PER_CM } from "./constants.js";
+import { DEFAULT_VIEWPORT, READABLE_FLOOR_SCALE, WORKSPACE_PX_PER_CM } from "./constants.js";
 import { bindObjects } from "./bind_objects.js";
 import { buildGlobalDefaults, resolveConfig } from "./config/index.js";
 import {
@@ -20,6 +20,8 @@ import {
   buildPackZoneDecision,
   buildRowZoneDecision,
 } from "./diagnostics/decision_metadata.js";
+import { collectUnfittableAssets, promoteBelowViewport } from "./diagnostics/promote.js";
+import { buildUnifiedDiagnostics } from "./diagnostics/unified.js";
 import { normalizeSchema } from "./normalize_schema.js";
 import { resolveInheritance } from "./resolve_inheritance.js";
 import { scaleToRealWorld } from "./scale_to_real_world.js";
@@ -268,12 +270,50 @@ export function runPipeline(scene: SceneA, opts: Partial<PipelineInputs> = {}): 
   // at MIN_SCALE. Kept SEPARATE from the closed-kind diagnostics stream, surfaced
   // here alongside the label and bounds severity diagnostics.
   const packerDiagnostics = lastCtx?.packerSeverity ?? [];
-  const severityDiagnostics = [...labelDiagnostics, ...boundsDiagnostics, ...packerDiagnostics];
 
   // Report-only per-item off-canvas classification from the final pass's validate
-  // phase. Kept SEPARATE from severityDiagnostics and the closed-kind diagnostics
-  // stream: it is purely informational and never fails or blocks the build.
+  // phase. Kept SEPARATE from the closed-kind diagnostics stream: it is purely
+  // informational. The fully_off_canvas subset is ALSO promoted below into a
+  // build-failing severity Error, but the raw report-only stream stays as-is.
   const offCanvasDiagnostics = lastCtx?.offCanvas ?? [];
+
+  // Preventive never-crop regression guard (M17): promote each fully_off_canvas
+  // item to a build-failing art_below_viewport severity Error. This is a
+  // regression guard -- 0 real scenes trip it today (the historical below-viewport
+  // clipping was fixed by the uniform rescale); it fails loud if one ever
+  // regresses. The build gate (wired by M19) exempts the documented
+  // intentional-void scenes and the adversarial dev fixture via
+  // isBuildGateExemptScene; the engine still reports the diagnostic here.
+  const belowViewportDiagnostics = promoteBelowViewport(offCanvasDiagnostics);
+
+  // D2 "unfittable asset" advisory (M17): a Warning (never fails the build) for
+  // each final item shrunk below the readable floor to fit its zone. It names the
+  // objects the dense shrink scenes squeezed past a readable size without blocking
+  // the build (the ~20 shrink scenes stay green).
+  const unfittableDiagnostics = collectUnfittableAssets(
+    final,
+    normalScene.scene_name,
+    READABLE_FLOOR_SCALE,
+  );
+
+  const severityDiagnostics = [
+    ...labelDiagnostics,
+    ...boundsDiagnostics,
+    ...packerDiagnostics,
+    ...belowViewportDiagnostics,
+    ...unfittableDiagnostics,
+  ];
+
+  // Unified diagnostics: fold the four parallel streams into one normalized array
+  // for report tooling (the long-term single source of truth). The build gate
+  // stays on severityDiagnostics; this stream is report-facing.
+  const unifiedDiagnostics = buildUnifiedDiagnostics({
+    sceneName: normalScene.scene_name,
+    legacy: diagnostics,
+    passes,
+    severity: severityDiagnostics,
+    offCanvas: offCanvasDiagnostics,
+  });
 
   return {
     scene: normalScene,
@@ -297,6 +337,7 @@ export function runPipeline(scene: SceneA, opts: Partial<PipelineInputs> = {}): 
     decisionMetadata,
     severityDiagnostics,
     offCanvasDiagnostics,
+    unifiedDiagnostics,
     zoneBands: finalZoneBands,
     reflowOverflow: finalReflowOverflow,
     reflowTotalContent: finalReflowTotalContent,

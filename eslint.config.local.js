@@ -37,4 +37,14 @@ export default [
     ],
     languageOptions: { globals: { ...globals.browser } },
   },
+  {
+    // Background-agent git worktree checkouts live under .claude/worktrees/agent-*
+    // at the repo root. Each worktree is a full repo copy with its own
+    // eslint.config.js and tsconfig.json, so the canonical '**/*.{ts,tsx,...}'
+    // glob picks up hundreds of duplicate files and typescript-eslint fails
+    // every one of them with a "multiple candidate TSConfigRootDirs" parsing
+    // error. Ignore the whole .claude/ tree the same way OTHER_REPOS/** is
+    // ignored for sibling-repo checkouts.
+    ignores: [".claude/**"],
+  },
 ];

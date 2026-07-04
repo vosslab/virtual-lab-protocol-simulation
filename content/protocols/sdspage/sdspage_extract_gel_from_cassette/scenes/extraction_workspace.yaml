@@ -4,5 +4,13 @@ extends: electrophoresis_bench
 add_placements:
   - placement_name: front_center_staining_tray
     object_name: staining_tray
-    zone: front_left
-    depth_tier: 1
+    zone: front_center
+    depth_tier: 2
+    align_stop: center
+
+reposition_placements:
+  # Not a target in this protocol; moved off the front working row so it does
+  # not crowd the two front-row targets (gel_cassette, staining_tray).
+  - placement_name: front_center_waste_container
+    zone: right_tool_area
+    depth_tier: 2

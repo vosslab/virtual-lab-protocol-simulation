@@ -21,7 +21,7 @@ The goal is to prove that a mini-protocol is playable through visible browser
 interactions, not merely schema-valid.
 
 The walker drives the Solid protocol host
-([src/protocol_host.tsx](../../src/protocol_host.tsx)). It reads two FROZEN
+([protocol_host.tsx](../../src/protocol_host.tsx)). It reads two FROZEN
 read-only browser surfaces and never writes them:
 
 - `window.PROTOCOL_STEPS`: the step list (`id` / `label` / `scene` / `nextId`).
@@ -140,18 +140,21 @@ node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol sdspage_extra
 node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol sdspage_extract_gel_from_cassette --screenshots per-click
 ```
 
-The walker drives only the closed gesture set the new host exposes a visible
-affordance for (currently `click`, `select`, and `type`). `select` reuses the
-visible scene-object click affordance (the host promotes a click on the active
-target to the `select` gesture); `type` fills + commits the visible
-type-input affordance (`[data-type-input]` / `[data-type-commit]`). A protocol
-whose active interaction needs a gesture the host has no visible affordance for
-yet (`adjust`, `drag`) fails loudly with an `unsupported_gesture` classification
-rather than silently skipping or branching per protocol. The simplest all-`click`
-protocols (`sdspage_assemble_electrode_module`,
-`sdspage_extract_gel_from_cassette`) walk end-to-end today, and the
-`select_check` / `type_check` dev_smoke fixtures exercise the `select` and `type`
-gestures (including a wrong-selection rejection under `--wrong-order`).
+The walker drives the closed gesture set the new host exposes a visible
+affordance for (currently `click`, `select`, `type`, and `adjust`). `select`
+reuses the visible scene-object click affordance (the host promotes a click on
+the active target to the `select` gesture); `type` fills + commits the visible
+type-input affordance (`[data-type-input]` / `[data-type-commit]`); `adjust`
+sets + commits a value in the shared numeric set-point editor
+(`[data-adjust-input]` / `[data-adjust-commit]`). `drag` is wired in the runtime
+and proven by the step-machine unit test and the walker driver, but no content
+protocol authors a drag yet, so the sweep still classifies a `drag` interaction
+`unsupported_gesture` rather than silently skipping or branching per protocol;
+adding `drag` to the sweep set is a one-line change once a real drag protocol
+lands. The simplest all-`click` protocols (`sdspage_assemble_electrode_module`,
+`sdspage_extract_gel_from_cassette`) walk end-to-end, and the `select_check` /
+`type_check` dev_smoke fixtures exercise the `select` and `type` gestures
+(including a wrong-selection rejection under `--wrong-order`).
 
 The `--screenshots` flag accepts `per-step` (default), `per-interaction`, or
 `per-click`. Per-interaction and per-click modes add report entries in
@@ -166,6 +169,29 @@ The Node walker:
 - Launches Chromium through the Playwright library.
 - Uses a `1280 x 900` viewport.
 - Runs headless.
+
+To sweep every curriculum protocol under `content/protocols/` in one run
+(worst-first summary plus `test-results/walker/sweep_summary.json`), build once
+and run the sweep runner or its `npm run walk:all` alias:
+
+```bash
+npm run build
+node tests/playwright/e2e/walk_all_protocols.mjs
+```
+
+The front-door script `run_playwright_tests.sh` drives the same sweep and is the
+recommended entry point. It builds `dist/` when it is missing (or with `--build`
+to force a rebuild), runs `walk_all_protocols.mjs`, and prints a final `PASS` or
+`FAIL` line. It mirrors the `npm run test:playwright` alias:
+
+```bash
+./run_playwright_tests.sh
+./run_playwright_tests.sh --build
+```
+
+`run_playwright_tests.sh` is kept separate from `check_codebase.sh` so the fast
+typecheck/lint/format/unit gate stays fast; the browser walker sweep is its own
+front door.
 
 The Python wrapper is an optional convenience around the same headless
 walkthrough. It can build first and then invoke the Node walker:
@@ -182,7 +208,10 @@ source source_me.sh && python3 tools/run_protocol_walkthrough.py --protocol tuto
 
 The wrapper also supports:
 
-- `--list-protocols`: list `content/protocols/*/protocol.yaml` protocol names.
+- `--list-protocols`: list protocol names discovered by recursively searching
+  `content/protocols/**/protocol.yaml` (works with both the flat
+  `content/protocols/<name>` and clustered `content/protocols/<cluster>/<name>`
+  layouts).
 - `--wrong-order`: pass wrong-order mode through to the Node walker.
 - `--no-build`: skip its build step and run the walker against the existing
   `dist/` output.
@@ -278,15 +307,19 @@ walker simply loops: read the active interaction, click its target, wait for
 progress, repeat until the step id changes.
 
 The walker acts only on the closed gesture set (`click`, `drag`, `adjust`,
-`select`, `type`). `click` and `select` have a visible affordance in the new host
-(the click resolver promotes a click on the active target to the active gesture,
-so `select` -- choosing the correct next-step object among the present objects --
-reuses the click path); `type` fills + commits the visible type-input affordance.
-`adjust` and `drag` FAIL with an `unsupported_gesture` classification so M4-D can
-record them; the walker never silently skips and never adds a per-protocol
-branch. For a `type` interaction the walker reads the expected value read-only
-from `gameState.activeTypeValue` (projected from the authored validator `value`)
-and types it into `[data-type-input]`, then clicks `[data-type-commit]`.
+`select`, `type`). `click`, `select`, `type`, and `adjust` all have a visible
+affordance in the new host: the click resolver promotes a click on the active
+target to the active gesture, so `select` -- choosing the correct next-step
+object among the present objects -- reuses the click path; `type` fills + commits
+the visible type-input affordance; `adjust` sets + commits a value in the shared
+numeric set-point editor. `drag` is wired but no content protocol authors one
+yet, so a `drag` interaction still FAILS with an `unsupported_gesture`
+classification rather than silently skipping or branching per protocol. For a
+`type` interaction the walker reads the expected value read-only from
+`gameState.activeTypeValue` (projected from the authored validator `value`) and
+types it into `[data-type-input]`, then clicks `[data-type-commit]`; for an
+`adjust` interaction it reads `gameState.activeAdjustValue` and commits it on
+`[data-adjust-input]` / `[data-adjust-commit]`.
 
 The central click helper is `clickTargetAndWaitProgress()`. It resolves a
 scene-scoped `data-item-id` selector, verifies that the element exists, verifies
@@ -351,10 +384,18 @@ Current new-host affordance coverage:
   It appears only while the active interaction's gesture is `type`; the walker
   fills it and clicks Commit, routing the typed text to
   `step_machine.handle_type_commit` (validated by `target_with_value`).
-- `drag` and `adjust` have no visible affordance in the new host yet. The host
-  renders no set-point control and no drag surface. When the active interaction
-  needs one of these, the walker fails with `unsupported_gesture` and the gap is
-  classified for M4-D.
+- `adjust` is supported through the shared numeric set-point editor
+  (`[data-adjust-input]` + `[data-adjust-commit]`, from
+  `src/shell/hud/set_point_editor.tsx`). It appears only while the active
+  interaction's gesture is `adjust`; the walker sets the value and clicks Commit,
+  routing the committed number to `step_machine.handle_adjust_commit` (coerced to
+  the field's declared type and validated by `target_with_value`).
+- `drag` is wired in the runtime (`step_machine.handle_drag_commit` plus the host
+  drag surface) and proven by the step-machine unit test and the
+  `dragToAndWaitProgress` walker driver, but no content protocol authors a drag
+  yet. Until one does, a `drag` interaction fails with `unsupported_gesture`;
+  adding `drag` to the walker's supported set is a one-line change once a real
+  drag protocol lands.
 
 The walker stays schema-driven. Step-name-specific branches and per-protocol
 special cases are not allowed; if the visible UI cannot be exercised by the
@@ -405,7 +446,7 @@ adding special-case code.
 | Protocol never reaches `isComplete`             | Terminal step did not complete, or a later step stalled                                      | Fix the terminal step's completion path or the stalled step                     |
 | Wrong-order injection advances the step         | Runtime accepts a non-required interaction as valid progress                                 | Tighten interaction-validator dispatch and active-target checks                 |
 | Mini-protocol enters hood or bench unexpectedly | Scene isolation is broken for a workspace-only protocol                                      | Fix the `SceneChange` `scene_operation` chain in the affected step's `response` |
-| `unsupported_gesture` on a step                 | Active interaction needs `adjust` or `drag`; new host has no visible affordance | Add the visible affordance to the host/scene/runtime; classify in M4-D          |
+| `unsupported_gesture` on a step                 | Active interaction needs `drag`; the sweep does not drive `drag` until a content protocol authors one | Author the drag protocol, then add `drag` to the walker's supported set (a one-line change) |
 | `type_input_missing` / `type_did_not_advance`   | `type` interaction active but the type-input affordance is missing/hidden, or the committed value did not validate | Confirm `[data-type-input]`/`[data-type-commit]` render and the validator `value` matches the committed text |
 
 Prefer fixing runtime schema, YAML, render output, or dispatch behavior before
@@ -574,10 +615,11 @@ mode was used, making the report self-describing.
 
 Documented future work, not yet implemented:
 
-- Add visible affordances for the `adjust` and `drag` gestures in the new
-  host (set-point control, drag surface). Until then the walker fails
-  `unsupported_gesture` on protocols that need them, and M4-D records the gap.
-  This is a host/scene/runtime extension, never a walker branch.
+- Author a content protocol that uses the `drag` gesture, then add `drag` to
+  the walker's supported set. The drag affordance and `handle_drag_commit` are
+  already wired; the sweep leaves `drag` classified `unsupported_gesture` only
+  because no content protocol authors one yet. This is a content + one-line
+  walker change, never a per-protocol walker branch.
 - Compare screenshots against golden baselines.
 - Prove that every intermediate teaching visual is correct.
 
@@ -608,9 +650,9 @@ walkthrough contract.
 
 ## Relationship to smoke tests
 
-[run_smoke.py](../../tools/run_smoke.py) builds the app and runs
-test_game_ui.mjs. That smoke test
-checks that the app loads, key UI elements render, and basic early gates pass.
+[run_smoke.py](../../tools/run_smoke.py) builds the app and runs a fast browser
+smoke test that checks that the app loads, key UI elements render, and basic
+early gates pass.
 
 Use smoke tests for fast browser sanity checks. Use the walkthrough when the
 question is whether a complete protocol can be played through visible UI

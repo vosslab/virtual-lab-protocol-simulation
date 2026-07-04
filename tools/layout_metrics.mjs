@@ -16,7 +16,8 @@
 //   uniform_rescale    -- scene-wide terminal rescale: factor, floor flag, overflow
 //   per_object         -- final scale, shrunk passes, floor flags, off-canvas, clamped
 //   row_metrics        -- per row: item count, occupancy fraction, min inter-object gap
-//   label_overlaps     -- from severity diagnostics (unresolved_label_overlap, etc.)
+//   overlap_diagnostics -- Error-level overlap diagnostics from the engine's severity
+//                          stream (unresolved_label_overlap, unresolved_overlap)
 //   overlap_graph      -- AABB graph: object + label nodes; overlap/near/conflict edges
 //   balance            -- area-weighted centroid offset; left/right and top/bottom ratios
 //
@@ -395,20 +396,28 @@ function rowMetrics(items, zoneBands, scene) {
 }
 
 //============================================
-// Label overlaps
+// Overlap diagnostics
 //============================================
 
-// Extracts label-related diagnostics from the severity stream.
-// Only label-specific codes are included; no interpretation is added here.
-function labelOverlaps(severityDiagnostics) {
-  const LABEL_CODES = new Set(["unresolved_label_overlap", "poor_label_alignment"]);
+// Extracts overlap-related diagnostics from the severity stream.
+// Includes both the label-overlap codes and the object-overlap Error
+// (unresolved_overlap) the engine emits when items still collide after
+// shrink-to-MIN_SCALE + pack, so the scorecard's Error set matches the
+// engine's. No interpretation is added here.
+function overlapDiagnostics(severityDiagnostics) {
+  const OVERLAP_CODES = new Set([
+    "unresolved_label_overlap",
+    "poor_label_alignment",
+    "unresolved_overlap",
+  ]);
   return (severityDiagnostics ?? [])
-    .filter((d) => LABEL_CODES.has(d.code))
+    .filter((d) => OVERLAP_CODES.has(d.code))
     .map((d) => ({
       code: d.code,
       severity: d.severity,
       placement_name: d.pointer.placement_name ?? null,
       zone_name: d.pointer.zone_name ?? null,
+      involved_items: d.payload?.involvedItems ?? null,
     }));
 }
 
@@ -599,7 +608,7 @@ function computeMetrics(sceneName, result) {
   const zones = zoneOccupancy(items, scene);
   const perObj = perObjectMetrics(items, result.reflowUniformScale, result.decisionMetadata, sb);
   const rows = rowMetrics(items, result.zoneBands, scene);
-  const lblOverlaps = labelOverlaps(result.severityDiagnostics);
+  const ovlDiagnostics = overlapDiagnostics(result.severityDiagnostics);
   const graph = overlapGraph(items);
   const bal = balance(items, sb);
 
@@ -624,7 +633,7 @@ function computeMetrics(sceneName, result) {
     },
     per_object: perObj,
     row_metrics: rows,
-    label_overlaps: lblOverlaps,
+    overlap_diagnostics: ovlDiagnostics,
     overlap_graph: graph,
     balance: bal,
     passes_used: result.passes.length,

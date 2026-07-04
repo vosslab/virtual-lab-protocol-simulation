@@ -2,8 +2,10 @@
 //
 // Runs the scene layout engine once per scene at the canonical 16:9 frame
 // (1920x1080) and emits generated/precomputed_layout.ts as a map keyed by
-// scene_name, each entry holding { final: ComputedItem[] }. The browser loads
-// these positions instead of recomputing layout at runtime.
+// scene_name, each entry holding { final: ComputedItem[], unifiedDiagnostics:
+// UnifiedDiagnostic[] }. The browser loads these positions instead of
+// recomputing layout at runtime; the diagnostics stream travels alongside for
+// report tooling that reads the built artifact.
 //
 // Why fixed 16:9 is a valid precompute: parity testing confirmed exact agreement
 // between running the engine at canonical 16:9 and at a live 16:9 panel (see
@@ -24,6 +26,10 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 
 import { runPipeline } from "../src/scene_runtime/layout/index.ts";
+import {
+  countBuildFailures,
+  isBuildGateExemptScene,
+} from "../src/scene_runtime/layout/diagnostics/severity_model.ts";
 import { SCENES } from "../generated/scenes.js";
 import { OBJECT_LIBRARY, ASSET_SPECS } from "../generated/object_library.js";
 
@@ -49,16 +55,17 @@ function repo_root() {
 // Run the engine for one scene
 //============================================
 
-// Run the engine for one scene at the canonical 16:9 frame and return its
-// final ComputedItem[]. This is the exact call the runtime renderer makes,
-// differing only in the fixed viewport argument.
+// Run the engine for one scene at the canonical 16:9 frame and return the full
+// PipelineResult. This is the exact call the runtime renderer makes, differing
+// only in the fixed viewport argument. Callers read `final` (the laid-out items)
+// and `unifiedDiagnostics` (the report stream carried into the artifact).
 function run_scene(scene) {
   const result = runPipeline(scene, {
     library: OBJECT_LIBRARY,
     assets: ASSET_SPECS,
     viewport: PRECOMPUTE_VIEWPORT,
   });
-  return result.final;
+  return result;
 }
 
 // Stable serialization order: sort items by placement_name so the emitted file
@@ -88,12 +95,17 @@ function build_artifact(layout_by_scene) {
   body += "//\n";
   body += "// Build-time layout: runPipeline output for every scene at the canonical\n";
   body += "// 16:9 frame (" + PRECOMPUTE_VIEWPORT.w + "x" + PRECOMPUTE_VIEWPORT.h + ").\n";
-  body += "// Keyed by scene_name; each entry holds { final: ComputedItem[] }.\n";
+  body += "// Keyed by scene_name; each entry holds { final: ComputedItem[],\n";
+  body += "// unifiedDiagnostics: UnifiedDiagnostic[] }.\n";
   body += "\n";
   body += "import type { ComputedItem } from '../src/scene_runtime/layout/types.js';\n";
+  body +=
+    "import type { UnifiedDiagnostic } " +
+    "from '../src/scene_runtime/layout/diagnostics/unified.js';\n";
   body += "\n";
   body += "export interface PrecomputedSceneLayout {\n";
   body += "\tfinal: ComputedItem[];\n";
+  body += "\tunifiedDiagnostics: UnifiedDiagnostic[];\n";
   body += "}\n";
   body += "\n";
   body += "export const PRECOMPUTED_LAYOUT: Record<string, PrecomputedSceneLayout> = ";
@@ -101,11 +113,53 @@ function build_artifact(layout_by_scene) {
   // (primitives, string arrays, optional flags), so JSON round-trips it exactly.
   const ordered = {};
   for (const name of scene_names) {
-    ordered[name] = { final: layout_by_scene[name] };
+    ordered[name] = {
+      final: layout_by_scene[name].final,
+      unifiedDiagnostics: layout_by_scene[name].unifiedDiagnostics,
+    };
   }
   body += JSON.stringify(ordered, null, "\t");
   body += ";\n";
   return body;
+}
+
+//============================================
+// Build gate
+//============================================
+
+// Enforce the never-crop / never-off-canvas build gate. Each scene's
+// severityDiagnostics (the gate's authoritative stream) is checked with
+// countBuildFailures; a scene named in isBuildGateExemptScene is skipped (the
+// documented intentional-void, dense-by-design, and adversarial-fixture scenes).
+// For every failing non-exempt scene each failBuild diagnostic is printed with
+// its scene, object/placement, and code so the operator can locate the break.
+// Returns the number of non-exempt scenes that failed the gate.
+function run_build_gate(layout_by_scene, scene_names) {
+  let failing_scene_count = 0;
+  for (const name of scene_names) {
+    if (isBuildGateExemptScene(name)) continue;
+    const severity = layout_by_scene[name].severityDiagnostics;
+    const failure_count = countBuildFailures(severity);
+    if (failure_count === 0) continue;
+    failing_scene_count += 1;
+    // Name each failing diagnostic (scene / object / code) for the operator.
+    for (const d of severity) {
+      if (!d.failBuild) continue;
+      const where = d.pointer.placement_name ?? d.pointer.zone_name ?? "scene";
+      process.stderr.write(
+        "precompute_layout: BUILD GATE FAILURE in scene '" +
+          name +
+          "' at '" +
+          where +
+          "': " +
+          d.code +
+          " (" +
+          d.trigger +
+          ")\n",
+      );
+    }
+  }
+  return failing_scene_count;
 }
 
 //============================================
@@ -120,7 +174,17 @@ function main() {
   const layout_by_scene = {};
   for (const name of scene_names) {
     const scene = SCENES[name];
-    layout_by_scene[name] = sort_items(run_scene(scene));
+    const result = run_scene(scene);
+    // Carry the laid-out items (sorted for determinism), the report diagnostics
+    // stream serialized into the artifact, and the severity-graded stream the
+    // build gate reads. severityDiagnostics is the gate's source of truth; it is
+    // not serialized (report tooling reads unifiedDiagnostics), only inspected
+    // here.
+    layout_by_scene[name] = {
+      final: sort_items(result.final),
+      unifiedDiagnostics: result.unifiedDiagnostics,
+      severityDiagnostics: result.severityDiagnostics,
+    };
   }
 
   const text = build_artifact(layout_by_scene);
@@ -137,6 +201,20 @@ function main() {
       PRECOMPUTE_VIEWPORT.h +
       ")\n",
   );
+
+  // Enforce the build gate after emitting the artifact so the recorded
+  // diagnostics reflect the full corpus even on a failing build. A non-exempt
+  // scene with any failBuild diagnostic (asset clipping, unresolved overlap,
+  // below-viewport artwork, ...) fails the build loudly by a nonzero exit.
+  const failing_scene_count = run_build_gate(layout_by_scene, scene_names);
+  if (failing_scene_count > 0) {
+    process.stderr.write(
+      "precompute_layout: build gate FAILED -- " +
+        failing_scene_count +
+        " non-exempt scene(s) have failBuild diagnostics (see above)\n",
+    );
+    process.exitCode = 1;
+  }
 }
 
 main();

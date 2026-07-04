@@ -18,7 +18,7 @@ Adding a new attribute requires editing this file.
 
 Scope: interface DOM only. Scene-side selectors (`data-item-id`,
 `data-object-name`, `data-placement-name`, `data-zone`, `data-kind`,
-`data-depth`, `data-target-id`, `data-label`, `data-label-for`) are
+`data-depth`, `data-label`, `data-label-for`) are
 owned by the imperative SVG renderer and documented under
 [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
 

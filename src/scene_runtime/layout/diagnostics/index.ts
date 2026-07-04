@@ -8,6 +8,8 @@
 export {
   SEVERITY_DIAGNOSTIC_CODES,
   SEVERITY_TABLE,
+  BUILD_GATE_EXEMPT_SCENES,
+  isBuildGateExemptScene,
   severityRuleFor,
   buildDiagnostic,
   failsBuild,
@@ -42,3 +44,8 @@ export type {
 
 export { buildRowZoneDecision, buildDecisionMetadata } from "./decision_metadata.js";
 export type { ZoneDecision, DecisionMetadata } from "./decision_metadata.js";
+
+export { buildUnifiedDiagnostics } from "./unified.js";
+export type { UnifiedDiagnostic, UnifiedDiagnosticSource } from "./unified.js";
+
+export { promoteBelowViewport, collectUnfittableAssets } from "./promote.js";

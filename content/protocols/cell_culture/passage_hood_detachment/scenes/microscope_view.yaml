@@ -13,12 +13,25 @@ remove_placements:
   # left stop (re-added below) so the two right_bench items do not collide once
   # the slide takes the right stop.
   - right_microtube
+  # Ethanol is a non-target in the microscope view (it is clicked back in the
+  # hood scene, not here). Remove the inherited rear_right ethanol so the
+  # rear_right shelf is free for the hood-return surface below.
+  - rear_ethanol_bottle
 
 add_placements:
   - placement_name: instrument_t75_flask
     object_name: t75_flask
     zone: instrument_area
     depth_tier: 2
+
+  # Hood-return affordance: the protocol clicks hood_surface to SceneChange back
+  # to the hood after inspecting the flask. Placed on the freed rear_right shelf
+  # so it reads as "step back to the hood," clear of the microscope and benches.
+  - placement_name: rear_right_hood_return
+    object_name: hood_surface
+    zone: rear_right
+    depth_tier: 1
+    align_stop: center
 
   # Hemocytometer slide pushed to the far-right of the right bench, clear of
   # the microscope base on the left edge of the zone.
@@ -27,6 +40,12 @@ add_placements:
     zone: right_bench
     depth_tier: 1
     align_stop: right
+    # right_bench sits below the rear_right shelf (now holding the hood-return
+    # surface); the default top label rises into that band and collides. This
+    # re-added placement needs its own label fix (the base label_placement does
+    # not carry to a re-added placement).
+    layout:
+      label_placement: bottom
 
   # Microtube shares the right stop with the slide so the two pack sequentially
   # along the right edge of the bench, both clear of the microscope base on the

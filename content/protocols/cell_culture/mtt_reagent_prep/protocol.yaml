@@ -61,6 +61,10 @@ steps:
               target: micropipette
               state:
                 set_volume: 1000
+      # This scene removes the inherited bench_basic rear_center_pbs placement
+      # (see scenes/bench_workspace.yaml remove_placements), so pbs_bottle is
+      # placed only once here (rear_center_pbs_bottle). The target names the
+      # object_name, matching the PRIMARY_SPEC target vocabulary.
       - target: pbs_bottle
         gesture: click
         validator:

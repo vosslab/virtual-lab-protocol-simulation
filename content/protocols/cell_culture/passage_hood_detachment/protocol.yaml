@@ -15,7 +15,7 @@ learning:
     "Overall, this mini-protocol aims to accomplish the first stage of routine
     cell passage: detaching cells from a T75 flask for subculture and replating. This
     is the entry point for any maintenance-passage or experimental-expansion workflow.
-    The 10 steps reflect the full pedagogical pathway from initial confluence assessment
+    The 9 steps reflect the full pedagogical pathway from initial confluence assessment
     through trypsin neutralization, including the essential ~2-minute incubation wait."
 steps:
   - step_name: inspect_confluence
@@ -42,7 +42,7 @@ steps:
         response:
           scene_operations:
             - type: SceneChange
-              to_scene: hood_workspace
+              to_scene: passage_hood_detachment_hood_workspace
     step_validator:
       preset: sequence_complete
     outcome:
@@ -264,7 +264,7 @@ steps:
         response:
           scene_operations:
             - type: SceneChange
-              to_scene: hood_workspace
+              to_scene: passage_hood_detachment_hood_workspace
     step_validator:
       preset: sequence_complete
     outcome:

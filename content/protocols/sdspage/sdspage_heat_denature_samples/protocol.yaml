@@ -41,7 +41,7 @@ steps:
       Place the microtube rack containing the prepared protein samples (3 student
       samples plus 1 MW ladder tube) into the heat block.
     sequence:
-      - target: microtube_rack_24
+      - target: front_microtube_rack
         gesture: click
         validator:
           preset: correct_target
@@ -99,7 +99,7 @@ steps:
               target: heat_block
               state:
                 lid_open: true
-      - target: microtube_rack_24
+      - target: front_microtube_rack
         gesture: click
         validator:
           preset: correct_target

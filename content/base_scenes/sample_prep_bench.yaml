@@ -144,11 +144,10 @@ placements:
     zone: center
     depth_tier: 1
     align_stop: left
-  - placement_name: center_laemmli_working
-    object_name: laemmli_4x_bottle
-    zone: center
-    depth_tier: 1
-    align_stop: right
+  # laemmli_4x_bottle is already placed once on the rear reagent shelf
+  # (rear_center_laemmli). A second placement here made a bare laemmli_4x_bottle
+  # target ambiguous, so the working-surface duplicate is removed; the reagent
+  # keeps its single shelf placement.
   # Right tool area: general tip box
   - placement_name: right_tool_area_tip_box
     object_name: micropipette_tip_box

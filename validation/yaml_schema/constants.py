@@ -106,7 +106,7 @@ PROTOCOL_SCENE_ALLOWED_KEYS = {
 
 # spec: docs/specs/SCENE_INHERITANCE.md "Locked fields within placements"
 PLACEMENT_LOCKED_FIELDS = {
-	'label', 'kind', 'state_fields', 'visual_states', 'capabilities', 'layout'
+	'label', 'kind', 'state_fields', 'visual_states', 'capabilities'
 }
 
 # spec: docs/specs/SCENE_INHERITANCE.md "Reposition operations"

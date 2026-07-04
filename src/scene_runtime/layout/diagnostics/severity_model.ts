@@ -37,6 +37,13 @@ export const SEVERITY_DIAGNOSTIC_CODES = [
   "invalid_scene_schema",
   "missing_asset",
   "impossible_bounds",
+  // Preventive never-crop regression guard (M17): an item's whole artwork box
+  // sits outside scene_bounds, so the object renders off the visible canvas.
+  // Promoted from the report-only offcanvas fully_off_canvas classification.
+  "art_below_viewport",
+  // D2 "unfittable asset" advisory (M17): an object shrank below the readable
+  // floor to fit. Warning only; it names the degradation without failing the build.
+  "unfittable_asset",
 ] as const;
 
 export type SeverityDiagnosticCode = (typeof SEVERITY_DIAGNOSTIC_CODES)[number];
@@ -184,8 +191,52 @@ export const SEVERITY_TABLE: Readonly<Record<SeverityDiagnosticCode, SeverityRul
       trigger: "Claude's vision model or credentials are unavailable",
       suggestedFix: "run human visual review for the scene",
     },
+    art_below_viewport: {
+      code: "art_below_viewport",
+      severity: "Error",
+      failBuild: true,
+      likelyOwner: "author/engine",
+      pointerLevel: "placement",
+      trigger: "item artwork box sits fully outside scene_bounds (object renders off-canvas)",
+      suggestedFix: "enlarge the zone/scene or reduce items so the asset stays on the canvas",
+    },
+    unfittable_asset: {
+      code: "unfittable_asset",
+      severity: "Warning",
+      failBuild: false,
+      likelyOwner: "author",
+      pointerLevel: "placement",
+      trigger: "object shrank below the readable floor (final scale < MIN_SCALE) to fit its zone",
+      suggestedFix: "enlarge the zone or reduce items so the asset renders at a readable size",
+    },
   },
 );
+
+//============================================
+// Build-gate scene exemptions
+//============================================
+
+// Scenes the build gate must NOT fail even when they raise a failBuild:true
+// diagnostic. Two categories, both documented and intentional:
+//   - intentional-void / dense-by-design scenes: empty or deliberately crowded
+//     teaching scenes calibrated before the never-crop gate was wired (M17 risk
+//     mitigation). They are aesthetic decisions, not build regressions.
+//   - the adversarial_overflow_smoke dev fixture: a capacity stress test authored
+//     to fail loudly; it must never gate a real build.
+// The gate wiring (M19) reads this set to skip these scenes. The engine still
+// REPORTS their diagnostics; only the gate decision is exempted here.
+export const BUILD_GATE_EXEMPT_SCENES: ReadonlySet<string> = new Set([
+  "hood_basic",
+  "microscope_basic",
+  "passage_hood_detachment_microscope_view",
+  "hemocytometer_view",
+  "adversarial_overflow_smoke",
+]);
+
+// True when a scene is exempt from the build gate (see BUILD_GATE_EXEMPT_SCENES).
+export function isBuildGateExemptScene(sceneName: string): boolean {
+  return BUILD_GATE_EXEMPT_SCENES.has(sceneName);
+}
 
 //============================================
 // YAML pointer

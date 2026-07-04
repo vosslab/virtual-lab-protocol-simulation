@@ -20,6 +20,7 @@
 import { OBJECT_LIBRARY, ASSET_SPECS } from "../../../generated/object_library.js";
 import { PRECOMPUTED_LAYOUT } from "../../../generated/precomputed_layout.js";
 import { buildDecisionMetadata } from "./diagnostics/decision_metadata.js";
+import type { UnifiedDiagnostic } from "./diagnostics/unified.js";
 import type { ComputedItem, PipelineResult, SceneA } from "./types.js";
 
 //============================================
@@ -33,7 +34,11 @@ import type { ComputedItem, PipelineResult, SceneA } from "./types.js";
 // internal and unused at render time, so it is filled with an explicit empty
 // value rather than recomputed. This keeps the production path free of any
 // runPipeline call while satisfying the full PipelineResult type with no cast.
-export function makePrecomputedResult(scene: SceneA, final: ComputedItem[]): PipelineResult {
+export function makePrecomputedResult(
+  scene: SceneA,
+  final: ComputedItem[],
+  unifiedDiagnostics: UnifiedDiagnostic[],
+): PipelineResult {
   const result: PipelineResult = {
     scene,
     sourceScene: scene,
@@ -59,6 +64,11 @@ export function makePrecomputedResult(scene: SceneA, final: ComputedItem[]): Pip
     // build-time validate-phase artifact, unused at render time, so the
     // production path fills an explicit empty list.
     offCanvasDiagnostics: [],
+    // The unified diagnostics stream is a build-time report artifact, unused at
+    // render time. It is rehydrated from the precomputed artifact (serialized by
+    // pipeline/precompute_layout.mjs) so report tooling reading a resolved
+    // PipelineResult sees the same findings the build-time engine produced.
+    unifiedDiagnostics,
     // The renderer reads only `final` and `scene`; the computed zone bands are a
     // build-time layout-engine artifact consumed at precompute time, unused at
     // render time, so the production path fills an explicit empty map.
@@ -95,6 +105,6 @@ export function resolvePrecomputedResult(scene_name: string, scene: SceneA): Pip
         "rebuild generated/precomputed_layout.ts (pipeline/precompute_layout.mjs)",
     );
   }
-  const result = makePrecomputedResult(scene, precomputed.final);
+  const result = makePrecomputedResult(scene, precomputed.final, precomputed.unifiedDiagnostics);
   return result;
 }

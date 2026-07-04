@@ -242,6 +242,10 @@ steps:
       on_success: complete
       on_failure: retry
     next_step: calculate_split_volume
+  # Gesture rubric note: this step teaches a precise-typed-value skill (the
+  # student computes 1.14 mL and measures it out), but stays click-only
+  # because aspirating_pipette carries no wired set-point or typed-value
+  # control (no set_volume field; see content/objects/pipette/aspirating_pipette.yaml).
   - step_name: calculate_split_volume
     prompt:
       "Calculate the 1:7 split volume. You have ~8 mL of cell suspension.\nFor\

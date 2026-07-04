@@ -3,21 +3,28 @@ extends: bench_basic
 
 scene_notes: |
   Bench-side scene for drug_dilution_setup. Two stock bottles at rear,
-  sterile water at rear right, intermediate tubes. Vortex and heat block
-  inherited from bench_basic rear right.
+  intermediate and working tubes staged at center. Vortex inherited from
+  bench_basic rear right (the diluent is media_bottle, clicked in the
+  dilution_workspace scene).
 
 remove_placements:
   - rear_left_media_bottle
   - rear_center_pbs
   - rear_center_ethanol
   - rear_right_heat_block
+  # Inherited center instruments are never targeted in this bench-setup scene
+  # (only micropipette is clicked here before the dilution_workspace change).
+  # Remove them so the center band holds the working tubes, not idle instruments.
+  - center_water_bath
+  - center_centrifuge
+  - center_well_plate_96
 
 add_placements:
   # Carboplatin stock at rear left (right stop beside waste)
   - placement_name: rear_left_carboplatin_stock
     object_name: carboplatin_stock_bottle
     zone: rear_left
-    depth_tier: 2
+    depth_tier: 1
     align_stop: right
 
   # Metformin stock at rear center (left stop)
@@ -25,13 +32,6 @@ add_placements:
     object_name: metformin_stock_bottle
     zone: rear_center
     depth_tier: 1
-    align_stop: left
-
-  # Sterile water at rear right (additional diluent, left stop)
-  - placement_name: rear_right_sterile_water
-    object_name: sterile_water_bottle
-    zone: rear_right
-    depth_tier: 2
     align_stop: left
 
   # Intermediate tube at center (left stop) -- the working vessel
@@ -57,5 +57,13 @@ add_placements:
   - placement_name: center_dilution_tube_rack
     object_name: dilution_tube_rack_8
     zone: center
-    depth_tier: 2
+    depth_tier: 1
     align_stop: right
+
+reposition_placements:
+  # Collapse the inherited micropipette from tier 2 to tier 1 so the whole sparse
+  # scene renders as a single tier-row. The scene is 96% empty, so the objects fit
+  # side by side horizontally, and dropping the second tier-row removes its label
+  # overhead from the vertical stack fit, raising the scene-wide scale factor.
+  - placement_name: base_right_micropipette
+    depth_tier: 1

@@ -97,18 +97,25 @@ placements:
   - placement_name: center_microwave
     object_name: microwave
     zone: center
-    depth_tier: 2
+    depth_tier: 1
     align_stop: center
   - placement_name: center_rocking_shaker
     object_name: rocking_shaker
     zone: center
-    depth_tier: 3
+    depth_tier: 1
     align_stop: right
-  # Right tool area: waste container only (kimwipe_pad is a placeholder; single item avoids collision)
+  # Right tool area: waste container (front) with the kimwipe pad stacked behind
+  # it. The destain protocols click kimwipe_pad, so it must be a real placed,
+  # clickable object. depth_tier 2 stacks it vertically above the waste in the
+  # narrow zone, so the two do not collide side-by-side.
   - placement_name: right_tool_area_waste
     object_name: waste_container
     zone: right_tool_area
     depth_tier: 1
+  - placement_name: right_tool_area_kimwipe
+    object_name: kimwipe_pad
+    zone: right_tool_area
+    depth_tier: 2
 
 layout_rules:
   label_line_height: 1.1

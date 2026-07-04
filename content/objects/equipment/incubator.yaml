@@ -43,5 +43,5 @@ capabilities: [clickable, instrument_with_setpoint]
 
 layout:
   default_width: 22
-  display_width_cm: 55
+  display_width_cm: 40
   label_width: 14

@@ -117,6 +117,70 @@ describe("scene_op_deps ObjectStateChange", () => {
 });
 
 //============================================
+// ObjectStateChange subpart-group fan-out
+//============================================
+
+describe("scene_op_deps ObjectStateChange group fan-out", () => {
+  test("a group write fans out to every declared member well", () => {
+    // Registry registers the drug so the subpart material write is accepted.
+    const store = create_scene_store({
+      cells: { label: "Cells", display_color: "#6c6c00" },
+    });
+    store.seed_from_scene([{ target: "well_plate_96", object_name: "well_plate_96" }]);
+    const deps = build_store_scene_op_deps(store, () => {});
+    // Bulk write to the all_wells subpart_group.
+    deps.apply_object_state({
+      type: "ObjectStateChange",
+      target: "well_plate_96.all_wells",
+      state: { material_name: "cells", material_volume: 100 },
+    });
+    // Every declared member (all 96 wells) received the write to its own slot.
+    const members = OBJECT_LIBRARY["well_plate_96"].subpart_groups["all_wells"];
+    assert.strictEqual(members.length, 96);
+    for (const well of members) {
+      const entry = store.state[`well_plate_96.${well}`];
+      assert.ok(entry !== undefined, `well ${well} should be seeded by the fan-out`);
+      assert.strictEqual(entry.state.material_name, "cells");
+      assert.strictEqual(entry.state.material_volume, 100);
+    }
+    // No non-rendered "all_wells" pseudo-node was written.
+    assert.strictEqual(store.state["well_plate_96.all_wells"], undefined);
+  });
+
+  test("a smaller group write reaches only its members", () => {
+    const store = create_scene_store({
+      cells: { label: "Cells", display_color: "#6c6c00" },
+    });
+    store.seed_from_scene([{ target: "well_plate_96", object_name: "well_plate_96" }]);
+    const deps = build_store_scene_op_deps(store, () => {});
+    deps.apply_object_state({
+      type: "ObjectStateChange",
+      target: "well_plate_96.row_A",
+      state: { material_name: "cells", material_volume: 50 },
+    });
+    // row_A members written; a non-member (B1) is untouched (unseeded).
+    assert.strictEqual(store.state["well_plate_96.A1"].state.material_volume, 50);
+    assert.strictEqual(store.state["well_plate_96.A12"].state.material_volume, 50);
+    assert.strictEqual(store.state["well_plate_96.B1"], undefined);
+  });
+
+  test("a single-subpart write is not fanned out", () => {
+    const store = create_scene_store({
+      cells: { label: "Cells", display_color: "#6c6c00" },
+    });
+    store.seed_from_scene([{ target: "well_plate_96", object_name: "well_plate_96" }]);
+    const deps = build_store_scene_op_deps(store, () => {});
+    deps.apply_object_state({
+      type: "ObjectStateChange",
+      target: "well_plate_96.A1",
+      state: { material_name: "cells", material_volume: 25 },
+    });
+    assert.strictEqual(store.state["well_plate_96.A1"].state.material_volume, 25);
+    assert.strictEqual(store.state["well_plate_96.A2"], undefined);
+  });
+});
+
+//============================================
 // CursorAttach
 //============================================
 

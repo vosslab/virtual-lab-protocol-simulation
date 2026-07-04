@@ -29,6 +29,46 @@
 // by writing activeScene. So scene scoping is simply the single #scene-root.
 
 //============================================
+// Page-error capture (uncaught runtime exceptions)
+//============================================
+
+// An uncaught page exception (for example AmbiguousTargetError thrown during
+// eager next-target resolution, see docs/active_plans/audits/
+// adjust_did_not_advance_rootcause.md) pre-empts the state mutation a driver
+// waits for, so the driver only ever sees a bare timeout. Playwright's
+// "pageerror" event is the one channel that still reports the real exception.
+// Attach this once per page; the drivers below read the latest captured
+// message when their own wait times out, so the reported failure carries the
+// real error text instead of a content-free "did_not_advance" message.
+export function attachPageErrorCapture(page) {
+  page.__capturedPageErrors = [];
+  page.on("pageerror", (err) => {
+    page.__capturedPageErrors.push(err.message);
+  });
+}
+
+// Read the most recently captured uncaught page exception, or null if none
+// have been captured yet (or attachPageErrorCapture was never called).
+function latestPageError(page) {
+  const captured = page.__capturedPageErrors;
+  if (!captured || captured.length === 0) {
+    return null;
+  }
+  return captured[captured.length - 1];
+}
+
+// Build the suffix appended to a "did_not_advance" timeout message when a
+// page error was captured during the wait. Returns an empty string when no
+// page error is available, so unaffected call sites are unchanged.
+function pageErrorSuffix(page) {
+  const message = latestPageError(page);
+  if (message === null) {
+    return "";
+  }
+  return ` (captured page error: ${message})`;
+}
+
+//============================================
 // Read-only state snapshots
 //============================================
 
@@ -66,6 +106,9 @@ export async function readGameState(page) {
       activeTarget: s.activeTarget,
       activeGesture: s.activeGesture,
       activeTypeValue: s.activeTypeValue,
+      activeAdjustValue: s.activeAdjustValue,
+      activeDragDestination: s.activeDragDestination,
+      activeMaterialEffect: s.activeMaterialEffect,
     };
   });
 }
@@ -81,6 +124,7 @@ export async function waitForExports(page, timeoutMs = 8000) {
         window.PROTOCOL_STEPS.length > 0
       );
     },
+    undefined,
     { timeout: timeoutMs },
   );
 }
@@ -184,7 +228,8 @@ export async function clickTargetAndWaitProgress(
       );
     } catch {
       throw new Error(
-        `click_did_not_advance: click on ${itemId} produced no state change after ${clickBudgetMs}ms`,
+        `click_did_not_advance: click on ${itemId} produced no state change after ${clickBudgetMs}ms` +
+          pageErrorSuffix(page),
       );
     }
     report.info(`Click on ${itemId} progressed`);
@@ -264,10 +309,155 @@ export async function typeCommitAndWaitProgress(
     );
   } catch {
     throw new Error(
-      `type_did_not_advance: committing "${typedText}" produced no state change after ${clickBudgetMs}ms`,
+      `type_did_not_advance: committing "${typedText}" produced no state change after ${clickBudgetMs}ms` +
+        pageErrorSuffix(page),
     );
   }
   report.info(`Type commit "${typedText}" progressed`);
+}
+
+//============================================
+// Real set-point commit (for the `adjust` gesture)
+//============================================
+
+// Drive an `adjust` interaction through the VISIBLE shared numeric set-point
+// editor (src/shell/hud/set_point_editor.tsx): verify the numeric input + commit
+// button exist and are visible, fill the input with a real Playwright fill()
+// (actionability-checked), then click the visible Commit button and wait for an
+// observable forward progress signal. No internal state write, no force
+// interaction.
+//
+// numericValue: the set-point the student would set, as a string (the value read
+// read-only from gameState.activeAdjustValue).
+export async function adjustCommitAndWaitProgress(
+  page,
+  numericValue,
+  report,
+  { clickBudgetMs = 3000 } = {},
+) {
+  const inputLocator = page.locator("[data-adjust-input]").first();
+  const commitLocator = page.locator("[data-adjust-commit]").first();
+
+  // Rule b: verify EXISTS and VISIBLE before interacting. Fail loud otherwise.
+  if ((await inputLocator.count()) === 0) {
+    throw new Error(
+      "adjust_input_missing: [data-adjust-input] affordance not in DOM for adjust gesture",
+    );
+  }
+  if (!(await inputLocator.isVisible())) {
+    throw new Error("adjust_input_hidden: [data-adjust-input] affordance is not visible");
+  }
+  if ((await commitLocator.count()) === 0 || !(await commitLocator.isVisible())) {
+    throw new Error(
+      "adjust_commit_missing: [data-adjust-commit] button not visible for adjust gesture",
+    );
+  }
+
+  // Rule d: snapshot observable progress signals BEFORE the commit.
+  const before = await readProgressSnapshot(page);
+
+  // Real, actionability-checked fill + commit.
+  await inputLocator.fill(numericValue);
+  await commitLocator.click();
+  report.summary.totalClicks++;
+  report.info(`Set set-point "${numericValue}" and committed`);
+
+  try {
+    await page.waitForFunction(
+      (b) => {
+        const s = window.gameState;
+        if (s.interactionIndex !== b.interactionIndex) return true;
+        if (s.activeStepId !== b.activeStepId) return true;
+        if (s.activeScene !== b.activeScene) return true;
+        if ((s.completedSteps || []).length > b.completedStepsCount) return true;
+        if (s.isComplete !== b.isComplete) return true;
+        return false;
+      },
+      before,
+      { timeout: clickBudgetMs },
+    );
+  } catch {
+    throw new Error(
+      `adjust_did_not_advance: committing set-point "${numericValue}" produced no state change ` +
+        `after ${clickBudgetMs}ms` +
+        pageErrorSuffix(page),
+    );
+  }
+  report.info(`Adjust commit "${numericValue}" progressed`);
+}
+
+//============================================
+// Real drag placement (for the `drag` gesture)
+//============================================
+
+// Drive a `drag` interaction through the host drag surface: resolve the source
+// and destination scene objects (both carry data-item-id={placement_name}),
+// verify each exists and is visible, drive a real Playwright source.dragTo(dest)
+// (actionability-checked, no forced event), then wait for an observable forward
+// progress signal.
+//
+// No content protocol authors a drag yet, so this driver is exercised by the
+// walker only once a real drag protocol lands; until then it is proven by the
+// step-machine unit test of handle_drag_commit. It is a real, visible-UI driver
+// with no internal state write, kept in parity with the other gesture drivers.
+export async function dragToAndWaitProgress(
+  page,
+  sourceItemId,
+  destinationItemId,
+  report,
+  { clickBudgetMs = 3000 } = {},
+) {
+  const sourceLocator = page.locator(resolveSelector(sourceItemId)).first();
+  const destLocator = page.locator(resolveSelector(destinationItemId)).first();
+
+  // Rule b: verify BOTH endpoints EXIST and are VISIBLE before dragging.
+  if ((await sourceLocator.count()) === 0) {
+    throw new Error(`drag_source_missing: ${resolveSelector(sourceItemId)} does not exist in DOM`);
+  }
+  if (!(await sourceLocator.isVisible())) {
+    throw new Error(`drag_source_hidden: ${resolveSelector(sourceItemId)} is not visible`);
+  }
+  if ((await destLocator.count()) === 0) {
+    throw new Error(
+      `drag_destination_missing: ${resolveSelector(destinationItemId)} does not exist in DOM`,
+    );
+  }
+  if (!(await destLocator.isVisible())) {
+    throw new Error(
+      `drag_destination_hidden: ${resolveSelector(destinationItemId)} is not visible`,
+    );
+  }
+
+  // Rule d: snapshot observable progress signals BEFORE the drag.
+  const before = await readProgressSnapshot(page);
+
+  // Real, actionability-checked drag from source to destination.
+  await sourceLocator.dragTo(destLocator);
+  report.summary.totalClicks++;
+  report.info(`Dragged ${sourceItemId} onto ${destinationItemId}`);
+
+  try {
+    await page.waitForFunction(
+      (b) => {
+        const s = window.gameState;
+        if (s.interactionIndex !== b.interactionIndex) return true;
+        if (s.activeStepId !== b.activeStepId) return true;
+        if (s.activeScene !== b.activeScene) return true;
+        if ((s.completedSteps || []).length > b.completedStepsCount) return true;
+        if (s.isComplete !== b.isComplete) return true;
+        return false;
+      },
+      before,
+      { timeout: clickBudgetMs },
+    );
+  } catch {
+    throw new Error(
+      `drag_did_not_advance: dragging ${sourceItemId} onto ${destinationItemId} produced no ` +
+        `state change after ${clickBudgetMs}ms` +
+        pageErrorSuffix(page),
+    );
+  }
+  report.info(`Drag ${sourceItemId}->${destinationItemId} progressed`);
 }
 
 //============================================
@@ -290,6 +480,153 @@ export async function pickWrongOrderItem(page, requiredItemId) {
     }
     return null;
   }, requiredItemId);
+}
+
+//============================================
+// Structured material-area verification (generic, schema-driven)
+//============================================
+
+// Read every rendered subpart on one structured object's material overlay as a
+// pure DOM read: for each [data-subpart-name] shape inside the object's
+// [data-subpart-overlay] svg, capture its material name (data-material-name) and
+// its resolved fill. Returns a map { subpartName: { material, fill } }. Empty
+// object when no overlay for that object is mounted in the current scene.
+//
+// This is the generic counterpart of the bespoke all-wells reader: it enumerates
+// EVERY rendered subpart (not a hand-picked sample) so both the positive check
+// (targeted subparts changed) and the negative check (nothing else changed) can
+// run over the full rendered set.
+export async function readSubpartOverlay(page, objectName) {
+  return await page.evaluate((obj) => {
+    const out = {};
+    const root = document.querySelector("#scene-root");
+    if (root === null) return out;
+    const overlay = root.querySelector(`[data-subpart-overlay='${obj}']`);
+    if (overlay === null) return out;
+    const shapes = overlay.querySelectorAll("[data-subpart-name]");
+    for (const shape of shapes) {
+      const name = shape.getAttribute("data-subpart-name");
+      if (name === null) continue;
+      out[name] = {
+        material: shape.getAttribute("data-material-name"),
+        fill: shape.getAttribute("fill"),
+      };
+    }
+    return out;
+  }, objectName);
+}
+
+// Wait (best-effort, bounded) for the first expected member subpart to reach the
+// authored material value, so the reactive overlay has settled before the full
+// snapshot is read. A timeout is swallowed: the subsequent assertion reads the
+// real post-state and reports the actual mismatch rather than a bare timeout.
+async function waitForSubpartMaterial(page, objectName, subpartName, value, timeoutMs) {
+  try {
+    await page.waitForFunction(
+      ({ obj, sub, val }) => {
+        const root = document.querySelector("#scene-root");
+        if (root === null) return false;
+        const overlay = root.querySelector(`[data-subpart-overlay='${obj}']`);
+        if (overlay === null) return false;
+        const shape = overlay.querySelector(`[data-subpart-name='${sub}']`);
+        if (shape === null) return false;
+        return shape.getAttribute("data-material-name") === val;
+      },
+      { obj: objectName, sub: subpartName, val: value },
+      { timeout: timeoutMs },
+    );
+  } catch {
+    // Let the assertion below read and report the real state.
+  }
+}
+
+// Assert the structured material-area effect: EVERY expected member subpart now
+// carries material_value (and its fill visibly changed when it was a real
+// transition), and EVERY other rendered subpart kept its prior material and fill
+// ("and nothing else", MATERIAL_DESIGN.md spatial correspondence). Throws a
+// single material_area_mismatch Error listing every problem when any check fails.
+// A pure comparison over the before/after DOM snapshots; no state is written.
+export function verifyMaterialAreaEffect(effect, before, after, report) {
+  const { object_name, material_value, expected_subparts } = effect;
+  const expectedSet = new Set(expected_subparts);
+
+  // The overlay must be mounted to verify a structured material write. A missing
+  // overlay means the student saw no material area change where the protocol
+  // wrote one -- a spatial-correspondence failure, not a pass.
+  if (Object.keys(after).length === 0) {
+    throw new Error(
+      `material_area_no_overlay: object '${object_name}' has no rendered subpart overlay, ` +
+        `so the write of '${material_value}' to ${expected_subparts.length} subpart(s) is not visible`,
+    );
+  }
+
+  const problems = [];
+
+  // POSITIVE: every targeted member carries the authored material; its fill
+  // changed when the material actually transitioned (a member already holding
+  // the value is a legitimate no-op, not a bug).
+  for (const name of expected_subparts) {
+    const a = after[name];
+    if (a === undefined) {
+      problems.push(`expected member '${name}' is not rendered in the overlay`);
+      continue;
+    }
+    if (a.material !== material_value) {
+      problems.push(
+        `member '${name}': material '${a.material}' !== authored '${material_value}' (silent no-op)`,
+      );
+    }
+    const b = before[name];
+    if (b !== undefined && b.material !== material_value && a.fill === b.fill) {
+      problems.push(
+        `member '${name}': fill did not change (before '${b.fill}' after '${a.fill}') ` +
+          `though material transitioned to '${material_value}'`,
+      );
+    }
+  }
+
+  // NEGATIVE: no non-targeted rendered subpart changed material or fill.
+  for (const name of Object.keys(after)) {
+    if (expectedSet.has(name)) continue;
+    const a = after[name];
+    const b = before[name];
+    if (b === undefined) continue; // newly appeared; nothing to compare against
+    if (a.material !== b.material || a.fill !== b.fill) {
+      problems.push(
+        `non-target subpart '${name}' changed: material '${b.material}'->'${a.material}', ` +
+          `fill '${b.fill}'->'${a.fill}'`,
+      );
+    }
+  }
+
+  if (problems.length > 0) {
+    throw new Error(
+      `material_area_mismatch on '${object_name}' (value '${material_value}', ` +
+        `${expected_subparts.length} expected member(s)): ${problems.join("; ")}`,
+    );
+  }
+  report.info(
+    `Material-area verified on '${object_name}': ${expected_subparts.length} member(s) = ` +
+      `'${material_value}', ${Object.keys(after).length - expected_subparts.length} other subpart(s) unchanged`,
+  );
+}
+
+// Drive the full material-area verification around one interaction. `before` is
+// the overlay snapshot captured BEFORE the interaction's click; this reads the
+// AFTER snapshot (once the first expected member has settled) and asserts.
+export async function verifyMaterialAreaAfterInteraction(page, effect, before, report) {
+  const firstMember = effect.expected_subparts[0];
+  if (firstMember !== undefined) {
+    await waitForSubpartMaterial(
+      page,
+      effect.object_name,
+      firstMember,
+      effect.material_value,
+      1500,
+    );
+  }
+  const after = await readSubpartOverlay(page, effect.object_name);
+  verifyMaterialAreaEffect(effect, before, after, report);
 }
 
 //============================================

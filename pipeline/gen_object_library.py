@@ -245,6 +245,87 @@ def derive_grid_geometry(object_name: str, structure: dict) -> tuple:
 
 #============================================
 
+def derive_subpart_names(object_name: str, structure: dict) -> list:
+	"""
+	Enumerate every declared subpart name from a grid structure block.
+
+	Reads rows/cols and name_pattern from the object's structure block and
+	expands the pattern row-major (top-left first) into the full ordered list of
+	subpart instance names. Supports the pattern tokens the corpus uses:
+	{row_letter} (0 -> 'A'), {row} (1-based row number), {col} (1-based column
+	number). Returns [] for a non-grid or structure-less object.
+
+	The list is the complete declared subpart vocabulary the runtime validates
+	authored "<object>.<subpart>" targets against; it is not geometry.
+	"""
+	if not structure:
+		return []
+	layout = structure.get("layout")
+	if layout != "grid":
+		return []
+	rows = int(structure["rows"])
+	cols = int(structure["cols"])
+	name_pattern = structure["name_pattern"]
+	names = []
+	# Row-major expansion so the emitted order is stable and reads top-left first.
+	for row in range(rows):
+		for col in range(cols):
+			name = name_pattern
+			name = name.replace("{row_letter}", row_letter(row))
+			name = name.replace("{row}", str(row + 1))
+			name = name.replace("{col}", str(col + 1))
+			names.append(name)
+	return names
+
+
+#============================================
+
+def derive_subpart_groups(
+	object_name: str,
+	structure: dict,
+	subpart_names: list,
+) -> dict:
+	"""
+	Flatten structure.subpart_groups into one {group_name: [members]} map.
+
+	Every group_kind block (rows, columns, plate_region, blocks, ...) is merged
+	into a single flat map keyed by group name (row_A, col_1, all_wells,
+	block_A_1_6, ...). Group names must be unique across kinds and every member
+	must be a declared subpart, so a group write always fans out to real
+	subparts. Returns {} when the structure declares no groups.
+	"""
+	groups = structure.get("subpart_groups", {})
+	if not groups:
+		return {}
+	declared = set(subpart_names)
+	result = {}
+	for group_kind_key in sorted(groups.keys()):
+		group_def = groups[group_kind_key]
+		for member in group_def.get("members", []):
+			name = member["name"]
+			if name in result:
+				raise ValueError(
+					f"duplicate subpart_group name {name!r} on object"
+					f" {object_name!r}"
+				)
+			if name in declared:
+				raise ValueError(
+					f"subpart_group name {name!r} on object {object_name!r}"
+					f" collides with a declared subpart name"
+				)
+			contains = list(member["contains"])
+			for well in contains:
+				if well not in declared:
+					raise ValueError(
+						f"subpart_group {name!r} on object {object_name!r}"
+						f" names undeclared subpart {well!r}"
+					)
+			result[name] = contains
+	return result
+
+
+#============================================
+
 def parse_state_fields(data: dict, yaml_path: str) -> tuple:
 	"""
 	Parse state_fields list into (object_level, subpart_level) dicts.
@@ -618,6 +699,14 @@ def process_object_yaml(
 	structure = data.get("structure", {})
 	subpart_geometry, view_box = derive_grid_geometry(object_name, structure)
 
+	# Declared subpart vocabulary for structured objects: every subpart instance
+	# name (tube_A, lane_1, A1..H12) plus the flattened subpart_groups map
+	# (all_wells, row_A, col_1, ...). The runtime validates authored
+	# "<object>.<subpart>" targets against these and fans a group write out to
+	# its members. Empty for non-structured objects.
+	subpart_names = derive_subpart_names(object_name, structure)
+	subpart_groups = derive_subpart_groups(object_name, structure, subpart_names)
+
 	# Build full object definition including state schema and visual_states
 	object_def = {
 		"object_name": object_name,
@@ -631,6 +720,8 @@ def process_object_yaml(
 		"visual_states": visual_states,
 		"subpart_geometry": subpart_geometry,
 		"view_box": view_box,
+		"subparts": subpart_names,
+		"subpart_groups": subpart_groups,
 	}
 
 	# Build asset spec
@@ -760,6 +851,24 @@ def emit_object_def_ts(object_name: str, obj: dict) -> list:
 	if subpart_geometry is not None:
 		geom_lines = emit_subpart_geometry_ts(subpart_geometry, view_box, "\t\t")
 		lines.extend(geom_lines)
+
+	# subparts + subpart_groups (only for structured grid objects). Both are the
+	# declared subpart vocabulary the runtime validates targets against; emit
+	# nothing for a non-structured object so its ObjectDef stays minimal.
+	subparts = obj["subparts"]
+	if subparts:
+		lines.append("\t\tsubparts: [")
+		for subpart_name in subparts:
+			lines.append(f"\t\t\t{repr(subpart_name)},")
+		lines.append("\t\t],")
+	subpart_groups = obj["subpart_groups"]
+	if subpart_groups:
+		lines.append("\t\tsubpart_groups: {")
+		for group_name in sorted(subpart_groups.keys()):
+			members = subpart_groups[group_name]
+			member_list = ", ".join(repr(m) for m in members)
+			lines.append(f"\t\t\t{repr(group_name)}: [{member_list}],")
+		lines.append("\t\t},")
 
 	lines.append("\t},")
 	return lines

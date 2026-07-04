@@ -42,6 +42,7 @@ import {
   dispatch_step_validator,
   type Interaction as ValidatorInteraction,
   type ProtocolStep as ValidatorStep,
+  type ObjectStateSnapshot,
 } from "./validators";
 import { is_interaction_preset, is_step_preset } from "./preset_guards";
 // Read-only schema-lookup seam. Type-only import: the protocol layer names the
@@ -51,6 +52,31 @@ import type { StateFieldLookup } from "./state_field_lookup";
 // Load-time authored-value validation pass. Uses only the injected lookup plus
 // ProtocolConfig; imports no store/registry.
 import { validate_authored_validator_values } from "./authored_value_check";
+// Load-time gesture-affordance invariant. Reads GESTURE_REGISTRY (the single
+// source of registered/wired gestures) plus ProtocolConfig; imports no
+// store/registry. Replaces the M2 temporary runtime gesture-collapse guard.
+import { validate_gesture_affordances } from "./gesture_affordance_check";
+// Load-time structure-derived pedagogy consistency invariant (M23). Checks two
+// narrow structured-claim shapes -- a "The N steps" learning-block claim and a
+// prompt-named dotted target token -- against the authored structure; imports
+// no store/registry.
+import { validate_pedagogy_consistency } from "./pedagogy_consistency_check";
+// Load-time target-existence invariant (M16-D). Walks the reachable step
+// graph, tracking scene transitions the same way the runtime does, and checks
+// each authored target against a per-scene TargetAdapter; imports no
+// store/registry.
+import {
+  validate_target_existence,
+  validate_scene_op_targets_seeded,
+  validate_authored_subpart_targets,
+  type SceneTargetAdapterResolver,
+} from "./target_existence_check";
+// Target-identity adapter seam (M8). The step machine names the resolver shape
+// but never builds it: the construction layer (protocol_host.tsx) supplies a
+// scene-scoped adapter, so authored targets normalize to the unique DOM
+// placement_name (equality, active_interaction_target) and back to the object
+// store key (state reads). IDENTITY_TARGET_ADAPTER is the adapter-less default.
+import { IDENTITY_TARGET_ADAPTER, type TargetAdapter } from "./target_adapter";
 
 //============================================
 // Public types
@@ -74,6 +100,27 @@ export interface StepMachineHandle {
   // Returns true when the commit was accepted (validation passed) and false
   // when the commit was rejected (wrong value, wrong target, or no active step).
   handle_type_commit(target: string, typed_text: string): boolean;
+  // Commit a numeric set-point for the active `adjust` interaction. The
+  // committed_number is the value the student reached in the visible shared
+  // numeric set-point editor (src/shell/hud/set_point_editor.tsx), whether by
+  // stepper clicks or direct numeric entry. It is validated by the active
+  // interaction's target_with_value preset: the number is coerced to the type of
+  // the single field the validator's `value` block declares (the field's DECLARED
+  // type, mirroring handle_type_commit's coercion, so a float set-point compares
+  // as a float and an int as an int), then compared. A match advances exactly
+  // like a validated click; a mismatch emits interaction_rejected (wrong_value)
+  // and does NOT advance. Returns true on accept, false on reject.
+  handle_adjust_commit(target: string, committed_number: number): boolean;
+  // Commit a drag placement for the active `drag` interaction. `target` is the
+  // dragged source scene object; `destination_placement` is the drop target's
+  // placement_name (the destination scene object's data-item-id). The source is
+  // checked against the interaction target and the destination against the
+  // destination the interaction's authored response names (the `zone` of the
+  // first LayoutMove scene_operation). A match applies the interaction response
+  // and advances; the step's step_validator (for example final_state_matches)
+  // then confirms the accepted final state. Returns true on accept, false on
+  // reject.
+  handle_drag_commit(target: string, destination_placement: string): boolean;
 }
 
 //============================================
@@ -141,7 +188,26 @@ function get_active_interaction(
 // Pure reducer mapping each ProtocolShellEvent to the next snapshot.
 // See seam_interface.md "Snapshot derivation".
 // The config is captured in the factory closure, below.
-function create_snapshot_reducer(config: ProtocolConfig): SnapshotReducer {
+//
+// resolve_target_to_placement (M8) normalizes the active interaction's authored
+// target to the unique DOM placement_name before it enters the snapshot, so
+// every consumer of active_interaction_target -- the walker's activeTarget
+// projection, the select-promotion equality in protocol_host, and the scene
+// item's affordance highlight -- sees the same placement_name the DOM stamps as
+// data-item-id. Optional and defaulting to identity: pure unit tests and the
+// config-only default reducer supply no scene adapter, and with no placements a
+// target IS its own placement.
+function create_snapshot_reducer(
+  config: ProtocolConfig,
+  resolve_target_to_placement: (target: string) => string = (target) => target,
+): SnapshotReducer {
+  // Resolve an active target to its placement_name, passing through null.
+  function to_active_placement(target: string | null): string | null {
+    if (target === null) {
+      return null;
+    }
+    return resolve_target_to_placement(target);
+  }
   return (prev, event) => {
     switch (event.kind) {
       case "protocol_loaded": {
@@ -171,7 +237,7 @@ function create_snapshot_reducer(config: ProtocolConfig): SnapshotReducer {
           current_prompt: event.prompt,
           current_tip: step_tip,
           current_interaction_index: 0,
-          active_interaction_target: active.target,
+          active_interaction_target: to_active_placement(active.target),
           active_interaction_gesture: active.gesture,
         };
         return next;
@@ -183,7 +249,7 @@ function create_snapshot_reducer(config: ProtocolConfig): SnapshotReducer {
           ...prev,
           current_interaction_index: next_index,
           pending_validator_kind: event.validator_preset,
-          active_interaction_target: active.target,
+          active_interaction_target: to_active_placement(active.target),
           active_interaction_gesture: active.gesture,
         };
         return next;
@@ -227,9 +293,32 @@ function create_snapshot_reducer(config: ProtocolConfig): SnapshotReducer {
         return next;
       }
       case "scene_changed": {
+        // Re-resolve the active interaction's target against the newly-mounted
+        // scene. A same-step SceneChange (authored in an interaction response)
+        // swaps the live scene adapter; the active_interaction_target computed by
+        // the preceding interaction_validated (or step_started) event was resolved
+        // against the OLD scene's adapter and is now stale. By the time this event
+        // fires, the scene-op handler has already rebound the adapter, so re-running
+        // the resolver here maps the same semantic target onto the NEW scene's
+        // placement. Without this, an adjust/type/click/select commit on the new
+        // scene's node is scored against the old scene's placement and rejected as
+        // out-of-order (the runtime's wrong-order counter increments and the step
+        // stalls). This fixes the whole scene-change-completion family, not any one
+        // protocol; it is data-driven off the active step + interaction index with
+        // no protocol/step-name branch. A step-entry scene render (sequence_runner
+        // boundary) also emits scene_changed, but the step_started that immediately
+        // follows recomputes these fields for the new step, so this recompute is a
+        // harmless transient there and the authoritative fix for a mid-step change.
+        const active = get_active_interaction(
+          config,
+          prev.current_step_name,
+          prev.current_interaction_index,
+        );
         const next: ShellViewSnapshot = {
           ...prev,
           active_scene_name: event.to_scene,
+          active_interaction_target: to_active_placement(active.target),
+          active_interaction_gesture: active.gesture,
         };
         return next;
       }
@@ -368,6 +457,35 @@ function validator_parameters(ref: ValidatorReference): Record<string, unknown> 
   return out;
 }
 
+// Project the authored step_validator into the {object_name: {field: value}}
+// parameters shape validate_final_state_matches compares against. A
+// final_state_matches step is authored as { target, contains }: a single object
+// name plus a flat {field: value} map. Nest `contains` under `target` so the
+// validator reads the same nested shape it expects. Every other step preset
+// (sequence_complete) declares no parameters, so this returns undefined for them.
+//
+// This projection is the fix for the runtime bug where the old code read
+// step_validator.value (undefined for final_state_matches) and so handed the
+// validator no parameters, forcing a perpetual retry. Authoring uses
+// .target/.contains, mirroring authored_value_check.ts.
+function step_validator_parameters(ref: ValidatorReference): Record<string, unknown> | undefined {
+  if (ref.preset !== "final_state_matches") {
+    return undefined;
+  }
+  const target = ref.target;
+  const contains = ref.contains;
+  if (target === undefined || contains === undefined) {
+    return undefined;
+  }
+  const fields: Record<string, unknown> = {};
+  for (const [field, value] of Object.entries(contains)) {
+    fields[field] = value;
+  }
+  const nested: Record<string, unknown> = {};
+  nested[target] = fields;
+  return nested;
+}
+
 // Convert a config ProtocolStep into the shape validators.ts expects.
 function to_validator_step(step: ProtocolStep): ValidatorStep {
   const preset: StepValidatorPreset = narrow_step_preset(step.step_validator.preset);
@@ -379,11 +497,15 @@ function to_validator_step(step: ProtocolStep): ValidatorStep {
       validator_parameters(interaction.validator),
     ),
   );
-  // Use `value` only (`params` alias removed; vocabulary-closure patch).
-  const validator_block: ValidatorStep["step_validator"] = step.step_validator.value
+  // Project the step-validator parameters from the authored shape. For
+  // final_state_matches this nests `contains` under `target`; other step presets
+  // carry no parameters. (Previously this read step_validator.value, which is
+  // undefined for final_state_matches and starved the validator of parameters.)
+  const parameters = step_validator_parameters(step.step_validator);
+  const validator_block: ValidatorStep["step_validator"] = parameters
     ? {
         preset,
-        parameters: step.step_validator.value,
+        parameters,
       }
     : { preset };
   const out: ValidatorStep = {
@@ -471,7 +593,51 @@ export interface StepMachineOptions {
   // validator value against the target's declared field type. This options object
   // only threads it through; the value checks land in authored_value_check.ts.
   lookup_state_field: StateFieldLookup;
+  // Read-only observed object-state reader supplied by the construction layer.
+  // Given a semantic target name, it returns that target's CURRENT declared-state
+  // fields as a flat {field: value} map (the live scene_store observed state), or
+  // an empty map when the target is not seeded. The pure protocol layer names the
+  // shape but never imports scene_store; the construction layer supplies the impl.
+  //
+  // This is the genuine observed source both state-touching validators read:
+  //   - handle_click feeds it to target_with_value so a click is judged against
+  //     real store state, not the authored expected value (which always matched).
+  //   - emit_step_validator_outcome builds the final_state_matches snapshot from
+  //     it so a step passes or fails on observed state instead of retrying forever.
+  read_object_state: ObjectStateReader;
+  // Scene-scoped target-identity adapter (M8). Supplied by the construction
+  // layer, rebuilt per mounted scene. The equality path normalizes both the
+  // authored interaction.target and the clicked value to the unique DOM
+  // placement_name through resolve_to_placement; the state-read path normalizes
+  // to the object_name store key through resolve_to_object. Optional and
+  // defaulting to the identity adapter: pure unit tests supply no scene, and
+  // with no placements a target is its own placement and object.
+  target_adapter?: TargetAdapter;
+  // Per-scene target-adapter resolver for the load-time target-existence
+  // invariant (M16-D). The construction layer eagerly builds a TargetAdapter
+  // for every scene the protocol's reachable step graph can visit (via
+  // collect_reachable_scene_names) and supplies this lookup so the check can
+  // verify each authored target against the SCENE actually active at that
+  // point in the flow, not only the entry scene. Optional and defaulting to a
+  // resolver that always returns the single `target_adapter` above (or
+  // IDENTITY): pure unit tests exercise one scene (or none) and see the same
+  // behavior as before this option existed.
+  resolve_scene_target_adapter?: SceneTargetAdapterResolver;
+  // Initially-mounted scene name. Seeds the step machine's current-scene tracker
+  // so the step-entry scene render fires ONLY on an actual scene change. The host
+  // resolves this the same way it resolves the initial mount scene, so entering
+  // the entry step (whose scene equals the mounted scene) causes no redundant
+  // re-render. Optional: pure unit tests omit it, and with no step declaring a
+  // scene the tracker is never consulted. This is the mechanism that plays
+  // sequence_runner mini-protocol boundaries (each mini's flattened entry step
+  // declares its resolved entry scene; entering it renders that scene).
+  initial_scene?: string;
 }
+
+// Read-only observed object-state reader. See StepMachineOptions.read_object_state.
+export type ObjectStateReader = (
+  target: string,
+) => Readonly<Record<string, string | number | boolean>>;
 
 export function create_step_machine(
   config: ProtocolConfig,
@@ -504,11 +670,81 @@ export function create_step_machine(
     lookup_state_field,
   });
 
+  // Load-time gesture-affordance invariant. Run BEFORE any handler closure,
+  // beside the two validators above, so an authored interaction whose gesture
+  // has no wired affordance in GESTURE_REGISTRY fails loud at protocol load with
+  // full locating fields, before the emitter/handlers build and before any
+  // browser session. This is the PERMANENT replacement for the M2 temporary
+  // runtime gesture-collapse guard: the invariant is data-driven off the
+  // registry, so it hardcodes no gesture list and needs no per-protocol branch.
+  validate_gesture_affordances(config);
+
+  // Load-time structure-derived pedagogy consistency invariant. Run BEFORE any
+  // handler closure, beside the three checks above, so a "The N steps"
+  // learning-block claim or a prompt-named dotted target token that no longer
+  // matches the authored structure fails loud at protocol load, instead of
+  // silently drifting out of sync with the steps a student actually walks.
+  validate_pedagogy_consistency(config);
+
+  // Scene-scoped target-identity adapter (M8). Defaults to identity for the
+  // adapter-less unit-test context. resolve_to_placement normalizes the equality
+  // path to the DOM key; resolve_to_object normalizes the state-read path to the
+  // object_name store key. Built here (moved above the target-existence check)
+  // so the existence pass below has a default adapter to fall back on.
+  const target_adapter: TargetAdapter = options.target_adapter ?? IDENTITY_TARGET_ADAPTER;
+
+  // Load-time target-existence invariant (M16-D). Run BEFORE any handler
+  // closure, beside the three checks above, so an authored `target` that
+  // resolves to no known placement or object in the SCENE ACTIVE AT THAT
+  // POINT in the reachable step graph fails loud at protocol load with full
+  // locating fields, instead of trapping a student mid-walk on an
+  // unresolvable click target. Defaults to always resolving `target_adapter`
+  // regardless of scene name, which is exactly the prior (pre-multi-scene)
+  // behavior for the adapter-less/single-scene unit-test context.
+  const resolve_scene_target_adapter: SceneTargetAdapterResolver =
+    options.resolve_scene_target_adapter ?? ((): TargetAdapter => target_adapter);
+  validate_target_existence(config, options.initial_scene ?? null, resolve_scene_target_adapter);
+
+  // Load-time scene-op-seeded invariant. Run BESIDE validate_target_existence,
+  // using the same reachable-graph scene tracking, so an ObjectStateChange or
+  // CursorAttach whose target is not seeded in the scene active where the op
+  // executes fails loud at protocol load, instead of degrading into a
+  // misleading mid-walk torn-snapshot "no_active_interaction" when the runtime
+  // op throws a `not seeded` error. A held tool that is only ever
+  // cursor-attached (never state-mutated) stays exempt.
+  validate_scene_op_targets_seeded(
+    config,
+    options.initial_scene ?? null,
+    resolve_scene_target_adapter,
+  );
+
+  // Load-time subpart-suffix invariant. Run BESIDE the two above, on the same
+  // reachable-graph scene tracking, so an authored "<object>.<suffix>" target
+  // whose suffix names no declared subpart or subpart_group of that object fails
+  // loud at load. Without it a group write (well_plate_96.all_wells) or a
+  // per-well write would silently address a non-rendered pseudo-node mid-walk
+  // with no visible change (has_target strips the suffix, so a typo'd group or
+  // well currently passes prefix-only existence).
+  validate_authored_subpart_targets(
+    config,
+    options.initial_scene ?? null,
+    resolve_scene_target_adapter,
+  );
+
+  // Read-only observed object-state reader. Captured in the factory closure so
+  // the click path and the step-validator snapshot both read the live scene
+  // store instead of the authored expected values.
+  const read_object_state: ObjectStateReader = options.read_object_state;
+
   // Mutable machine state.
   let active_step_name: string | null = null;
   let interaction_index = 0;
   let started = false;
   let completed = false;
+  // Current rendered scene, tracked so the step-entry scene render fires only on
+  // an actual change. Seeded from the initially-mounted scene and updated by both
+  // the step-entry render and every authored SceneChange scene_operation.
+  let current_scene: string | null = options.initial_scene ?? null;
 
   function current_step(): ProtocolStep | null {
     if (active_step_name === null) {
@@ -524,6 +760,29 @@ export function create_step_machine(
     }
     active_step_name = step.step_name;
     interaction_index = 0;
+    // Step-entry scene render. ProtocolStep.scene is the authoritative
+    // initial/transition scene for the step; when it names a scene different from
+    // the one currently rendered, transition to it BEFORE step_started so the
+    // step's first target is visible and the scene adapter is rebound for the new
+    // scene. This is the general mechanism that plays sequence_runner boundaries:
+    // each flattened constituent's entry step declares its resolved entry scene,
+    // so entering it renders that scene. It is data-driven off step.scene with no
+    // protocol-name branch; a step without a scene field (every normal
+    // mini-protocol step) leaves behavior unchanged.
+    if (typeof step.scene === "string" && step.scene !== "" && step.scene !== current_scene) {
+      const scene_change_op: SceneOperation = { type: "SceneChange", to_scene: step.scene };
+      // The handler re-renders the target scene (disposing the prior root and
+      // rebuilding the scene adapter) before the reducer derives step_started's
+      // active interaction against the new scene.
+      scene_op_handler(scene_change_op);
+      current_scene = step.scene;
+      const scene_changed: ProtocolShellEvent = {
+        kind: "scene_changed",
+        from_scene: null,
+        to_scene: step.scene,
+      };
+      emitter.emit(scene_changed);
+    }
     const event: ProtocolShellEvent = {
       kind: "step_started",
       step_name: step.step_name,
@@ -544,6 +803,10 @@ export function create_step_machine(
       };
       emitter.emit(applied);
       if (op.type === "SceneChange") {
+        // Keep the current-scene tracker in sync so a later step-entry render
+        // (sequence_runner boundary) sees the scene an authored SceneChange left
+        // active and does not re-render redundantly.
+        current_scene = op.to_scene;
         const scene_changed: ProtocolShellEvent = {
           kind: "scene_changed",
           from_scene: null,
@@ -554,10 +817,41 @@ export function create_step_machine(
     }
   }
 
+  // Build the observed object-state snapshot a final_state_matches step validator
+  // compares against, reading the live scene store for every object named in the
+  // projected step-validator parameters. sequence_complete declares no
+  // parameters, so its snapshot is empty and unused. Reading the real store here
+  // is what lets final_state_matches pass or fail on observed state instead of
+  // retrying forever against an empty default.
+  function build_step_object_state_snapshot(validator_step: ValidatorStep): ObjectStateSnapshot {
+    const parameters = validator_step.step_validator.parameters;
+    if (parameters === undefined) {
+      return {};
+    }
+    const snapshot: Record<string, Record<string, string | number | boolean>> = {};
+    for (const object_name of Object.keys(parameters)) {
+      // The final_state_matches parameters are keyed by authored target names.
+      // Normalize each to the object_name store key before reading, so a target
+      // authored as a placement_name still hits the object_name-keyed store. The
+      // snapshot itself stays keyed by the authored name the validator projects.
+      const store_key = target_adapter.resolve_to_object(object_name);
+      snapshot[object_name] = { ...read_object_state(store_key) };
+    }
+    return snapshot;
+  }
+
   function emit_step_validator_outcome(step: ProtocolStep): void {
     const preset = narrow_step_preset(step.step_validator.preset);
     const validator_step = to_validator_step(step);
-    const passed = dispatch_step_validator(preset, validator_step, step.sequence.length, undefined);
+    // Pass the real observed snapshot (was undefined, which the validator
+    // defaulted to {} and never matched, forcing perpetual retry).
+    const object_state_snapshot = build_step_object_state_snapshot(validator_step);
+    const passed = dispatch_step_validator(
+      preset,
+      validator_step,
+      step.sequence.length,
+      object_state_snapshot,
+    );
     if (passed) {
       const completed_event: ProtocolShellEvent = {
         kind: "step_completed",
@@ -695,25 +989,51 @@ export function create_step_machine(
       return;
     }
     const preset = narrow_interaction_preset(interaction.validator.preset);
-    // Out-of-order target or wrong gesture: reject as wrong_target.
-    if (interaction.target !== target || interaction.gesture !== gesture) {
+    // Out-of-order target or wrong gesture: reject as wrong_target. Normalize
+    // BOTH sides through the adapter to the unique DOM placement_name before
+    // comparing (M8): the clicked `target` arrives as a placement_name (the DOM
+    // data-item-id the click resolver read), and the authored interaction.target
+    // is a semantic/object name. Resolving one side only would reintroduce the
+    // object-vs-placement mismatch. resolve_to_placement is identity on a value
+    // that is already a placement_name, so the clicked side is unchanged.
+    const resolved_interaction_target = target_adapter.resolve_to_placement(interaction.target);
+    const resolved_clicked_target = target_adapter.resolve_to_placement(target);
+    if (
+      resolved_interaction_target !== resolved_clicked_target ||
+      interaction.gesture !== gesture
+    ) {
       emit_rejection(step.step_name, interaction_index, target, gesture, preset, "wrong_target");
       return;
     }
     // Dispatch the preset validator. Clicks feed correct_target
-    // or target_with_value; correct_choice is feed via modal.
+    // or target_with_value; correct_choice is feed via modal. The validator
+    // re-checks clicked_target === interaction.target internally, so feed it the
+    // ADAPTER-RESOLVED placement on BOTH sides (M8): build the validator
+    // interaction with resolved_interaction_target and pass resolved_clicked_target.
+    // Passing the raw authored target and the clicked placement_name would fail
+    // the validator's own equality even though the step-machine equality above
+    // matched.
     const validator_interaction = to_validator_interaction(
-      interaction.target,
+      resolved_interaction_target,
       interaction.gesture,
       preset,
       validator_parameters(interaction.validator),
     );
+    // Observed value map for target_with_value comes from the LIVE scene store,
+    // not the authored validator parameters. Reading the authored parameters here
+    // compared the expected value against itself, so the check was always ok. The
+    // store read makes a click whose target state does not match the authored
+    // value fail with wrong_value. Normalize the clicked placement_name to the
+    // object_name store key (M8): the store is object_name-keyed, so a
+    // placement_name would miss it and read {} incorrectly.
     const value_map =
-      preset === "target_with_value" ? validator_parameters(interaction.validator) : {};
+      preset === "target_with_value"
+        ? read_object_state(target_adapter.resolve_to_object(target))
+        : {};
     const result = dispatch_interaction_validator(
       preset,
       validator_interaction,
-      target,
+      resolved_clicked_target,
       null,
       value_map,
     );
@@ -734,10 +1054,23 @@ export function create_step_machine(
   function handle_modal_close(committed: boolean, choice_id: string | null): void {
     const step = current_step();
     if (!started || completed || step === null) {
+      // Emit a no_active_step rejection instead of a silent return, matching
+      // handle_click/handle_type_commit, so a dropped modal-close event is
+      // observable (interaction_rejected) rather than vanishing. No interaction
+      // exists here, so target/gesture are neutral placeholders.
+      emit_rejection(active_step_name ?? "", 0, "", "select", "correct_target", "no_active_step");
       return;
     }
     const interaction = step.sequence[interaction_index];
     if (!interaction) {
+      emit_rejection(
+        step.step_name,
+        interaction_index,
+        "",
+        "select",
+        "correct_target",
+        "no_active_step",
+      );
       return;
     }
     const preset = narrow_interaction_preset(interaction.validator.preset);
@@ -786,10 +1119,30 @@ export function create_step_machine(
   function handle_timer_elapsed(equipment_name: string): void {
     const step = current_step();
     if (!started || completed || step === null) {
+      // Emit a no_active_step rejection instead of a silent return, matching
+      // handle_click/handle_type_commit, so a dropped timer-elapsed event is
+      // observable (interaction_rejected). The equipment name is the target;
+      // a timer has no gesture, so "click" is a neutral placeholder.
+      emit_rejection(
+        active_step_name ?? "",
+        0,
+        equipment_name,
+        "click",
+        "correct_target",
+        "no_active_step",
+      );
       return;
     }
     const interaction = step.sequence[interaction_index];
     if (!interaction) {
+      emit_rejection(
+        step.step_name,
+        interaction_index,
+        equipment_name,
+        "click",
+        "correct_target",
+        "no_active_step",
+      );
       return;
     }
     // Find a TimedWait scene_operation in the current interaction's
@@ -825,7 +1178,18 @@ export function create_step_machine(
     }
     const preset = narrow_interaction_preset(interaction.validator.preset);
     // A type commit only applies to the active `type` interaction on its target.
-    if (interaction.gesture !== "type" || interaction.target !== target) {
+    // The committed `target` is the type-input's active target, sourced from the
+    // snapshot's active_interaction_target, which is now the adapter-resolved
+    // placement_name (M8). Normalize BOTH sides to placement_name so the authored
+    // interaction.target (a semantic/object name) matches it.
+    const resolved_type_interaction_target = target_adapter.resolve_to_placement(
+      interaction.target,
+    );
+    const resolved_type_committed_target = target_adapter.resolve_to_placement(target);
+    if (
+      interaction.gesture !== "type" ||
+      resolved_type_interaction_target !== resolved_type_committed_target
+    ) {
       emit_rejection(step.step_name, interaction_index, target, "type", preset, "wrong_target");
       return false;
     }
@@ -835,8 +1199,11 @@ export function create_step_machine(
     // a numeric field compares as a number, not a string.
     const expected = validator_parameters(interaction.validator) ?? {};
     const value_map = build_typed_value_map(expected, typed_text);
+    // Feed the validator the ADAPTER-RESOLVED placement on both sides (M8), same
+    // as handle_click: the validator re-checks clicked_target === interaction.target
+    // internally, and the committed `target` is a placement_name.
     const validator_interaction = to_validator_interaction(
-      interaction.target,
+      resolved_type_interaction_target,
       interaction.gesture,
       preset,
       expected,
@@ -844,7 +1211,7 @@ export function create_step_machine(
     const result = dispatch_interaction_validator(
       preset,
       validator_interaction,
-      target,
+      resolved_type_committed_target,
       null,
       value_map,
     );
@@ -863,14 +1230,212 @@ export function create_step_machine(
     return true;
   }
 
+  function handle_adjust_commit(target: string, committed_number: number): boolean {
+    const step = current_step();
+    if (!started || completed || step === null) {
+      emit_rejection(
+        active_step_name ?? "",
+        0,
+        target,
+        "adjust",
+        "correct_target",
+        "no_active_step",
+      );
+      return false;
+    }
+    const interaction = step.sequence[interaction_index];
+    if (!interaction) {
+      emit_rejection(
+        step.step_name,
+        interaction_index,
+        target,
+        "adjust",
+        "correct_target",
+        "no_active_step",
+      );
+      return false;
+    }
+    const preset = narrow_interaction_preset(interaction.validator.preset);
+    // A set-point commit only applies to the active `adjust` interaction on its
+    // target. The committed `target` is the set-point editor's active target,
+    // sourced from the snapshot's active_interaction_target (the adapter-resolved
+    // placement_name, M8). Normalize BOTH sides to placement_name so the authored
+    // interaction.target (a semantic/object name) matches it, mirroring
+    // handle_type_commit.
+    const resolved_adjust_interaction_target = target_adapter.resolve_to_placement(
+      interaction.target,
+    );
+    const resolved_adjust_committed_target = target_adapter.resolve_to_placement(target);
+    if (
+      interaction.gesture !== "adjust" ||
+      resolved_adjust_interaction_target !== resolved_adjust_committed_target
+    ) {
+      emit_rejection(step.step_name, interaction_index, target, "adjust", preset, "wrong_target");
+      return false;
+    }
+    // Build the value_map from the committed number. target_with_value compares
+    // the validator's declared `value` fields against this map. Coerce the number
+    // through the SAME authored-value-directed path handle_type_commit uses
+    // (build_typed_value_map keyed off each declared field's authored type), so a
+    // float set-point (voltage 3.5) compares as a float and an int set-point
+    // (set_volume 1000) as an int. A hard-coded numeric type would fail a float.
+    const expected = validator_parameters(interaction.validator) ?? {};
+    const value_map = build_typed_value_map(expected, String(committed_number));
+    // Feed the validator the ADAPTER-RESOLVED placement on both sides (M8), same
+    // as handle_type_commit: the validator re-checks clicked_target ===
+    // interaction.target internally, and the committed `target` is a placement_name.
+    const validator_interaction = to_validator_interaction(
+      resolved_adjust_interaction_target,
+      interaction.gesture,
+      preset,
+      expected,
+    );
+    const result = dispatch_interaction_validator(
+      preset,
+      validator_interaction,
+      resolved_adjust_committed_target,
+      null,
+      value_map,
+    );
+    if (!result.ok) {
+      emit_rejection(
+        step.step_name,
+        interaction_index,
+        target,
+        "adjust",
+        preset,
+        result.reason ?? "wrong_value",
+      );
+      return false;
+    }
+    handle_validated(step, target, "adjust", preset);
+    return true;
+  }
+
+  function handle_drag_commit(target: string, destination_placement: string): boolean {
+    const step = current_step();
+    if (!started || completed || step === null) {
+      emit_rejection(active_step_name ?? "", 0, target, "drag", "correct_target", "no_active_step");
+      return false;
+    }
+    const interaction = step.sequence[interaction_index];
+    if (!interaction) {
+      emit_rejection(
+        step.step_name,
+        interaction_index,
+        target,
+        "drag",
+        "correct_target",
+        "no_active_step",
+      );
+      return false;
+    }
+    const preset = narrow_interaction_preset(interaction.validator.preset);
+    // A drag commit only applies to the active `drag` interaction whose source is
+    // the dragged object. Normalize BOTH sides to placement_name so the authored
+    // interaction.target (semantic/object name) matches the committed source
+    // placement_name, mirroring handle_click / handle_type_commit.
+    const resolved_drag_source_target = target_adapter.resolve_to_placement(interaction.target);
+    const resolved_drag_committed_source = target_adapter.resolve_to_placement(target);
+    if (
+      interaction.gesture !== "drag" ||
+      resolved_drag_source_target !== resolved_drag_committed_source
+    ) {
+      emit_rejection(step.step_name, interaction_index, target, "drag", preset, "wrong_target");
+      return false;
+    }
+    // Derive the accepted destination from EXISTING authored slots (no new YAML
+    // field): the `zone` of the first LayoutMove scene_operation in the
+    // interaction's response is where the drag moves the source object. Normalize
+    // both the authored destination and the committed drop placement through the
+    // adapter so the comparison is in placement space. A drag interaction that
+    // authors no LayoutMove destination is an authoring gap: reject as wrong_value
+    // so it fails loud rather than silently accepting any drop.
+    const authored_destination = derive_drag_destination(interaction.response.scene_operations);
+    if (authored_destination === null) {
+      emit_rejection(step.step_name, interaction_index, target, "drag", preset, "wrong_value");
+      return false;
+    }
+    const resolved_authored_destination = target_adapter.resolve_to_placement(authored_destination);
+    const resolved_committed_destination =
+      target_adapter.resolve_to_placement(destination_placement);
+    if (resolved_authored_destination !== resolved_committed_destination) {
+      emit_rejection(step.step_name, interaction_index, target, "drag", preset, "wrong_value");
+      return false;
+    }
+    // Source + destination both accepted. Run the interaction's own preset
+    // validator on the source (drag interactions validate the source with
+    // correct_target; target_with_value would read live store state as
+    // handle_click does), then apply the response and advance. The step's
+    // step_validator (final_state_matches) confirms the accepted final state.
+    const validator_interaction = to_validator_interaction(
+      resolved_drag_source_target,
+      interaction.gesture,
+      preset,
+      validator_parameters(interaction.validator),
+    );
+    const value_map =
+      preset === "target_with_value"
+        ? read_object_state(target_adapter.resolve_to_object(target))
+        : {};
+    const result = dispatch_interaction_validator(
+      preset,
+      validator_interaction,
+      resolved_drag_committed_source,
+      null,
+      value_map,
+    );
+    if (!result.ok) {
+      emit_rejection(
+        step.step_name,
+        interaction_index,
+        target,
+        "drag",
+        preset,
+        result.reason ?? "wrong_target",
+      );
+      return false;
+    }
+    handle_validated(step, target, "drag", preset);
+    return true;
+  }
+
   const handle: StepMachineHandle = {
     start,
     handle_click,
     handle_modal_close,
     handle_timer_elapsed,
     handle_type_commit,
+    handle_adjust_commit,
+    handle_drag_commit,
   };
   return handle;
+}
+
+//============================================
+// Drag destination derivation
+//============================================
+
+// Derive the accepted drag destination from the interaction's authored response,
+// using only EXISTING authored slots (no new YAML field). The destination is the
+// `zone` of the first LayoutMove scene_operation: a drag moves its source object
+// to that zone, so the LayoutMove already names where the source lands. Returns
+// null when the response authors no LayoutMove, which the caller treats as an
+// authoring gap and rejects loudly rather than accepting any drop.
+//
+// This is the single authored slot M12 settles on for the destination (the
+// contract permits either a LayoutMove destination or a final_state_matches
+// target/state; LayoutMove.zone is the cleaner, response-local choice). When a
+// real drag content protocol first lands (M16), confirm the zone-name vs
+// placement_name mapping resolves through the scene adapter; today no content
+// protocol authors a drag, so this path is proven by the step-machine unit test.
+function derive_drag_destination(ops: ReadonlyArray<SceneOperation>): string | null {
+  for (const op of ops) {
+    if (op.type === "LayoutMove") {
+      return op.zone;
+    }
+  }
+  return null;
 }
 
 //============================================

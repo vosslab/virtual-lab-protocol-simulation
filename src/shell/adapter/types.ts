@@ -259,15 +259,60 @@ export interface LearningBlock {
   readonly goals: string;
 }
 
-// Validator reference (preset + optional typed parameters).
-// Authored YAML uses `value` only. The legacy `params` alias was removed
-// by the vocabulary-closure patch.
-export interface ValidatorReference {
-  readonly preset: ValidatorPreset;
+// Validator reference: a discriminated union keyed on `preset`, mirroring the
+// SceneOperation union below. The `preset` literal selects which authored fields
+// are legal; every illegal field is typed `never` so it cannot be authored on
+// the wrong preset, while remaining a declared (optional) key so union-wide reads
+// in the step machine and authored-value checker keep resolving without narrowing.
+// Field legality per docs/PRIMARY_SPEC.md "Validators and outcome":
+// - correct_target / correct_choice / sequence_complete: `preset` only.
+// - target_with_value: carries a flat {field: value} `value` map.
+// - final_state_matches: carries a single object `target` plus a flat {field:
+//   value} `contains` map.
+// Authored YAML uses `value`/`target`/`contains`; the legacy `params` alias was
+// removed by the vocabulary-closure patch.
+export interface CorrectTargetValidator {
+  readonly preset: "correct_target";
+  readonly value?: never;
+  readonly target?: never;
+  readonly contains?: never;
+}
+
+export interface CorrectChoiceValidator {
+  readonly preset: "correct_choice";
+  readonly value?: never;
+  readonly target?: never;
+  readonly contains?: never;
+}
+
+export interface TargetWithValueValidator {
+  readonly preset: "target_with_value";
   readonly value?: Readonly<Record<string, string | number | boolean>>;
+  readonly target?: never;
+  readonly contains?: never;
+}
+
+export interface SequenceCompleteValidator {
+  readonly preset: "sequence_complete";
+  readonly value?: never;
+  readonly target?: never;
+  readonly contains?: never;
+}
+
+export interface FinalStateMatchesValidator {
+  readonly preset: "final_state_matches";
   readonly target?: string;
   readonly contains?: Readonly<Record<string, string | number | boolean>>;
+  readonly value?: never;
 }
+
+// Discriminated union of validator references (interaction + step presets).
+export type ValidatorReference =
+  | CorrectTargetValidator
+  | CorrectChoiceValidator
+  | TargetWithValueValidator
+  | SequenceCompleteValidator
+  | FinalStateMatchesValidator;
 
 // Five scene operation primitives per PRIMARY_SPEC.md.
 export interface ObjectStateChangeOp {

@@ -142,6 +142,10 @@ function build_harness(config) {
     // Stub lookup for the M1B-2 seam. WP-SEAM only threads it through; the
     // load-time value pass (WP-CHECK/WP-TEST) is not exercised here.
     lookup_state_field: () => ({ kind: "unknown_object" }),
+    // Observed-state reader seam. These scenarios use only correct_target /
+    // correct_choice (no target_with_value / final_state_matches), so nothing
+    // reads it; an empty map keeps the option well-formed.
+    read_object_state: () => ({}),
   });
   return { machine, events, scene_ops, emitter };
 }

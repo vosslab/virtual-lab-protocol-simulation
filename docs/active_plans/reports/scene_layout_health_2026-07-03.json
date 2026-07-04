@@ -1,0 +1,829 @@
+{
+  "bands": {
+    "sample_size": 38,
+    "fill": {
+      "metric": "fill.fraction",
+      "basis": "p25..p75 (target range)",
+      "target_low": 0.0918,
+      "target_high": 0.1622,
+      "min": 0.022,
+      "median": 0.1137,
+      "max": 0.4543,
+      "note": "fill is low repo-wide; sparse = below p25, dense = above p75 (relative)"
+    },
+    "ler": {
+      "metric": "largest_empty_rectangle.area_fraction",
+      "basis": "p75 (elevated) / p90 (severe)",
+      "elevated_edge": 0.2081,
+      "severe_edge": 0.4214,
+      "min": 0.12,
+      "median": 0.178,
+      "max": 0.7,
+      "note": "a large empty rectangle means usable room exists in the scene"
+    },
+    "shrink": {
+      "metric": "mean final_scale (PROXY)",
+      "basis": "p50 (median readable scale)",
+      "stressed_edge": 0.7167,
+      "min": 0.4272,
+      "median": 0.7167,
+      "max": 1,
+      "hard_floors": {
+        "h_floor": 0.55,
+        "v_floor": 0.27
+      },
+      "note": "shrink-stressed = mean final_scale at or below the median, OR uniform rescale at floor, OR a majority of objects at the packer floor (all PROXY)"
+    },
+    "label": {
+      "metric": "overlap_graph.label_conflict_count",
+      "basis": "p90 (auxiliary, not one of the three required bands)",
+      "stressed_edge": 2,
+      "max": 24,
+      "note": "label-conflict distribution is degenerate (mostly zero); edge applied with a margin"
+    }
+  },
+  "diagnoses": [
+    {
+      "scene": "adversarial_overflow_smoke",
+      "categories": [
+        "high-empty-space-plus-shrink",
+        "shrink-stressed",
+        "crowded",
+        "label-stressed"
+      ],
+      "borderline": [
+        "shrink~stressed-edge"
+      ],
+      "finding": "engine-fit",
+      "verdict": "engine leaves usable space (lower) while shrinking content toward the floor",
+      "evidence": [
+        "fill 0.0749 (band 0.0918..0.1622)",
+        "largest empty rect 70% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.6833, min 0.55, 67% of objects at_h_floor (<=0.56)",
+        "shrink proxy: up to 2 horizontal shrink pass(es)",
+        "label conflicts 24 (edge 2)",
+        "object overlaps 1 (same-tier 0, cross-tier 0, cross-zone 1)",
+        "21 objects; balance offset (12.11, -30.027)"
+      ],
+      "suggestion": "objects shrink while the lower stays empty; widen the packed zone (zone_b) or spread objects into the lower empty band so the solver need not shrink",
+      "severity": 175.52
+    },
+    {
+      "scene": "drug_dilution_setup_bench_setup",
+      "categories": [
+        "high-empty-space-plus-shrink",
+        "shrink-stressed"
+      ],
+      "borderline": [],
+      "finding": "engine-fit",
+      "verdict": "engine leaves usable space (center) while shrinking content toward the floor",
+      "evidence": [
+        "fill 0.0331 (band 0.0918..0.1622)",
+        "largest empty rect 25.1% at center (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5153, min 0.5153, 100% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5153",
+        "10 objects; balance offset (7.494, -4.069)"
+      ],
+      "suggestion": "objects shrink while the center stays empty; widen the packed zone (rear_right) or spread objects into the center empty band so the solver need not shrink",
+      "severity": 81.64
+    },
+    {
+      "scene": "hood_workspace",
+      "categories": [
+        "high-empty-space-plus-shrink",
+        "shrink-stressed",
+        "crowded"
+      ],
+      "borderline": [
+        "ler~room-edge"
+      ],
+      "finding": "engine-fit",
+      "verdict": "engine leaves usable space (center) while shrinking content toward the floor",
+      "evidence": [
+        "fill 0.1765 (band 0.0918..0.1622)",
+        "largest empty rect 21% at center (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5237, min 0.3175, 27% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5772",
+        "11 objects; balance offset (5.023, -3.399)"
+      ],
+      "suggestion": "objects shrink while the center stays empty; widen the packed zone (rear_right) or spread objects into the center empty band so the solver need not shrink",
+      "severity": 78.69
+    },
+    {
+      "scene": "mtt_solubilization_readout_bench_workspace",
+      "categories": [
+        "high-empty-space-plus-shrink",
+        "shrink-stressed"
+      ],
+      "borderline": [],
+      "finding": "engine-fit",
+      "verdict": "engine leaves usable space (lower-right) while shrinking content toward the floor",
+      "evidence": [
+        "fill 0.1211 (band 0.0918..0.1622)",
+        "largest empty rect 27.8% at lower-right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.661, min 0.661, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.661",
+        "8 objects; balance offset (-18.088, 1.669)"
+      ],
+      "suggestion": "objects shrink while the lower-right stays empty; widen the packed zone (center) or spread objects into the lower-right empty band so the solver need not shrink",
+      "severity": 74.56
+    },
+    {
+      "scene": "incubator_workspace",
+      "categories": [
+        "high-empty-space-plus-shrink",
+        "shrink-stressed"
+      ],
+      "borderline": [],
+      "finding": "engine-fit",
+      "verdict": "engine leaves usable space (center) while shrinking content toward the floor",
+      "evidence": [
+        "fill 0.1179 (band 0.0918..0.1622)",
+        "largest empty rect 27% at center (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.6664, min 0.6664, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.6664",
+        "9 objects; balance offset (-10.2, 2.19)"
+      ],
+      "suggestion": "objects shrink while the center stays empty; widen the packed zone (center) or spread objects into the center empty band so the solver need not shrink",
+      "severity": 73.73
+    },
+    {
+      "scene": "hemocytometer_view",
+      "categories": [
+        "crowded",
+        "label-stressed"
+      ],
+      "borderline": [
+        "label~stressed-edge"
+      ],
+      "finding": "intentional",
+      "verdict": "dense scene with non-same-tier object overlap (cross-tier/cross-zone z-layering), content readable",
+      "evidence": [
+        "fill 0.4543 (band 0.0918..0.1622)",
+        "largest empty rect 16.2% at lower-left (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.9825, min 0.868, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.9952",
+        "label conflicts 3 (edge 2)",
+        "object overlaps 6 (same-tier 0, cross-tier 0, cross-zone 6)",
+        "10 objects; balance offset (-2.494, -8.189)"
+      ],
+      "suggestion": "no change needed (intentional non-same-tier layering); confirm overlaps are by design",
+      "severity": 40.05
+    },
+    {
+      "scene": "passage_hood_detachment_hood_workspace",
+      "categories": [
+        "shrink-stressed"
+      ],
+      "borderline": [],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.1405 (band 0.0918..0.1622)",
+        "largest empty rect 13.5% at center (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.4272, min 0.2536, 100% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.461",
+        "9 objects; balance offset (10.229, 3.094)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone rear_right or add a zone row",
+      "severity": 34.37
+    },
+    {
+      "scene": "extraction_workspace",
+      "categories": [
+        "shrink-stressed",
+        "label-stressed"
+      ],
+      "borderline": [
+        "label~stressed-edge"
+      ],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.1001 (band 0.0918..0.1622)",
+        "largest empty rect 15.1% at right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5685, min 0.327, 6% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5836",
+        "shrink proxy: up to 2 horizontal shrink pass(es)",
+        "label conflicts 2 (edge 2)",
+        "17 objects; balance offset (-6.429, -2.094)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone rear_center or add a zone row",
+      "severity": 31.89
+    },
+    {
+      "scene": "electrophoresis_bench",
+      "categories": [
+        "shrink-stressed",
+        "label-stressed"
+      ],
+      "borderline": [
+        "fill~sparse-edge",
+        "label~stressed-edge"
+      ],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.0918 (band 0.0918..0.1622)",
+        "largest empty rect 14.6% at right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5836, min 0.5836, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5836",
+        "label conflicts 2 (edge 2)",
+        "16 objects; balance offset (-8.282, -4.939)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone rear_center or add a zone row",
+      "severity": 30.98
+    },
+    {
+      "scene": "sdspage_attach_lid_and_leads_workspace",
+      "categories": [
+        "shrink-stressed",
+        "label-stressed"
+      ],
+      "borderline": [
+        "fill~sparse-edge",
+        "label~stressed-edge"
+      ],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.0918 (band 0.0918..0.1622)",
+        "largest empty rect 14.6% at right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5836, min 0.5836, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5836",
+        "label conflicts 2 (edge 2)",
+        "16 objects; balance offset (-8.282, -4.939)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone rear_center or add a zone row",
+      "severity": 30.98
+    },
+    {
+      "scene": "sdspage_fill_tank_buffer_workspace",
+      "categories": [
+        "shrink-stressed",
+        "label-stressed"
+      ],
+      "borderline": [
+        "fill~sparse-edge",
+        "label~stressed-edge"
+      ],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.0918 (band 0.0918..0.1622)",
+        "largest empty rect 14.6% at right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5836, min 0.5836, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5836",
+        "label conflicts 2 (edge 2)",
+        "16 objects; balance offset (-8.282, -4.939)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone rear_center or add a zone row",
+      "severity": 30.98
+    },
+    {
+      "scene": "sdspage_load_sample_single_lane_workspace",
+      "categories": [
+        "shrink-stressed",
+        "label-stressed"
+      ],
+      "borderline": [
+        "fill~sparse-edge",
+        "label~stressed-edge"
+      ],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.0928 (band 0.0918..0.1622)",
+        "largest empty rect 14.6% at right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5836, min 0.5836, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5836",
+        "label conflicts 2 (edge 2)",
+        "17 objects; balance offset (-8.192, -4.884)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone rear_center or add a zone row",
+      "severity": 30.98
+    },
+    {
+      "scene": "sdspage_prepare_running_buffer_workspace",
+      "categories": [
+        "shrink-stressed",
+        "label-stressed"
+      ],
+      "borderline": [
+        "fill~sparse-edge",
+        "label~stressed-edge"
+      ],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.0918 (band 0.0918..0.1622)",
+        "largest empty rect 14.6% at right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5836, min 0.5836, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5836",
+        "label conflicts 2 (edge 2)",
+        "16 objects; balance offset (-8.282, -4.939)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone rear_center or add a zone row",
+      "severity": 30.98
+    },
+    {
+      "scene": "sdspage_recycle_buffer_workspace",
+      "categories": [
+        "shrink-stressed",
+        "label-stressed"
+      ],
+      "borderline": [
+        "fill~sparse-edge",
+        "label~stressed-edge"
+      ],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.0918 (band 0.0918..0.1622)",
+        "largest empty rect 14.6% at right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5836, min 0.5836, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5836",
+        "label conflicts 2 (edge 2)",
+        "16 objects; balance offset (-8.282, -4.939)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone rear_center or add a zone row",
+      "severity": 30.98
+    },
+    {
+      "scene": "sdspage_run_electrophoresis_workspace",
+      "categories": [
+        "shrink-stressed",
+        "label-stressed"
+      ],
+      "borderline": [
+        "fill~sparse-edge",
+        "label~stressed-edge"
+      ],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.0918 (band 0.0918..0.1622)",
+        "largest empty rect 14.6% at right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5836, min 0.5836, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5836",
+        "label conflicts 2 (edge 2)",
+        "16 objects; balance offset (-8.282, -4.939)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone rear_center or add a zone row",
+      "severity": 30.98
+    },
+    {
+      "scene": "plate_drug_treatment_media_adjustment_plate_workspace",
+      "categories": [
+        "shrink-stressed"
+      ],
+      "borderline": [],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.127 (band 0.0918..0.1622)",
+        "largest empty rect 14.4% at right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5055, min 0.4502, 100% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5116",
+        "10 objects; balance offset (-3.993, 5.296)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone rear_right or add a zone row",
+      "severity": 29.67
+    },
+    {
+      "scene": "microscope_basic",
+      "categories": [
+        "crowded",
+        "label-stressed"
+      ],
+      "borderline": [
+        "label~stressed-edge"
+      ],
+      "finding": "intentional",
+      "verdict": "dense scene with non-same-tier object overlap (cross-tier/cross-zone z-layering), content readable",
+      "evidence": [
+        "fill 0.3676 (band 0.0918..0.1622)",
+        "largest empty rect 17.4% at lower-left (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.868, min 0.868, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.868",
+        "label conflicts 2 (edge 2)",
+        "object overlaps 3 (same-tier 0, cross-tier 0, cross-zone 3)",
+        "8 objects; balance offset (-1.605, -6.067)"
+      ],
+      "suggestion": "no change needed (intentional non-same-tier layering); confirm overlaps are by design",
+      "severity": 28.92
+    },
+    {
+      "scene": "passage_hood_detachment_microscope_view",
+      "categories": [
+        "crowded",
+        "label-stressed"
+      ],
+      "borderline": [
+        "label~stressed-edge"
+      ],
+      "finding": "intentional",
+      "verdict": "dense scene with non-same-tier object overlap (cross-tier/cross-zone z-layering), content readable",
+      "evidence": [
+        "fill 0.3807 (band 0.0918..0.1622)",
+        "largest empty rect 16.2% at lower-left (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.9599, min 0.8197, 0% of objects at_h_floor (<=0.56)",
+        "label conflicts 2 (edge 2)",
+        "object overlaps 4 (same-tier 0, cross-tier 0, cross-zone 4)",
+        "9 objects; balance offset (1.263, -9.387)"
+      ],
+      "suggestion": "no change needed (intentional non-same-tier layering); confirm overlaps are by design",
+      "severity": 28.41
+    },
+    {
+      "scene": "plate_workspace",
+      "categories": [
+        "shrink-stressed"
+      ],
+      "borderline": [],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.1544 (band 0.0918..0.1622)",
+        "largest empty rect 17.6% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5641, min 0.365, 18% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.6084",
+        "11 objects; balance offset (-5.664, 8.05)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone center or add a zone row",
+      "severity": 26.15
+    },
+    {
+      "scene": "bench_basic",
+      "categories": [
+        "shrink-stressed"
+      ],
+      "borderline": [
+        "ler~room-edge"
+      ],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.1344 (band 0.0918..0.1622)",
+        "largest empty rect 19.2% at right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.5724, min 0.3293, 9% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5987",
+        "11 objects; balance offset (-12.204, -2.636)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone center or add a zone row",
+      "severity": 25.66
+    },
+    {
+      "scene": "seeding_workspace",
+      "categories": [
+        "shrink-stressed",
+        "crowded"
+      ],
+      "borderline": [],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.2038 (band 0.0918..0.1622)",
+        "largest empty rect 12% at upper (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.578, min 0.4934, 10% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.5874",
+        "10 objects; balance offset (3.175, 2.829)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone rear_right or add a zone row",
+      "severity": 25.32
+    },
+    {
+      "scene": "hood_basic",
+      "categories": [
+        "shrink-stressed",
+        "crowded"
+      ],
+      "borderline": [
+        "shrink~stressed-edge"
+      ],
+      "finding": "authoring",
+      "verdict": "content is shrunk to fit with little spare room; likely too many objects for the zones",
+      "evidence": [
+        "fill 0.1901 (band 0.0918..0.1622)",
+        "largest empty rect 18.7% at right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.6864, min 0.6864, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.6864",
+        "10 objects; balance offset (-7.858, 4.15)"
+      ],
+      "suggestion": "too many objects for the zones; reduce count in zone rear_center or add a zone row",
+      "severity": 18.82
+    },
+    {
+      "scene": "centrifuge_workspace",
+      "categories": [
+        "healthy"
+      ],
+      "borderline": [
+        "shrink~stressed-edge",
+        "label~stressed-edge"
+      ],
+      "finding": "healthy",
+      "verdict": "content fits at a readable scale with no overlap or label pressure",
+      "evidence": [
+        "fill 0.185 (band 0.0918..0.1622)",
+        "largest empty rect 31.9% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.7469, min 0.4638, 17% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.8432",
+        "label conflicts 1 (edge 2)",
+        "12 objects; balance offset (-17.445, 4.697)"
+      ],
+      "suggestion": "no change needed",
+      "severity": 18.19
+    },
+    {
+      "scene": "mtt_reagent_prep_bench_workspace",
+      "categories": [
+        "sparse"
+      ],
+      "borderline": [
+        "ler~room-edge"
+      ],
+      "finding": "intentional",
+      "verdict": "sparse but readable and not shrunk; composition looks intentional",
+      "evidence": [
+        "fill 0.054 (band 0.0918..0.1622)",
+        "largest empty rect 20.2% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.7683, min 0.7683, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.7683",
+        "8 objects; balance offset (4.891, -15.664)"
+      ],
+      "suggestion": "no change needed; add context objects only if pedagogically useful",
+      "severity": 13.9
+    },
+    {
+      "scene": "dilution_workspace",
+      "categories": [
+        "sparse"
+      ],
+      "borderline": [],
+      "finding": "intentional",
+      "verdict": "sparse but readable and not shrunk; composition looks intentional",
+      "evidence": [
+        "fill 0.0727 (band 0.0918..0.1622)",
+        "largest empty rect 23.5% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.7835, min 0.7835, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.7835",
+        "11 objects; balance offset (-7.485, -10.553)"
+      ],
+      "suggestion": "no change needed; add context objects only if pedagogically useful",
+      "severity": 12.99
+    },
+    {
+      "scene": "cell_counter_workspace",
+      "categories": [
+        "healthy"
+      ],
+      "borderline": [
+        "fill~dense-edge",
+        "ler~room-edge"
+      ],
+      "finding": "healthy",
+      "verdict": "content fits at a readable scale with no overlap or label pressure",
+      "evidence": [
+        "fill 0.164 (band 0.0918..0.1622)",
+        "largest empty rect 20.2% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.7849, min 0.5434, 11% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.8151",
+        "9 objects; balance offset (-0.47, 1.995)"
+      ],
+      "suggestion": "no change needed",
+      "severity": 12.91
+    },
+    {
+      "scene": "sdspage_prepare_sample_mix_single_lane_workspace",
+      "categories": [
+        "sparse"
+      ],
+      "borderline": [],
+      "finding": "intentional",
+      "verdict": "sparse but readable and not shrunk; composition looks intentional",
+      "evidence": [
+        "fill 0.0738 (band 0.0918..0.1622)",
+        "largest empty rect 14.3% at lower-right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.813, min 0.813, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.813",
+        "13 objects; balance offset (-4.879, -5.346)"
+      ],
+      "suggestion": "no change needed; add context objects only if pedagogically useful",
+      "severity": 11.22
+    },
+    {
+      "scene": "sdspage_destain_gel_rock_workspace",
+      "categories": [
+        "healthy"
+      ],
+      "borderline": [
+        "fill~dense-edge"
+      ],
+      "finding": "healthy",
+      "verdict": "content fits at a readable scale with no overlap or label pressure",
+      "evidence": [
+        "fill 0.1568 (band 0.0918..0.1622)",
+        "largest empty rect 14.4% at upper-right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.8633, min 0.8633, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.8633",
+        "9 objects; balance offset (0.711, 14.443)"
+      ],
+      "suggestion": "no change needed",
+      "severity": 8.2
+    },
+    {
+      "scene": "staining_bench",
+      "categories": [
+        "healthy"
+      ],
+      "borderline": [
+        "fill~dense-edge"
+      ],
+      "finding": "healthy",
+      "verdict": "content fits at a readable scale with no overlap or label pressure",
+      "evidence": [
+        "fill 0.1568 (band 0.0918..0.1622)",
+        "largest empty rect 14.4% at upper-right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.8633, min 0.8633, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.8633",
+        "9 objects; balance offset (0.711, 14.443)"
+      ],
+      "suggestion": "no change needed",
+      "severity": 8.2
+    },
+    {
+      "scene": "mtt_solubilization_readout_plate_reader_workspace",
+      "categories": [
+        "healthy"
+      ],
+      "borderline": [
+        "ler~room-edge"
+      ],
+      "finding": "healthy",
+      "verdict": "content fits at a readable scale with no overlap or label pressure",
+      "evidence": [
+        "fill 0.1442 (band 0.0918..0.1622)",
+        "largest empty rect 19.2% at upper (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.8667, min 0.8667, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.8667",
+        "7 objects; balance offset (-7.039, 2.889)"
+      ],
+      "suggestion": "no change needed",
+      "severity": 8
+    },
+    {
+      "scene": "cell_counter_basic",
+      "categories": [
+        "healthy"
+      ],
+      "borderline": [],
+      "finding": "healthy",
+      "verdict": "content fits at a readable scale with no overlap or label pressure",
+      "evidence": [
+        "fill 0.2322 (band 0.0918..0.1622)",
+        "largest empty rect 17% at upper-right (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.9524, min 0.6667, 0% of objects at_h_floor (<=0.56)",
+        "7 objects; balance offset (-3.914, 9.508)"
+      ],
+      "suggestion": "no change needed",
+      "severity": 2.86
+    },
+    {
+      "scene": "heat_block_bench",
+      "categories": [
+        "healthy"
+      ],
+      "borderline": [],
+      "finding": "healthy",
+      "verdict": "content fits at a readable scale with no overlap or label pressure",
+      "evidence": [
+        "fill 0.1095 (band 0.0918..0.1622)",
+        "largest empty rect 18% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.9566, min 0.9566, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.9566",
+        "13 objects; balance offset (-2.128, 4.059)"
+      ],
+      "suggestion": "no change needed",
+      "severity": 2.6
+    },
+    {
+      "scene": "sample_prep_bench",
+      "categories": [
+        "healthy"
+      ],
+      "borderline": [],
+      "finding": "healthy",
+      "verdict": "content fits at a readable scale with no overlap or label pressure",
+      "evidence": [
+        "fill 0.1017 (band 0.0918..0.1622)",
+        "largest empty rect 18% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.9566, min 0.9566, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.9566",
+        "13 objects; balance offset (-3.895, 1.363)"
+      ],
+      "suggestion": "no change needed",
+      "severity": 2.6
+    },
+    {
+      "scene": "sdspage_heat_denature_samples_workspace",
+      "categories": [
+        "healthy"
+      ],
+      "borderline": [],
+      "finding": "healthy",
+      "verdict": "content fits at a readable scale with no overlap or label pressure",
+      "evidence": [
+        "fill 0.1095 (band 0.0918..0.1622)",
+        "largest empty rect 18% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 0.9566, min 0.9566, 0% of objects at_h_floor (<=0.56)",
+        "shrink proxy: uniform_rescale factor 0.9566",
+        "13 objects; balance offset (-2.128, 4.059)"
+      ],
+      "suggestion": "no change needed",
+      "severity": 2.6
+    },
+    {
+      "scene": "imaging_bench",
+      "categories": [
+        "healthy"
+      ],
+      "borderline": [],
+      "finding": "healthy",
+      "verdict": "content fits at a readable scale with no overlap or label pressure",
+      "evidence": [
+        "fill 0.2015 (band 0.0918..0.1622)",
+        "largest empty rect 18% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 1, min 1, 0% of objects at_h_floor (<=0.56)",
+        "12 objects; balance offset (4.342, -9.222)"
+      ],
+      "suggestion": "no change needed",
+      "severity": 0
+    },
+    {
+      "scene": "missing_svg_check",
+      "categories": [
+        "sparse"
+      ],
+      "borderline": [],
+      "finding": "intentional",
+      "verdict": "trivial fixture: almost no content, nothing to pack",
+      "evidence": [
+        "fill 0.022 (band 0.0918..0.1622)",
+        "largest empty rect 70% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 1, min 1, 0% of objects at_h_floor (<=0.56)",
+        "1 objects; balance offset (0, -28.411)"
+      ],
+      "suggestion": "no change needed (trivial dev/test fixture)",
+      "severity": 0
+    },
+    {
+      "scene": "select_check",
+      "categories": [
+        "sparse"
+      ],
+      "borderline": [],
+      "finding": "intentional",
+      "verdict": "trivial fixture: almost no content, nothing to pack",
+      "evidence": [
+        "fill 0.03 (band 0.0918..0.1622)",
+        "largest empty rect 66% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 1, min 1, 0% of objects at_h_floor (<=0.56)",
+        "2 objects; balance offset (0.002, -26.274)"
+      ],
+      "suggestion": "no change needed (trivial dev/test fixture)",
+      "severity": 0
+    },
+    {
+      "scene": "type_check",
+      "categories": [
+        "sparse"
+      ],
+      "borderline": [],
+      "finding": "intentional",
+      "verdict": "trivial fixture: almost no content, nothing to pack",
+      "evidence": [
+        "fill 0.03 (band 0.0918..0.1622)",
+        "largest empty rect 70% at lower (room edge 0.2081)",
+        "shrink proxy: mean final_scale 1, min 1, 0% of objects at_h_floor (<=0.56)",
+        "1 objects; balance offset (0, -28.388)"
+      ],
+      "suggestion": "no change needed (trivial dev/test fixture)",
+      "severity": 0
+    }
+  ],
+  "categoryCounts": {
+    "high-empty-space-plus-shrink": 5,
+    "shrink-stressed": 19,
+    "crowded": 7,
+    "label-stressed": 12,
+    "healthy": 10,
+    "sparse": 6
+  },
+  "findingCounts": {
+    "engine-fit": 5,
+    "intentional": 9,
+    "authoring": 14,
+    "healthy": 10
+  }
+}

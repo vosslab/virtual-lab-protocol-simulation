@@ -1,14 +1,18 @@
 scene_name: plate_drug_treatment_media_adjustment_plate_workspace
 extends: hood_basic
 
+# Single remove_placements list. A YAML mapping may hold a key only once, so the
+# previous file's two separate remove_placements blocks silently dropped the
+# first (the serological-pipette removal never applied). All intended removals
+# now live in one list.
 remove_placements:
-  # Media adjustment across a 96-well plate is done with the multichannel
-  # pipette added below. The inherited single-channel serological pipette is
-  # not used here and its wide footprint crowded the multichannel in the right
-  # tool area, so remove it to declutter that corner.
+  # Media adjustment across a 96-well plate uses the multichannel pipette added
+  # below. Both inherited single-channel pipettes (serological and aspirating)
+  # are non-targets whose footprints crowd the multichannel in the right tool
+  # band, so remove them (fully, not deactivate: a deactivated placement is
+  # still laid out and rendered) to leave the multichannel as the lone tool.
   - base_right_serological_pipette
-
-remove_placements:
+  - right_aspirating_pipette
   # The base PBS and waste bottles are context decoration here (not protocol
   # targets). Their labels ran under the waste-container art in the crowded
   # rear_center band, and the waste label dropped onto the tall multichannel
@@ -17,13 +21,11 @@ remove_placements:
   # media bottle.
   - base_rear_center_pbs
   - rear_center_waste
-
-reposition_placements:
-  # The inherited aspirating pipette shares the right_tool_area front row with
-  # the added multichannel pipette; their labels abutted. Push the aspirating
-  # pipette to the back row so the two pipette labels separate vertically.
-  - placement_name: right_aspirating_pipette
-    depth_tier: 2
+  # hood_basic contributes an inherited media bottle (base_rear_right_media) and
+  # this scene adds its own rear_center_media. Two media_bottle placements make a
+  # bare media_bottle target ambiguous, so remove the inherited one and keep the
+  # rear_center media bottle that reads with the plate work.
+  - base_rear_right_media
 
 add_placements:
   # well_plate_96 is now placed in the inherited hood_basic center band (single

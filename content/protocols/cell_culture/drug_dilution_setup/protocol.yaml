@@ -155,7 +155,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: dilution_tube_rack_8.tube_G
+      - target: dilution_tube_rack_8
         gesture: click
         validator:
           preset: correct_target
@@ -184,7 +184,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: dilution_tube_rack_8.tube_G
+      - target: dilution_tube_rack_8
         gesture: click
         validator:
           preset: correct_target
@@ -232,7 +232,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: dilution_tube_rack_8.tube_F
+      - target: dilution_tube_rack_8
         gesture: click
         validator:
           preset: correct_target
@@ -261,7 +261,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: dilution_tube_rack_8.tube_F
+      - target: dilution_tube_rack_8
         gesture: click
         validator:
           preset: correct_target
@@ -309,7 +309,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: dilution_tube_rack_8.tube_E
+      - target: dilution_tube_rack_8
         gesture: click
         validator:
           preset: correct_target
@@ -338,7 +338,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: dilution_tube_rack_8.tube_E
+      - target: dilution_tube_rack_8
         gesture: click
         validator:
           preset: correct_target
@@ -386,7 +386,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: dilution_tube_rack_8.tube_D
+      - target: dilution_tube_rack_8
         gesture: click
         validator:
           preset: correct_target
@@ -415,7 +415,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: dilution_tube_rack_8.tube_D
+      - target: dilution_tube_rack_8
         gesture: click
         validator:
           preset: correct_target
@@ -463,7 +463,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: dilution_tube_rack_8.tube_C
+      - target: dilution_tube_rack_8
         gesture: click
         validator:
           preset: correct_target
@@ -492,7 +492,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: dilution_tube_rack_8.tube_C
+      - target: dilution_tube_rack_8
         gesture: click
         validator:
           preset: correct_target
@@ -540,7 +540,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: dilution_tube_rack_8.tube_B
+      - target: dilution_tube_rack_8
         gesture: click
         validator:
           preset: correct_target
@@ -569,7 +569,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: dilution_tube_rack_8.tube_B
+      - target: dilution_tube_rack_8
         gesture: click
         validator:
           preset: correct_target
@@ -680,6 +680,11 @@ steps:
       on_success: complete
       on_failure: retry
     next_step: verify_metformin_volume
+  # Gesture rubric note: this step is a single directed confirm-click, not a
+  # set-point. The target_with_value validator asserts the tube's pre-existing
+  # material_volume (300 uL, set by the prior dilution steps); the student reads
+  # and confirms that state rather than dialing or typing a value, so click is
+  # correct here and this is not the value-on-a-click anti-pattern.
   - step_name: verify_metformin_volume
     prompt:
       Verify that you have prepared sufficient metformin working stock. You need

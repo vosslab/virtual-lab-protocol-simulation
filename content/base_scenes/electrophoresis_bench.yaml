@@ -71,6 +71,15 @@ zones:
     baseline: 90
     align: center
     label: Front left zone
+  - zone_name: front_center
+    bounds:
+      left: 35
+      right: 65
+      top: 72
+      bottom: 94
+    baseline: 90
+    align: tab-stops
+    label: Front center zone
   - zone_name: front_right
     bounds:
       left: 70
@@ -85,7 +94,7 @@ placements:
   - placement_name: rear_left_running_buffer_10x
     object_name: running_buffer_10x_bottle
     zone: rear_left
-    depth_tier: 1
+    depth_tier: 2
   - placement_name: rear_center_electrophoresis_tank
     object_name: electrophoresis_tank
     zone: rear_center
@@ -110,16 +119,6 @@ placements:
     zone: center
     depth_tier: 2
     align_stop: center
-  - placement_name: center_waste_container
-    object_name: waste_container
-    zone: center
-    depth_tier: 3
-    align_stop: center
-  - placement_name: center_gel_cassette
-    object_name: gel_cassette
-    zone: center
-    depth_tier: 1
-    align_stop: right
   - placement_name: center_serological_pipette
     object_name: serological_pipette
     zone: center
@@ -134,7 +133,7 @@ placements:
   - placement_name: center_p200_micropipette
     object_name: p200_micropipette
     zone: center
-    depth_tier: 3
+    depth_tier: 2
     align_stop: right
   # Right tool area: just the tip box (single item avoids label collision)
   - placement_name: right_tool_area_p10_gel_loading_tip_box
@@ -159,10 +158,28 @@ placements:
     object_name: mini_protean_gel
     zone: front_left
     depth_tier: 1
+  - placement_name: front_center_gel_cassette
+    object_name: gel_cassette
+    zone: front_center
+    depth_tier: 1
+    align_stop: left
+  - placement_name: front_center_waste_container
+    object_name: waste_container
+    zone: front_center
+    depth_tier: 2
+    align_stop: right
   - placement_name: front_right_gel_comb
     object_name: gel_comb
     zone: front_right
     depth_tier: 1
+    # gel_comb sits in the lower front band; the right_tool_area tip box sits in
+    # the mid band directly above and its zone overlaps front_right's x-range in
+    # the bottom-right corner. With the default top label, gel_comb's label rises
+    # into that corner and collides with the tip box's label (unresolved_label_
+    # overlap Error). Placing gel_comb's label below the comb moves it down, clear
+    # of the tip box above.
+    layout:
+      label_placement: bottom
 
 layout_rules:
   label_line_height: 1.1

@@ -18,18 +18,21 @@
 //   type   + item == active_target               -> "active"  (directed-gesture branch, type variant)
 //
 // Covered cases for enumerate_candidate_targets:
-//   top-level object names (no ".") are included in the returned set
+//   top-level object names (no ".") with the "clickable" capability are
+//     included in the returned set
 //   subpart names containing "." (e.g. "well_plate_96.A1") are excluded
+//   items lacking the "clickable" capability (decoration_only) are excluded
 //   empty result.final yields an empty set
-//   returned set contains exactly the top-level names provided
+//   returned set contains exactly the top-level clickable names provided
 //
 // Run with:
 //   node --import tsx --test tests/test_affordance.mjs
 //
 // NOTE on PipelineResult fixture shape: enumerate_candidate_targets only reads
-// result.final and item.object_name from each entry; fixtures here include only
-// those fields. Full PipelineResult has many more fields but the function does
-// not dereference them, so they are omitted to keep fixtures minimal.
+// result.final, item.object_name, and item.capabilities from each entry;
+// fixtures here include only those fields. Full PipelineResult has many more
+// fields but the function does not dereference them, so they are omitted to
+// keep fixtures minimal.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -154,11 +157,22 @@ test("type + item == active_target returns active", () => {
 // enumerate_candidate_targets tests
 //============================================
 
-// Helper: build a minimal PipelineResult-like fixture. Only result.final and
-// item.object_name are read by enumerate_candidate_targets; no other fields
-// are needed.
-function make_pipeline_result(object_names) {
-  return { final: object_names.map((object_name) => ({ object_name })) };
+// Helper: build a minimal PipelineResult-like fixture. Only result.final,
+// item.placement_name, and item.capabilities are read by
+// enumerate_candidate_targets (M8: the candidate set is keyed by the unique DOM
+// placement_name, not object_name); no other fields are needed. These unit
+// fixtures set placement_name = the provided name so the existing name-filtering
+// assertions still read straight through. Defaults every item to the "clickable"
+// capability so existing callers keep testing the name-filtering behavior;
+// capability-gating tests pass their own capabilities explicitly.
+function make_pipeline_result(names, capabilities = ["clickable"]) {
+  return {
+    final: names.map((name) => ({
+      object_name: name,
+      placement_name: name,
+      capabilities,
+    })),
+  };
 }
 
 test("enumerate_candidate_targets: top-level names are included", () => {
@@ -193,4 +207,35 @@ test("enumerate_candidate_targets: result contains exactly the top-level names p
   assert.equal(result.size, 2, "should contain exactly 2 top-level names");
   assert.ok(result.has("flask_a"), "flask_a should be present");
   assert.ok(result.has("tube_b"), "tube_b should be present");
+});
+
+//============================================
+// Capability gate (M6 "Enforce capabilities in renderer and candidate
+// enumeration"): a decoration_only item is excluded from the candidate set
+// even though its name has no "." and would otherwise pass the subpart filter.
+//============================================
+
+test("enumerate_candidate_targets: decoration_only items are excluded", () => {
+  const fixture = {
+    final: [
+      { object_name: "flask_a", placement_name: "flask_a", capabilities: ["clickable"] },
+      { object_name: "tip_box", placement_name: "tip_box", capabilities: ["decoration_only"] },
+    ],
+  };
+  const result = enumerate_candidate_targets(fixture);
+  assert.ok(result.has("flask_a"), "clickable flask_a should be present");
+  assert.ok(!result.has("tip_box"), "decoration_only tip_box should be excluded");
+  assert.equal(result.size, 1, "should contain exactly the one clickable name");
+});
+
+test("enumerate_candidate_targets: missing-object placeholder (capabilities: []) is excluded", () => {
+  const fixture = {
+    final: [
+      { object_name: "flask_a", placement_name: "flask_a", capabilities: ["clickable"] },
+      { object_name: "unknown_thing", placement_name: "unknown_thing", capabilities: [] },
+    ],
+  };
+  const result = enumerate_candidate_targets(fixture);
+  assert.ok(result.has("flask_a"), "clickable flask_a should be present");
+  assert.ok(!result.has("unknown_thing"), "capabilities:[] placeholder should be excluded");
 });

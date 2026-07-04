@@ -5,6 +5,7 @@ import re
 
 from validation.shared_toolkit.yaml_io import load_yaml
 from validation.yaml_schema.findings import Finding, Severity
+from pipeline.scene_inheritance import resolve_protocol_scene
 
 
 class ContentDatabase:
@@ -16,6 +17,12 @@ class ContentDatabase:
 		self.base_scenes: dict = {}
 		self.protocols: dict = {}
 		self.materials_by_protocol: dict = {}
+		# placement_name -> object_name, gathered from every resolved scene
+		# (base scenes and every protocol scene under content/protocols/**/scenes/).
+		# This mirrors the runtime identity model (src/scene_runtime/protocol/
+		# target_adapter.ts): a protocol target resolves to either a scene
+		# placement_name or an object_name, never only the latter.
+		self.placements: dict = {}
 		self.findings: list[Finding] = []
 
 	def load_from_tree(self, root: Path) -> None:
@@ -55,6 +62,7 @@ class ContentDatabase:
 					scene_name = scene_data.get('scene_name')
 					if scene_name:
 						self.base_scenes[scene_name] = scene_data
+						self._register_placements(scene_data.get('placements', []))
 				except RuntimeError as e:
 					rel_path = str(scene_file.relative_to(root_path))
 					self.findings.append(Finding(
@@ -108,6 +116,52 @@ class ContentDatabase:
 							code="yaml_parse_error",
 						))
 
+				# Load per-protocol scenes (content/protocols/.../scenes/*.yaml).
+				# Each protocol scene extends a base scene; resolving the
+				# inheritance chain gathers every placement_name a protocol's
+				# interaction targets may legitimately name (M7 placement-name
+				# identity model), not just declared object_names.
+				scenes_subdir = protocol_dir / 'scenes'
+				if scenes_subdir.exists():
+					for protocol_scene_file in sorted(scenes_subdir.glob('*.yaml')):
+						try:
+							protocol_scene_data = load_yaml(protocol_scene_file)
+							scene_name = protocol_scene_data.get('scene_name', protocol_scene_file.stem)
+							resolved_scene = resolve_protocol_scene(
+								scene_name, protocol_scene_data, self.base_scenes
+							)
+							self._register_placements(resolved_scene.get('placements', []))
+						except RuntimeError as e:
+							rel_path = str(protocol_scene_file.relative_to(root_path))
+							self.findings.append(Finding(
+								path=rel_path,
+								lineno=None,
+								severity=Severity.ERROR,
+								message=str(e),
+								tool="yaml_parser",
+								code="yaml_parse_error",
+							))
+
+	def _register_placements(self, placements: list) -> None:
+		"""Record placement_name -> object_name bindings from a resolved scene.
+
+		Mirrors src/scene_runtime/protocol/target_adapter.ts: placement_name is
+		the unique DOM/target key, object_name is the non-unique capability key.
+		A placement_name may legitimately repeat across scenes (each scene is a
+		separate DOM), so this registry is a validator-time union used only to
+		check that an authored target names SOME known placement, not to
+		enforce cross-scene uniqueness.
+		"""
+		if not isinstance(placements, list):
+			return
+		for placement in placements:
+			if not isinstance(placement, dict):
+				continue
+			placement_name = placement.get('placement_name')
+			object_name = placement.get('object_name')
+			if placement_name and object_name:
+				self.placements[placement_name] = object_name
+
 	# ============================================
 	# LOOKUP METHODS
 	# ============================================
@@ -116,6 +170,24 @@ class ContentDatabase:
 		"""Resolve object by name. Returns dict or None."""
 		return self.objects.get(name)
 
+	def resolve_target_prefix(self, prefix: str) -> dict | None:
+		"""
+		Resolve a target prefix to its object data.
+
+		A prefix is either a declared object_name (direct lookup) or a
+		placement_name (the M7 identity model's DOM/target key; resolved
+		through self.placements to the object it renders). This mirrors
+		src/scene_runtime/protocol/target_adapter.ts, which accepts both
+		an explicit placement_name and an object_name as a valid target prefix.
+		"""
+		obj = self.resolve_object(prefix)
+		if obj:
+			return obj
+		object_name = self.placements.get(prefix)
+		if object_name:
+			return self.resolve_object(object_name)
+		return None
+
 	def resolve_target(self, target: str) -> tuple | None:
 		"""
 		Resolve a target (bare or dotted form).
@@ -123,18 +195,21 @@ class ContentDatabase:
 		Examples:
 		  - "well_plate" -> (well_plate_object, None)
 		  - "well_plate.A1" -> (well_plate_object, "A1")
+		  - "front_microtube_rack" -> (microtube_rack_object, None), resolved
+		    via placement_name since front_microtube_rack is a placement, not
+		    an object_name.
 		"""
 		if '.' not in target:
 			# Bare target
-			obj = self.resolve_object(target)
+			obj = self.resolve_target_prefix(target)
 			return (obj, None) if obj else None
 
-		# Dotted form: object.subpart
+		# Dotted form: object.subpart (or placement.subpart)
 		parts = target.split('.', 1)
 		obj_name = parts[0]
 		subpart_name = parts[1]
 
-		obj = self.resolve_object(obj_name)
+		obj = self.resolve_target_prefix(obj_name)
 		if not obj:
 			return None
 
@@ -240,14 +315,15 @@ class ContentDatabase:
 		    whose applies_to == 'subpart'.
 
 		Args:
-			object_name: The object class name.
+			object_name: The object class name (or a placement_name naming it;
+				see resolve_target_prefix for the M7 identity model).
 			field_name: The state field name to resolve.
 			subpart_targeted: Select the subpart-scoped decl when True.
 
 		Returns:
 			The matching field dict, or None if no entry matches the scope.
 		"""
-		obj = self.resolve_object(object_name)
+		obj = self.resolve_target_prefix(object_name)
 		if not obj:
 			return None
 

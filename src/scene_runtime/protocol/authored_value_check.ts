@@ -12,10 +12,6 @@
 //   - final_state_matches (step): object = step.step_validator.target, the flat
 //     {field: value} map = step.step_validator.contains.
 //
-// (These authored shapes, not the runtime `parameters` projection, are read
-// directly; the runtime projection is broken for final_state_matches and would
-// give this pass nothing to check.)
-//
 // The pass owns ALL error behavior for schema misses and bad values. It never
 // falls back, never returns a silent false, and never wraps work in a broad
 // try/catch. The injected lookup never throws; it reports every miss as a

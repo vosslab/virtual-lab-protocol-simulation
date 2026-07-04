@@ -56,7 +56,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: well_plate_96.block_A_1_6
+      - target: well_plate_96
         gesture: click
         validator:
           preset: correct_target
@@ -79,7 +79,7 @@ steps:
               target: multichannel_pipette
               state:
                 set_volume: 95
-      - target: well_plate_96.block_B_H_1_6
+      - target: well_plate_96
         gesture: click
         validator:
           preset: correct_target
@@ -128,7 +128,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: well_plate_96.block_A_7_12
+      - target: well_plate_96
         gesture: click
         validator:
           preset: correct_target
@@ -151,7 +151,7 @@ steps:
               target: multichannel_pipette
               state:
                 set_volume: 90
-      - target: well_plate_96.block_B_H_7_12
+      - target: well_plate_96
         gesture: click
         validator:
           preset: correct_target

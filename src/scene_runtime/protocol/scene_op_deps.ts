@@ -44,6 +44,7 @@ import type {
   TimedWaitOp,
 } from "../../shell/adapter/types.js";
 import type { SceneStore, StateValue, TargetSeed } from "../state/scene_store.js";
+import { expand_subpart_group_target } from "../state/subpart_group_expand.js";
 import type { SceneOpDeps } from "./scene_operations.js";
 
 //============================================
@@ -109,19 +110,9 @@ export function build_store_scene_op_deps(
   const deps: SceneOpDeps = {
     //----------------------------------------
     apply_object_state(op: ObjectStateChangeOp): void {
-      // Subpart targets ("treatment_plate.A1") are not enumerated from the
-      // PipelineResult, so seed the subpart instance on first write before the
-      // partial-merge. The seed uses the object segment as the object_name so
-      // the store resolves the subpart state schema.
-      const obj = object_segment(op.target);
-      if (op.target !== obj) {
-        // Subpart target: ensure the instance is seeded WITHOUT disturbing any
-        // sibling target's state. seed_target is a no-op when already present.
-        const seed: TargetSeed = { target: op.target, object_name: obj };
-        store.seed_target(seed);
-      }
-      // Partial-merge the declared-state write. The store validates every key
-      // against the resolved schema and throws on an undeclared key/value.
+      // Build the partial-merge write once; every fanned-out target receives the
+      // same declared-state payload. The store validates every key against the
+      // resolved schema and throws on an undeclared key/value.
       const partial: Record<string, StateValue> = {};
       for (const key of Object.keys(op.state)) {
         const value = op.state[key];
@@ -129,7 +120,26 @@ export function build_store_scene_op_deps(
           partial[key] = value;
         }
       }
-      store.set_object_state(op.target, partial);
+      // A group write ("well_plate_96.all_wells") fans out to every member
+      // subpart so each member's own store slot (and its overlay) updates; a
+      // bare object or single-subpart target resolves to itself. Data-driven off
+      // the object's declared subpart_groups; no object or group name is
+      // special-cased.
+      const write_targets = expand_subpart_group_target(op.target);
+      for (const write_target of write_targets) {
+        // Subpart targets ("treatment_plate.A1") are not enumerated from the
+        // PipelineResult, so seed the subpart instance on first write before the
+        // partial-merge. The seed uses the object segment as the object_name so
+        // the store resolves the subpart state schema.
+        const obj = object_segment(write_target);
+        if (write_target !== obj) {
+          // Subpart target: ensure the instance is seeded WITHOUT disturbing any
+          // sibling target's state. seed_target is a no-op when already present.
+          const seed: TargetSeed = { target: write_target, object_name: obj };
+          store.seed_target(seed);
+        }
+        store.set_object_state(write_target, partial);
+      }
     },
 
     //----------------------------------------

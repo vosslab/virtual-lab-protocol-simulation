@@ -836,7 +836,7 @@ The densest scenes (uniform scale in the 0.27-0.32 range with
 uniform-rescale floor because their measured content nearly fills the scene
 vertical range. Thinning content (fewer items per band, shorter labels) would
 raise their scale and improve legibility. The scene-scale report tool
-[tools/scene_scale_report.mjs](../tools/scene_scale_report.mjs) tells writers which scenes and which vertical
+[scene_scale_report.mjs](../tools/scene_scale_report.mjs) tells writers which scenes and which vertical
 bands are heaviest and lists the top contributing items per band, so
 density-reduction edits target the right scene and band.
 
@@ -848,7 +848,7 @@ renderable viewport. A future detector should flag any art bottom past the
 renderable viewport independent of bbox aspect, so a fully off-canvas object is
 counted even when its visible bbox is undistorted. Cross-reference the
 investigation in
-[docs/active_plans/audits/viewport_overflow_reflow_investigation.md](active_plans/audits/viewport_overflow_reflow_investigation.md).
+[viewport_overflow_reflow_investigation.md](active_plans/audits/viewport_overflow_reflow_investigation.md).
 
 ### 7.6 Label-on-label crowding from the full WP-4 sweep
 
@@ -859,7 +859,7 @@ The full WP-4 per-scene visual sweep surfaced four scenes with label-vs-label
 fails and not label-over-own-artwork. They are a horizontal label-stagger polish
 follow-up, distinct from the cosmetic clusters in 7.3. The complete merged
 per-scene evidence (quantitative columns plus by-eye verdicts) lives in
-[docs/active_plans/reports/vertical_reflow_wp4_evidence_table.md](active_plans/reports/vertical_reflow_wp4_evidence_table.md).
+[vertical_reflow_wp4_evidence_table.md](active_plans/reports/vertical_reflow_wp4_evidence_table.md).
 
 ---
 
@@ -887,7 +887,7 @@ python3 run_scene_health.py <scene_name>
 No npm or node knowledge required -- the script handles the full pipeline.
 For a quickstart, category reference, finding reference, evidence-field
 glossary, and provisional band tables, see
-[docs/specs/SCENE_METRICS.md](specs/SCENE_METRICS.md).
+[SCENE_METRICS.md](specs/SCENE_METRICS.md).
 
 The underlying node commands (for maintainers) are:
 
@@ -917,13 +917,13 @@ The tool source is at `tools/layout_health_report.mjs`.
 
 The canonical category table, finding table, evidence-field glossary, and
 provisional metric bands live in
-[docs/specs/SCENE_METRICS.md](specs/SCENE_METRICS.md).
+[SCENE_METRICS.md](specs/SCENE_METRICS.md).
 
 ---
 
 ## 9. Provisional metric bands
 
-See [docs/specs/SCENE_METRICS.md](specs/SCENE_METRICS.md) for the canonical
+See [SCENE_METRICS.md](specs/SCENE_METRICS.md) for the canonical
 band tables (fill, largest empty rectangle, shrink, label conflict) with
 distribution-derived values and provisional status notes.
 

@@ -19,7 +19,7 @@ zones:
   - zone_name: rear_left
     bounds:
       left: 5
-      right: 33
+      right: 32
       top: 5
       bottom: 36
     baseline: 32
@@ -27,8 +27,8 @@ zones:
     label: Rear left zone
   - zone_name: rear_center
     bounds:
-      left: 34
-      right: 66
+      left: 33
+      right: 62
       top: 5
       bottom: 36
     baseline: 32
@@ -36,8 +36,8 @@ zones:
     label: Rear center zone
   - zone_name: rear_right
     bounds:
-      left: 67
-      right: 95
+      left: 63
+      right: 97
       top: 5
       bottom: 36
     baseline: 32
@@ -53,6 +53,16 @@ zones:
     baseline: 84
     align: tab-stops
     label: Work surface center
+  # Front center band: small accessories at lower canvas
+  - zone_name: front_center
+    bounds:
+      left: 35
+      right: 65
+      top: 72
+      bottom: 94
+    baseline: 90
+    align: tab-stops
+    label: Front center zone
   # Right tool area: mirrors center band vertically
   - zone_name: right_tool_area
     bounds:
@@ -118,7 +128,7 @@ placements:
   - placement_name: center_well_plate_96
     object_name: well_plate_96
     zone: center
-    depth_tier: 3
+    depth_tier: 2
     align_stop: left
 
   # Right tool area: aspirating pipette (left), serological pipette (right)

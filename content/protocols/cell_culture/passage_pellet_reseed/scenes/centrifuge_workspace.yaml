@@ -15,6 +15,9 @@ remove_placements:
   - rear_center_pbs
   - rear_center_ethanol
   - rear_right_heat_block
+  # Inherited 96-well plate is never targeted in the centrifuge scene; remove so
+  # the center band holds the centrifuge and reseed vessels, not an idle plate.
+  - center_well_plate_96
 
 add_placements:
   # Conical tube at rear left -- the pellet tube about to be centrifuged
@@ -38,10 +41,19 @@ add_placements:
     depth_tier: 2
     align_stop: left
 
-  # T75 flask at center (right stop) for cell reseed
-  - placement_name: center_t75_flask
-    object_name: t75_flask
-    zone: center
+  # Media bottle at rear left -- the reseed medium the protocol clicks
+  # (media_bottle target) after decanting. Was a target_missing gap.
+  - placement_name: rear_left_media_bottle_reseed
+    object_name: media_bottle
+    zone: rear_left
+    depth_tier: 1
+    align_stop: center
+
+  # Biohazard decant container at rear right -- the waste vessel the protocol
+  # clicks (biohazard_decant target) when pouring off supernatant. Was missing.
+  - placement_name: rear_right_biohazard_decant
+    object_name: biohazard_decant
+    zone: rear_right
     depth_tier: 1
     align_stop: right
 
@@ -59,23 +71,9 @@ add_placements:
     depth_tier: 2
     align_stop: right
 
-  # Rear center: micropipette tip box restocks the emptied rear shelf
-  - placement_name: rear_center_tip_box
-    object_name: micropipette_tip_box
-    zone: rear_center
-    depth_tier: 1
-    align_stop: center
-
   # Rear right: PBS rinse bottle staged for the reseed step
   - placement_name: rear_right_pbs
     object_name: pbs_bottle
     zone: rear_right
     depth_tier: 1
     align_stop: left
-
-  # Center (mid): microtube rack staged alongside the centrifuge
-  - placement_name: center_microtube_rack
-    object_name: microtube_rack_24
-    zone: center
-    depth_tier: 3
-    align_stop: center

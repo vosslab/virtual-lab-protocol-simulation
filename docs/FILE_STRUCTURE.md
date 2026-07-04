@@ -13,6 +13,8 @@
 | [build_github_pages.sh](../build_github_pages.sh) | Canonical production build into `dist/` |
 | [run_web_server.sh](../run_web_server.sh) | Build then serve `dist/` on local network |
 | [check_codebase.sh](../check_codebase.sh) | Aggregate lint, typecheck, and test gate |
+| `run_all_checks.sh` | Umbrella gate: build, `check_codebase.sh`, `pytest`, content validation (no browser sweep) |
+| [run_playwright_tests.sh](../run_playwright_tests.sh) | Build as needed, then run the browser walker sweep (`walk_all_protocols.mjs`) |
 | [source_me.sh](../source_me.sh) | Bash environment for Python 3.12 |
 | [package.json](../package.json) | Node dev dependencies and npm scripts |
 | [tsconfig.json](../tsconfig.json) | Repo-root TypeScript compiler config (strict) |
@@ -71,9 +73,15 @@ src/
 |  |      clamp_scene_bounds, footprint, wrap_label, index).ts
 |  +- protocol/                -- step machine and protocol drivers
 |  |  +- affordance.ts         -- pure affordance-kind mapping (compute_affordance_kind, affordance types)
+|  |  +- gesture_registry.ts   -- GESTURE_REGISTRY: per-gesture affordance contract + dispatch_gesture, scene_click_to_command
 |  |  +- resolve_entry_scene.ts -- entry-scene resolution + empty-scene guard
+|  |  +- target_adapter.ts     -- protocol-target -> DOM identity adapter (resolve_to_placement/object, AmbiguousTargetError)
+|  |  +- flatten_sequence_runner.ts -- flattens a sequence_runner into its constituent mini-protocol steps
 |  |  +- step_machine.ts       -- pure step machine (no DOM)
 |  |  +- validators.ts         -- interaction and step validator dispatch
+|  |  +- authored_value_check.ts -- load-time authored-value guard for target_with_value / final_state_matches
+|  |  +- gesture_affordance_check.ts -- load-time invariant: authored gesture must be registered + wired (UnaffordancedGestureError)
+|  |  +- target_existence_check.ts -- load-time invariant: authored target must exist in the scene
 |  |  +- scene_operations.ts   -- routes the five SceneOperation primitives to injected store-backed deps
 |  |  +- scene_op_deps.ts      -- SceneOpDeps interface + store-backed factory
 |  |  +- walker_debug.ts       -- debug helpers for walkthrough evidence collection
@@ -98,7 +106,8 @@ src/
    +- signals.ts               -- Solid signal helpers + subscribeEmitterToSnapshot
    +- hud/
    |  +- ProtocolHud.tsx       -- mounts four region components into named DOM targets
-   |  `- type_input.tsx        -- visible type-input affordance (data-type-input / data-type-commit)
+   |  +- type_input.tsx        -- visible type-input affordance (data-type-input / data-type-commit)
+   |  `- set_point_editor.tsx  -- shared numeric set-point editor for the adjust gesture (data-adjust-input / data-adjust-commit)
    `- regions/
       +- StepOutline.tsx       -- read-only ordered step cards
       +- TipsBubble.tsx        -- professor-tip bubble
@@ -123,6 +132,7 @@ Every script that emits to `generated/`, assembles bundles, or produces
 | [gen_svg_manifest.py](../pipeline/gen_svg_manifest.py) | `assets/**/*.svg` -> `generated/svg_manifest.ts` (asset_name -> relative file path) |
 | [gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts` + `generated/scene_manifest.json`; `--missing-svg=strict|placeholder` (default `placeholder`) |
 | [gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` + `generated/protocol_materials.ts` (per-protocol material registry from each package `materials.yaml`) |
+| [gen_flow_view.py](../pipeline/gen_flow_view.py) | Protocol YAML -> `generated/flow_views/<protocol_name>.txt`, a per-protocol audit view (click path, gestures, state changes, transitions); not the design source, see [PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md) |
 | [build_protocol_index.py](../pipeline/build_protocol_index.py) | Protocol index build helpers |
 | [list_protocols.py](../pipeline/list_protocols.py) | Reads `PROTOCOLS_INDEX`; `emit` writes one `dist/<name>.html` per protocol |
 | [scene_inheritance.py](../pipeline/scene_inheritance.py) | Scene YAML inheritance resolution library (imported by gen_scene_index) |
@@ -157,7 +167,7 @@ content/protocols/<cluster>/<protocol_name>/
 
 ### `validation/` - YAML and scene validators
 
-Standalone Python validators. Entry point: [validation/validate.py](../validation/validate.py).
+Standalone Python validators. Entry point: [validate.py](../validation/validate.py).
 
 ```text
 validation/
@@ -175,7 +185,7 @@ validation/
 
 ### `tests/` - Test suite
 
-Three tiers isolated by [tests/conftest.py](../tests/conftest.py)
+Three tiers isolated by [conftest.py](../tests/conftest.py)
 (`collect_ignore = ["e2e", "playwright"]`).
 
 ```text
@@ -192,40 +202,42 @@ tests/
 `- playwright/                 -- browser-driven tests
    +- repo_root.mjs            -- shared REPO_ROOT resolver
    +- test_*.mjs               -- browser tests (framed layout, initial scene, etc.)
-   +- walker/                  -- shared Playwright walker engine
-   `- e2e/                     -- full-path YAML walkthroughs
+   `- e2e/                     -- the single canonical YAML walker
+      +- protocol_walkthrough_yaml.mjs -- schema-driven single-protocol walker
+      +- walk_all_protocols.mjs        -- all-protocols sweep runner (npm run walk:all)
+      `- walker_helpers.mjs            -- selector resolution + gesture-commit-and-wait drivers
 ```
 
 Key pytest files:
 
 | File | Purpose |
 | --- | --- |
-| [tests/test_pyflakes_code_lint.py](../tests/test_pyflakes_code_lint.py) | Pyflakes lint gate |
-| [tests/test_ascii_compliance.py](../tests/test_ascii_compliance.py) | ASCII source check |
-| [tests/test_markdown_links.py](../tests/test_markdown_links.py) | Markdown link validity |
-| [tests/test_shebangs.py](../tests/test_shebangs.py) | Shebang consistency |
-| [tests/test_import_dot.py](../tests/test_import_dot.py) | Forbids relative imports |
-| [tests/test_import_requirements.py](../tests/test_import_requirements.py) | Third-party imports declared |
-| [tests/test_test_naming_conventions.py](../tests/test_test_naming_conventions.py) | Test layout and naming |
-| [tests/test_spec_docs_no_camelcase_yaml.py](../tests/test_spec_docs_no_camelcase_yaml.py) | Spec doc camelCase gate |
-| [tests/test_walker_no_step_branches.py](../tests/test_walker_no_step_branches.py) | Walker must not branch on step name |
+| [test_pyflakes_code_lint.py](../tests/test_pyflakes_code_lint.py) | Pyflakes lint gate |
+| [test_ascii_compliance.py](../tests/test_ascii_compliance.py) | ASCII source check |
+| [test_markdown_links.py](../tests/test_markdown_links.py) | Markdown link validity |
+| [test_shebangs.py](../tests/test_shebangs.py) | Shebang consistency |
+| [test_import_dot.py](../tests/test_import_dot.py) | Forbids relative imports |
+| [test_import_requirements.py](../tests/test_import_requirements.py) | Third-party imports declared |
+| [test_test_naming_conventions.py](../tests/test_test_naming_conventions.py) | Test layout and naming |
+| [test_spec_docs_no_camelcase_yaml.py](../tests/test_spec_docs_no_camelcase_yaml.py) | Spec doc camelCase gate |
+| [test_walker_no_step_branches.py](../tests/test_walker_no_step_branches.py) | Walker must not branch on step name |
 
 Key Node test files:
 
 | File | Purpose |
 | --- | --- |
-| [tests/test_layout_engine.mjs](../tests/test_layout_engine.mjs) | Layout pipeline unit tests |
-| [tests/test_step_machine.mjs](../tests/test_step_machine.mjs) | Step machine unit tests |
-| [tests/test_structural_guards.mjs](../tests/test_structural_guards.mjs) | Structural guard unit tests |
-| [tests/test_resolve_entry_scene.mjs](../tests/test_resolve_entry_scene.mjs) | Entry-scene resolution unit tests |
-| [tests/test_visual_state_resolver.mjs](../tests/test_visual_state_resolver.mjs) | Visual-state resolver (formulas, materials, missing-svg) |
-| [tests/test_scene_operations.mjs](../tests/test_scene_operations.mjs) | Scene operations unit tests |
-| [tests/test_protocol_emitter.mjs](../tests/test_protocol_emitter.mjs) | Emitter unit tests |
-| [tests/test_shell_signals.mjs](../tests/test_shell_signals.mjs) | Shell signal binding tests |
-| [tests/test_m2_integration.mjs](../tests/test_m2_integration.mjs) | M2 framed-layout integration |
+| [test_layout_engine.mjs](../tests/test_layout_engine.mjs) | Layout pipeline unit tests |
+| [test_step_machine.mjs](../tests/test_step_machine.mjs) | Step machine unit tests |
+| [test_structural_guards.mjs](../tests/test_structural_guards.mjs) | Structural guard unit tests |
+| [test_resolve_entry_scene.mjs](../tests/test_resolve_entry_scene.mjs) | Entry-scene resolution unit tests |
+| [test_visual_state_resolver.mjs](../tests/test_visual_state_resolver.mjs) | Visual-state resolver (formulas, materials, missing-svg) |
+| [test_scene_operations.mjs](../tests/test_scene_operations.mjs) | Scene operations unit tests |
+| [test_protocol_emitter.mjs](../tests/test_protocol_emitter.mjs) | Emitter unit tests |
+| [test_shell_signals.mjs](../tests/test_shell_signals.mjs) | Shell signal binding tests |
+| [test_m2_integration.mjs](../tests/test_m2_integration.mjs) | M2 framed-layout integration |
 | `test_material_color.mjs` | D3 resolver contract: all `resolve_color_result` success and failure cases |
 | `test_subpart_visual_state_renderer.mjs` | Subpart material-tint renderer: dispatch predicate, fill, transparent empty, degrade path |
-| [tests/test_scene_store.mjs](../tests/test_scene_store.mjs) | Scene store: `getSubpartStateField` accessor, per-well independent reactivity |
+| [test_scene_store.mjs](../tests/test_scene_store.mjs) | Scene store: `getSubpartStateField` accessor, per-well independent reactivity |
 | `test_material_acceptance_cross_layer.mjs` | Cross-layer acceptance: stepper D1 and TS runtime store accept and reject the same material names |
 | `tests/test_layout_offcanvas.mjs` | Off-canvas classifier unit tests (exercises `PipelineResult.offCanvasDiagnostics` fully_off_canvas and partial_overflow paths) |
 | `tests/test_layout_config.mjs` | Config-precedence unit tests: 16 behavioral tests covering zone_gap split, scene-level and zone-level overrides, and strategy-local values |
@@ -234,7 +246,7 @@ Key Node test files:
 
 `assets/equipment/` contains tracked source SVG files for all lab objects.
 Sidecar `*.colormap.json` files group element ids for the recolor pipeline.
-Processed by [pipeline/gen_svg_manifest.py](../pipeline/gen_svg_manifest.py).
+Processed by [gen_svg_manifest.py](../pipeline/gen_svg_manifest.py).
 
 ### `tools/` - Developer-only helpers
 
@@ -245,11 +257,11 @@ Key tools:
 
 | File | Purpose |
 | --- | --- |
-| [tools/normalize_svg_v2.py](../tools/normalize_svg_v2.py) | SVG asset normalizer (stdlib-only; kept until v3 parity is proven) |
+| [normalize_svg_v2.py](../tools/normalize_svg_v2.py) | SVG asset normalizer (stdlib-only; kept until v3 parity is proven) |
 | `tools/normalize_svg_v3.py` | SVG ingestion-gate normalizer (lxml + tinycss2 + shapely): normalize-or-reject pipeline; run before adding any SVG to `assets/`; see [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md) for support contract and ingestion workflow |
-| [tools/svg_to_html_render.mjs](../tools/svg_to_html_render.mjs) | Renders an SVG on five color swatches via Playwright Firefox and writes `<stem>_render.{html,png}` to CWD; use `--no-open` to skip auto-open |
-| [tools/svg_identity_sweep.py](../tools/svg_identity_sweep.py) | Perceptual-hash duplicate/mislabel sweep over `assets/**/*.svg`; emits a review report |
-| [tools/svg_feature_census.py](../tools/svg_feature_census.py) | Read-only feature census over the wild SVG corpus (`OTHER_REPOS/`); counts clipPath/transform/text/etc. per file, cross-tabbed against the v3 verdict; emits `docs/active_plans/reports/svg_feature_census.{json,md}` |
+| [svg_to_html_render.mjs](../tools/svg_to_html_render.mjs) | Renders an SVG on five color swatches via Playwright Firefox and writes `<stem>_render.{html,png}` to CWD; use `--no-open` to skip auto-open |
+| [svg_identity_sweep.py](../tools/svg_identity_sweep.py) | Perceptual-hash duplicate/mislabel sweep over `assets/**/*.svg`; emits a review report |
+| [svg_feature_census.py](../tools/svg_feature_census.py) | Read-only feature census over the wild SVG corpus (`OTHER_REPOS/`); counts clipPath/transform/text/etc. per file, cross-tabbed against the v3 verdict; emits `docs/active_plans/reports/svg_feature_census.{json,md}` |
 | `tools/layout_golden_diff.mjs` | `layout:diff` / `layout:refresh` -- ephemeral regression harness; captures a gitignored snapshot at `test-results/layout_reference_snapshot.json` with provenance and staleness detection; compares engine output after a change |
 | `tools/layout_metrics.mjs` | `layout:metrics` -- raw per-scene geometry metrics (rectangle-union fill, largest-empty-rect, occupancy, scale proxies, AABB overlap graph, balance) with per-scene overlay |
 | `tools/layout_health_report.mjs` | `layout:health` -- interprets raw geometry metrics into provisional health categories and a worst-first author scorecard; writes `test-results/layout_health/` |
@@ -259,14 +271,14 @@ Key tools:
 
 | File | Purpose |
 | --- | --- |
-| [devel/setup_playwright.sh](../devel/setup_playwright.sh) | Idempotent Playwright (chromium) install |
-| [devel/setup_typescript.sh](../devel/setup_typescript.sh) | TypeScript dev environment setup |
-| [devel/dist_clean.sh](../devel/dist_clean.sh) | Wipe `generated/` and `dist/` |
-| [devel/rotate_changelog.py](../devel/rotate_changelog.py) | Changelog rotation (keeps two newest day blocks) |
-| [devel/query_changelog.py](../devel/query_changelog.py) | Changelog search by date, category, keyword |
-| [devel/commit_changelog.py](../devel/commit_changelog.py) | Draft commit message from new changelog entries |
-| [devel/bump_version.py](../devel/bump_version.py) | Version bump helper |
-| [devel/ai_polish_review.mjs](../devel/ai_polish_review.mjs) | AI visual-polish reviewer over before/after scene screenshots |
+| [setup_playwright.sh](../devel/setup_playwright.sh) | Idempotent Playwright (chromium) install |
+| [setup_typescript.sh](../devel/setup_typescript.sh) | TypeScript dev environment setup |
+| [dist_clean.sh](../devel/dist_clean.sh) | Wipe `generated/` and `dist/` |
+| [rotate_changelog.py](../devel/rotate_changelog.py) | Changelog rotation (keeps two newest day blocks) |
+| [query_changelog.py](../devel/query_changelog.py) | Changelog search by date, category, keyword |
+| [commit_changelog.py](../devel/commit_changelog.py) | Draft commit message from new changelog entries |
+| [bump_version.py](../devel/bump_version.py) | Version bump helper |
+| [ai_polish_review.mjs](../devel/ai_polish_review.mjs) | AI visual-polish reviewer over before/after scene screenshots |
 
 ### `docs/` - Documentation
 
@@ -301,6 +313,7 @@ Key tools:
 | [specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md) | Scene YAML schema reference |
 | [specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md) | Scene wiring and runtime |
 | [specs/SCENE_METRICS.md](specs/SCENE_METRICS.md) | Scene-author guide to the layout health report |
+| [SCENE_LAYOUT_BASELINE.md](SCENE_LAYOUT_BASELINE.md) | Committed, hand-refreshed layout health/diagnostics snapshot taken after the failBuild gate went live |
 | [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) | Canonical object vocabulary |
 | [specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md) | Object-definition YAML schema reference |
 | [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md) | Layout-engine placement reference |
@@ -322,16 +335,17 @@ All gitignored (see [.gitignore](../.gitignore)):
 
 | Path | Source script |
 | --- | --- |
-| `generated/object_library.ts` | [pipeline/gen_object_library.py](../pipeline/gen_object_library.py) |
-| `generated/svg_manifest.ts` | [pipeline/gen_svg_manifest.py](../pipeline/gen_svg_manifest.py) |
-| `generated/svg_placeholder_keys.ts` | [pipeline/gen_svg_manifest.py](../pipeline/gen_svg_manifest.py) (build/test-only placeholder key array) |
-| `generated/scenes.ts` | [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) |
-| `generated/scene_manifest.json` | [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) (per-scene classification, source of truth for scene tooling) |
-| `generated/protocols.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) |
-| `generated/protocols_index_slim.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) |
-| `generated/protocol_materials.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) (per-protocol material registry; keyed by protocol_name) |
-| `generated/precomputed_layout.ts` | [pipeline/precompute_layout.mjs](../pipeline/precompute_layout.mjs) (`PRECOMPUTED_LAYOUT`: per-scene `{ final: ComputedItem[] }` at canonical 16:9) |
-| `generated/scene_render_stats/<scene>.stats.json` | renderer-produced scene geometry stats (build evidence consumed by SCENE-LINT/SCENE-DESIGN), written by [build_github_pages.sh](../build_github_pages.sh) via [tools/scene_to_png.mjs](../tools/scene_to_png.mjs) |
+| `generated/object_library.ts` | [gen_object_library.py](../pipeline/gen_object_library.py) |
+| `generated/svg_manifest.ts` | [gen_svg_manifest.py](../pipeline/gen_svg_manifest.py) |
+| `generated/svg_placeholder_keys.ts` | [gen_svg_manifest.py](../pipeline/gen_svg_manifest.py) (build/test-only placeholder key array) |
+| `generated/scenes.ts` | [gen_scene_index.py](../pipeline/gen_scene_index.py) |
+| `generated/scene_manifest.json` | [gen_scene_index.py](../pipeline/gen_scene_index.py) (per-scene classification, source of truth for scene tooling) |
+| `generated/protocols.ts` | [gen_protocols.py](../pipeline/gen_protocols.py) |
+| `generated/protocols_index_slim.ts` | [gen_protocols.py](../pipeline/gen_protocols.py) |
+| `generated/protocol_materials.ts` | [gen_protocols.py](../pipeline/gen_protocols.py) (per-protocol material registry; keyed by protocol_name) |
+| `generated/flow_views/<protocol_name>.txt` | [gen_flow_view.py](../pipeline/gen_flow_view.py) (per-protocol audit view; not the design source) |
+| `generated/precomputed_layout.ts` | [precompute_layout.mjs](../pipeline/precompute_layout.mjs) (`PRECOMPUTED_LAYOUT`: per-scene `{ final: ComputedItem[] }` at canonical 16:9) |
+| `generated/scene_render_stats/<scene>.stats.json` | renderer-produced scene geometry stats (build evidence consumed by SCENE-LINT/SCENE-DESIGN), written by [build_github_pages.sh](../build_github_pages.sh) via [scene_to_png.mjs](../tools/scene_to_png.mjs) |
 | `dist/` | [build_github_pages.sh](../build_github_pages.sh) (GitHub Pages bundle) |
 | `dist/assets/svg/<category>/<name>.svg` | SVG assets copied by [build_github_pages.sh](../build_github_pages.sh) |
 | `dist/scene_viewer.html` | Copied from `src/scene_viewer_template.html` during build |

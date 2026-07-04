@@ -159,3 +159,21 @@ exits non-zero and instructs you to run `--refresh` first.
 - If the snapshot is stale or missing, re-run `--refresh` from the current clean state.
 - Do not run `--refresh` mid-refactor: that silently accepts in-flight changes as the
   new baseline, defeating the regression check.
+
+### Durable layout baseline
+
+`docs/SCENE_LAYOUT_BASELINE.md` is a committed, hand-refreshed snapshot of the corpus's
+health scorecard and `severityDiagnostics` Error table, taken after the failBuild gate
+(`countBuildFailures` in `pipeline/precompute_layout.mjs`) went live. Unlike the
+gitignored/ephemeral regression snapshot above, this file stays in the repo as a durable
+reference point for what "clean" looks like. Refresh it with:
+
+```bash
+./build_github_pages.sh
+node --import tsx pipeline/precompute_layout.mjs
+source source_me.sh && python3 run_scene_health.py
+node --import tsx tests/e2e/e2e_layout_diagnostics_baseline.mjs
+```
+
+Refresh by hand at each release or whenever the exempt-scene list or scene count changes;
+it is not regenerated automatically as part of the build.

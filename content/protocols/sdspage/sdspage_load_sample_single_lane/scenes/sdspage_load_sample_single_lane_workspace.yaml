@@ -2,10 +2,11 @@ scene_name: sdspage_load_sample_single_lane_workspace
 extends: electrophoresis_bench
 
 add_placements:
-  - placement_name: center_microtube
+  - placement_name: front_center_microtube
     object_name: microtube
-    zone: center
-    depth_tier: 2
+    zone: front_center
+    depth_tier: 1
+    align_stop: center
 
 scene_notes: |
   Electrophoresis bench workspace extended with a microtube for sample loading.

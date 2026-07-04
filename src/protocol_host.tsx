@@ -55,16 +55,28 @@ import { create_scene_op_handler } from "./scene_runtime/protocol/scene_operatio
 import { build_store_scene_op_deps } from "./scene_runtime/protocol/scene_op_deps.js";
 import { install_walker_debug_surface } from "./scene_runtime/protocol/walker_debug.js";
 import { attach_click_resolver } from "./scene_runtime/protocol/click_resolver.js";
+import {
+  scene_click_to_command,
+  dispatch_gesture,
+} from "./scene_runtime/protocol/gesture_registry.js";
+import {
+  build_target_adapter,
+  IDENTITY_TARGET_ADAPTER,
+  type TargetAdapter,
+} from "./scene_runtime/protocol/target_adapter.js";
+import { collect_reachable_scene_names } from "./scene_runtime/protocol/target_existence_check.js";
 import type { ActiveAffordanceAccessor } from "./scene_runtime/protocol/affordance.js";
 import {
   resolve_entry_scene_name,
   assert_scene_not_empty,
 } from "./scene_runtime/protocol/resolve_entry_scene.js";
+import { flatten_sequence_runner } from "./scene_runtime/protocol/flatten_sequence_runner.js";
 
 import { render } from "solid-js/web";
 import { subscribeEmitterToSnapshot } from "./shell/signals.js";
 import { ProtocolHud } from "./shell/hud/ProtocolHud.js";
 import { TypeInput } from "./shell/hud/type_input.js";
+import { SetPointEditor } from "./shell/hud/set_point_editor.js";
 
 //============================================
 // Window extensions (debug-only)
@@ -170,7 +182,16 @@ function mount(): void {
   if (!config) {
     throw new Error(`protocol_host: protocol "${protocol_name}" not found in PROTOCOLS`);
   }
-  const active_config = config;
+  // Sequence-runner playback: a sequence_runner carries no steps of its own, only
+  // an ordered mini_protocols list. flatten_sequence_runner expands it into one
+  // flat mini_protocol-shaped config whose next_step chain plays every
+  // constituent mini-protocol in order (each mini's entry step carries its
+  // resolved entry scene, so the step machine renders the correct scene at each
+  // boundary). A non-runner config passes through unchanged. Everything
+  // downstream -- reducer, step machine, walker surface, HUD -- then runs the one
+  // flat steps list with no sequence-runner special case. The original runner
+  // config in PROTOCOLS is untouched.
+  const active_config = flatten_sequence_runner(config, PROTOCOLS);
 
   // Resolve the scene-root and shell-root DOM hosts. Shell mounts as a
   // sibling of scene-root, never as an ancestor (asset-cropping rule).
@@ -184,8 +205,10 @@ function mount(): void {
     throw new Error("protocol_host: #shell-root element not found");
   }
 
-  // Resolve the entry scene.
-  const scene_name = resolve_entry_scene_name_bound(config);
+  // Resolve the entry scene from the flattened config. For a runner this reads
+  // the first constituent's namespaced entry step (whose scene the flattener set
+  // to that mini's resolved entry scene); for a normal protocol it is unchanged.
+  const scene_name = resolve_entry_scene_name_bound(active_config);
 
   // Measure actual #scene-root pixel dimensions before running the pipeline.
   // getBoundingClientRect() forces a synchronous layout reflow so the CSS grid
@@ -241,6 +264,21 @@ function mount(): void {
   // disposes any prior root for the same element internally.
   let active_dispose: SceneDispose | null = null;
 
+  // Scene-scoped target-identity adapter (M8). Rebuilt from each mounted scene's
+  // placements inside render_protocol_scene so an authored protocol target
+  // resolves against whatever scene is currently mounted. current_adapter holds
+  // the live per-scene adapter; delegating_adapter is a STABLE wrapper captured
+  // once by the step machine (created below) whose methods forward to the live
+  // adapter, so a SceneChange re-point needs no step-machine rebuild. Starts as
+  // identity until the entry scene mounts.
+  let current_adapter: TargetAdapter = IDENTITY_TARGET_ADAPTER;
+  const delegating_adapter: TargetAdapter = {
+    resolve_to_placement: (target: string): string => current_adapter.resolve_to_placement(target),
+    resolve_to_object: (target: string): string => current_adapter.resolve_to_object(target),
+    has_target: (target: string): boolean => current_adapter.has_target(target),
+    placements_for: (target: string): readonly string[] => current_adapter.placements_for(target),
+  };
+
   function render_protocol_scene(next_scene_name: string): void {
     const scene = SCENES[next_scene_name];
     if (!scene) {
@@ -256,6 +294,19 @@ function mount(): void {
     // loudly inside resolvePrecomputedResult rather than silently falling back
     // to the runtime engine (single production path = precomputed).
     const pipeline_result: PipelineResult = resolvePrecomputedResult(next_scene_name, scene);
+
+    // Rebuild the scene-scoped target-identity adapter (M8) from this scene's
+    // placements. Every ComputedItem carries its unique placement_name and its
+    // object_name; the adapter maps authored targets to the unique DOM
+    // placement_name and back to the object_name store key. build_target_adapter
+    // fails loud only when an authored target later names a NON-unique object
+    // (one placed more than once) with no disambiguating placement_name.
+    current_adapter = build_target_adapter(
+      pipeline_result.final.map((item) => ({
+        object_name: item.object_name,
+        placement_name: item.placement_name,
+      })),
+    );
 
     // Fail-loud empty-scene guard (via assert_scene_not_empty).
     // A student-visible protocol must render a non-empty scene. dev_smoke is exempt.
@@ -288,7 +339,13 @@ function mount(): void {
   // BEFORE the first scene render so the active-affordance accessor can read its
   // snapshot signal; the renderer needs the accessor at mount time.
   const initial_snapshot = build_initial_snapshot(active_config);
-  const reducer = create_snapshot_reducer(active_config);
+  // Resolve the active interaction's authored target to the unique DOM
+  // placement_name as it enters the snapshot (M8), so active_interaction_target
+  // matches the data-item-id the walker clicks, the select-promotion equality,
+  // and the affordance highlight. Delegates to the live per-scene adapter.
+  const reducer = create_snapshot_reducer(active_config, (target: string): string =>
+    current_adapter.resolve_to_placement(target),
+  );
   const emitter = createProtocolShellEmitter(initial_snapshot, reducer);
 
   // Active-affordance accessor (affordance plumbing). A Solid signal mirrors the emitter
@@ -324,8 +381,62 @@ function mount(): void {
   // scene_store/registry import. The load-time authored-value validation pass
   // consumes this inside the step machine.
   const lookup_state_field = create_state_field_lookup();
+
+  // Per-scene target adapters for the load-time target-existence invariant
+  // (M16-D). collect_reachable_scene_names walks the same reachable step
+  // graph the check itself walks, tracking scene transitions the same way the
+  // runtime does, so every scene the protocol can actually visit gets its own
+  // adapter here -- not only the entry scene. resolvePrecomputedResult is a
+  // build-time-precomputed lookup (cheap; no live layout computation), so
+  // eagerly building an adapter per reachable scene here, before any handler
+  // closure or student interaction, stays a load-time cost.
+  const reachable_scene_names = collect_reachable_scene_names(active_config, scene_name);
+  const scene_target_adapters: Record<string, TargetAdapter> = {};
+  for (const reachable_scene_name of reachable_scene_names) {
+    const reachable_scene = SCENES[reachable_scene_name];
+    if (!reachable_scene) {
+      // Scene-existence is a separate failure class, already guarded by
+      // render_protocol_scene's own SCENES lookup when that scene actually
+      // mounts. Skip building an adapter for it here; the target-existence
+      // check treats an unresolved scene as "not checkable", not a miss.
+      continue;
+    }
+    const reachable_pipeline_result = resolvePrecomputedResult(
+      reachable_scene_name,
+      reachable_scene,
+    );
+    scene_target_adapters[reachable_scene_name] = build_target_adapter(
+      reachable_pipeline_result.final.map((item) => ({
+        object_name: item.object_name,
+        placement_name: item.placement_name,
+      })),
+    );
+  }
+
   const step_machine = create_step_machine(active_config, emitter, scene_op_handler, {
     lookup_state_field,
+    // Read-only observed object-state reader over the live scene store. The pure
+    // step machine reads current declared state for a target through this seam:
+    // target_with_value judges a click against real store state, and
+    // final_state_matches builds its snapshot from it. Returns an empty map for
+    // an unseeded target.
+    read_object_state: (target: string) => {
+      const entry = scene_store.state[target];
+      return entry === undefined ? {} : entry.state;
+    },
+    // Scene-scoped target-identity adapter (M8). The step machine normalizes the
+    // equality path to the DOM placement_name and the state-read path to the
+    // object_name store key through this stable delegating wrapper.
+    target_adapter: delegating_adapter,
+    // Per-scene resolver for the load-time target-existence invariant (M16-D).
+    // Looks up the eagerly-built adapter for the scene active at each authored
+    // target's point in the flow graph.
+    resolve_scene_target_adapter: (name: string): TargetAdapter | undefined =>
+      scene_target_adapters[name],
+    // Seed the step machine's current-scene tracker with the initially-mounted
+    // scene so its step-entry scene render (sequence_runner boundary) fires only
+    // on an actual change, never redundantly re-rendering the entry scene.
+    initial_scene: scene_name,
   });
 
   // Restore the read-only walker/debug surfaces (window.PROTOCOL_STEPS +
@@ -334,22 +445,31 @@ function mount(): void {
   // them. Sourced from the emitter snapshot + step events + the scene store.
   const dispose_walker_surface = install_walker_debug_surface(active_config, emitter, scene_store);
 
-  // Attach the click resolver to the scene root and route to step machine.
-  // The click resolver only knows "a scene object was clicked" (gesture
-  // "click"). The active interaction's gesture decides what that click counts
-  // as: a `select` interaction promotes a click on the active target to a
-  // `select` (the student is choosing the next-step object among the present
-  // scene objects), so select reuses the same visible-click affordance as click.
-  // A click on a non-active target stays "click" and the step machine rejects
-  // it (wrong target / wrong order), which is exactly the wrong-selection path.
-  attach_click_resolver(active_scene_root, (target: string, gesture: Gesture) => {
+  // Attach the click resolver to the scene root and route through the gesture
+  // registry. The click resolver only knows "a scene object was clicked"
+  // (gesture "click"); the registry's scene_click_to_command owns the promotion
+  // that used to be an inline ternary here: a click on the active target while
+  // the active gesture is `select` becomes a `select` command (the student is
+  // choosing the next-step object among the present scene objects, reusing the
+  // same visible-click affordance as click); every other scene click stays a
+  // `click` command, and the step machine rejects a wrong/non-active target
+  // (wrong target / wrong order).
+  //
+  // A bare click is never promoted to `adjust`, `drag`, or `type`: those each
+  // need a real affordance that does not exist yet (M12 builds them). So an
+  // active adjust/drag interaction reached by a bare click stays a `click`
+  // command and falls to the step machine's M2 temporary guard (removed by
+  // M13), unchanged by this milestone. dispatch_gesture is the single routing
+  // point; the incoming resolver gesture is ignored because the command is
+  // derived from the live snapshot.
+  attach_click_resolver(active_scene_root, (target: string, _gesture: Gesture) => {
     const snapshot = emitter.get_snapshot();
-    const active_gesture = snapshot.active_interaction_gesture;
-    const resolved_gesture =
-      snapshot.active_interaction_target === target && active_gesture !== null
-        ? active_gesture
-        : gesture;
-    step_machine.handle_click(target, resolved_gesture);
+    const command = scene_click_to_command(
+      snapshot.active_interaction_gesture,
+      snapshot.active_interaction_target,
+      target,
+    );
+    dispatch_gesture(step_machine, command);
   });
 
   // Mount the visible type-input affordance. It lives in its own
@@ -367,12 +487,57 @@ function mount(): void {
     () => (
       <TypeInput
         snapshot={type_snapshot_signal}
-        on_commit={(target: string, typed_text: string) =>
-          step_machine.handle_type_commit(target, typed_text)
-        }
+        on_commit={(target: string, typed_text: string) => {
+          // Route the `type` gesture through the single registry dispatch point,
+          // same as scene clicks. The registry calls handle_type_commit and
+          // returns the runtime's accept signal, which drives the affordance's
+          // visible rejection message. accepted is a boolean for the type
+          // gesture (never null); ?? false is a defensive coercion only.
+          const result = dispatch_gesture(step_machine, {
+            gesture: "type",
+            target,
+            committed_text: typed_text,
+          });
+          return result.accepted ?? false;
+        }}
       />
     ),
     type_input_root,
+  );
+
+  // Mount the visible shared numeric set-point editor for the `adjust` gesture.
+  // Like the type-input overlay it lives in its own container appended to the
+  // document body so it works whether or not the HUD shell is mounted
+  // (?shell=off). It shows only while the active interaction's gesture is
+  // `adjust`; a real stepper/entry + commit routes the committed number to
+  // step_machine.handle_adjust_commit (the only advance path) through the same
+  // single registry dispatch point, which validates it via the interaction's
+  // target_with_value preset (coercing the number to the field's declared type).
+  const adjust_editor_root = document.createElement("div");
+  adjust_editor_root.id = "adjust-editor-root";
+  document.body.appendChild(adjust_editor_root);
+  const adjust_binding = subscribeEmitterToSnapshot(emitter);
+  const adjust_snapshot_signal = adjust_binding.snapshot;
+  const dispose_adjust_editor = render(
+    () => (
+      <SetPointEditor
+        snapshot={adjust_snapshot_signal}
+        on_commit={(target: string, committed_number: number) => {
+          // Route the `adjust` gesture through the single registry dispatch
+          // point, same as scene clicks and type commits. The registry calls
+          // handle_adjust_commit and returns the runtime's accept signal, which
+          // drives the editor's visible rejection message. accepted is a boolean
+          // for the adjust gesture (never null); ?? false is a defensive coercion.
+          const result = dispatch_gesture(step_machine, {
+            gesture: "adjust",
+            target,
+            committed_number,
+          });
+          return result.accepted ?? false;
+        }}
+      />
+    ),
+    adjust_editor_root,
   );
 
   // Optional shell mount. ?shell=off keeps the runtime running but
@@ -412,12 +577,17 @@ function mount(): void {
       if (type_input_root.parentNode !== null) {
         type_input_root.parentNode.removeChild(type_input_root);
       }
+      dispose_adjust_editor();
+      if (adjust_editor_root.parentNode !== null) {
+        adjust_editor_root.parentNode.removeChild(adjust_editor_root);
+      }
       dispose_walker_surface();
       // Release the emitter snapshot subscriptions so listeners do not
       // accumulate across navigations. These bindings mount outside a Solid
       // owner, so onCleanup does not apply; pagehide is the release path.
       affordance_binding.unsubscribe();
       type_binding.unsubscribe();
+      adjust_binding.unsubscribe();
       if (shell_unsubscribe !== null) {
         shell_unsubscribe();
       }

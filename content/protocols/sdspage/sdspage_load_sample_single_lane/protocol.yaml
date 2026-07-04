@@ -97,7 +97,7 @@ steps:
       Carefully dispense the sample into gel cassette lane 1. Dispense slowly
       to avoid bubble formation and sample splashing.
     sequence:
-      - target: gel_cassette.lane_1
+      - target: gel_cassette
         gesture: click
         validator:
           preset: correct_target

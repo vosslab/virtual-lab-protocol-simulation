@@ -212,6 +212,34 @@ test("validate_target_with_value: boolean expected is not parsed from strings", 
 });
 
 //============================================
+// M3 (WS-C) red-path unit tests: mismatched value / non-matching final state.
+// These construct inline inputs distinct from the coercion-focused cases
+// above, directly proving the two closed-vocabulary validators fail closed
+// (return false / wrong_value) rather than silently passing on bad input.
+//============================================
+
+test("validate_target_with_value: mismatched observed value rejects with wrong_value", () => {
+  const interaction = make_interaction("serological_pipette", "target_with_value", {
+    set_volume: 25,
+  });
+  // Observed store state disagrees with the authored expected value.
+  const result = validate_target_with_value(interaction, "serological_pipette", {
+    set_volume: 10,
+  });
+  assert.strictEqual(result.ok, false);
+  assert.strictEqual(result.reason, "wrong_value");
+});
+
+test("validate_final_state_matches: non-matching final state rejects", () => {
+  const step = make_step(1, "final_state_matches", {
+    serological_pipette: { material_name: "PBS", set_volume: 25 },
+  });
+  // Observed snapshot disagrees with the authored expected final state.
+  const snapshot = { serological_pipette: { material_name: "PBS", set_volume: 5 } };
+  assert.strictEqual(validate_final_state_matches(step, snapshot), false);
+});
+
+//============================================
 // validate_final_state_matches: authored-value-directed coercion (M1B)
 //============================================
 

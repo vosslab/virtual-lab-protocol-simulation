@@ -56,15 +56,10 @@ add_placements:
   # well_plate_96 is now placed in the inherited hood_basic center band (single
   # plate); the former microtube_rack_24 placeholder was removed here.
 
-  # Incubator in rear_right. It is large equipment whose rendered height spans
-  # most of the scene, so it claims the entire right side. The right_tool_area
-  # zone overlaps rear_right in X, so any tool placed there would sit under the
-  # incubator; the label pen is therefore placed in the center band instead.
-  # Incubator in rear_right. The incubator asset is oversized (its real-world
-  # 55cm width scales beyond the rear_right zone), so it clips slightly at the
-  # right edge regardless of alignment; align_stop center gives the least clip.
-  # Its X-range still covers the right half of right_tool_area, so the aspirating
-  # pipette and label pen are kept in the left slot of that zone.
+  # Incubator in rear_right (40cm). It is tall equipment on the right side;
+  # align_stop center keeps it clear of the zone edges. Its X-range still
+  # reaches into right_tool_area, so the aspirating pipette keeps the left slot
+  # there and the label pen is placed in the center band, below.
   - placement_name: rear_right_incubator
     object_name: incubator
     zone: rear_right

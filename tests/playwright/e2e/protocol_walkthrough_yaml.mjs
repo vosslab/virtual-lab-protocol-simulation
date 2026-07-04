@@ -59,8 +59,12 @@ import {
   readGameState,
   clickTargetAndWaitProgress,
   typeCommitAndWaitProgress,
+  adjustCommitAndWaitProgress,
   pickWrongOrderItem,
   recordInjection,
+  attachPageErrorCapture,
+  readSubpartOverlay,
+  verifyMaterialAreaAfterInteraction,
 } from "./walker_helpers.mjs";
 
 const DIST_DIR = path.join(REPO_ROOT, "dist");
@@ -74,17 +78,21 @@ const STEP_BUDGET_MS = 30000;
 // Per-click budget: 3 seconds.
 const CLICK_BUDGET_MS = 3000;
 
-// Closed gesture set (PRIMARY_SPEC.md). "click", "select", and "type" have
-// visible affordances in the host:
+// Closed gesture set (PRIMARY_SPEC.md). "click", "select", "type", and "adjust"
+// have visible affordances in the host:
 //   - click  : a real visible click on the active scene object.
 //   - select : choosing the next-step object among the present scene objects;
 //              reuses the same visible-click affordance (the host promotes a
 //              click on the active target to the active `select` gesture).
 //   - type   : filling + committing the visible type-input affordance
 //              ([data-type-input] / [data-type-commit]).
-// "drag" and "adjust" stay classified-unsupported in v1: the host has no visible
-// affordance for them yet, so the walker fails loud (M4-D classifies them).
-const SUPPORTED_GESTURES = new Set(["click", "select", "type"]);
+//   - adjust : setting + committing a value in the visible shared numeric
+//              set-point editor ([data-adjust-input] / [data-adjust-commit]).
+// "drag" stays classified-unsupported for the SWEEP because no content protocol
+// authors a drag yet; the drag affordance + handle_drag_commit are wired (M12)
+// and proven by the step-machine unit test + walker driver, and adding "drag"
+// here is a one-line change once a real drag protocol lands.
+const SUPPORTED_GESTURES = new Set(["click", "select", "type", "adjust"]);
 const KNOWN_GESTURES = new Set(["click", "drag", "adjust", "select", "type"]);
 
 //============================================
@@ -259,9 +267,10 @@ async function walkActiveStep(page, step, report, opts) {
 
     // Wrong-order injection (negative mode): a real visible click on a
     // non-required item must be rejected by the runtime. Only meaningful for the
-    // visible-click gestures (click/select); a `type` interaction has no
-    // alternative scene object to click, so injection is skipped for it.
-    if (wrongOrderMode && gesture !== "type") {
+    // visible-click gestures (click/select); a `type` or `adjust` interaction is
+    // driven through an overlay affordance, not an alternative scene object, so
+    // injection is skipped for those.
+    if (wrongOrderMode && gesture !== "type" && gesture !== "adjust") {
       const wrongItem = await pickWrongOrderItem(page, target);
       if (wrongItem) {
         report.info(`[wrong-order injection] clicking ${wrongItem} (not the active target)`);
@@ -275,6 +284,19 @@ async function walkActiveStep(page, step, report, opts) {
           stepId: step.id,
         });
       }
+    }
+
+    // Structured material-area verification (generic, schema-driven). When the
+    // active interaction's response writes a structured object's declared
+    // material-tint subpart field, snapshot that object's per-subpart overlay
+    // BEFORE the click so the after-verify can assert the targeted members
+    // changed and nothing else did. activeMaterialEffect is a read-only
+    // projection of authored config + generated object schema (walker_debug.ts);
+    // null for every non-material-write interaction. No per-protocol branch.
+    const materialEffect = gs.activeMaterialEffect;
+    let materialBeforeOverlay = null;
+    if (materialEffect !== null) {
+      materialBeforeOverlay = await readSubpartOverlay(page, materialEffect.object_name);
     }
 
     // Correct interaction: drive the active interaction through its visible
@@ -292,6 +314,22 @@ async function walkActiveStep(page, step, report, opts) {
         );
       }
       await typeCommitAndWaitProgress(page, typedText, report, {
+        clickBudgetMs: CLICK_BUDGET_MS,
+      });
+    } else if (gesture === "adjust") {
+      // The expected set-point is read read-only from gameState.activeAdjustValue
+      // (projected from the authored target_with_value `value`, the same
+      // read-only basis the walker uses for type and for which object to click).
+      // A real fill + commit on the visible [data-adjust-input] /
+      // [data-adjust-commit] shared numeric set-point editor.
+      const setPoint = gs.activeAdjustValue;
+      if (setPoint === null) {
+        throw new Error(
+          `adjust_value_missing: step ${step.id} adjust interaction on '${target}' has no ` +
+            `activeAdjustValue to set (validator declares no expected value)`,
+        );
+      }
+      await adjustCommitAndWaitProgress(page, setPoint, report, {
         clickBudgetMs: CLICK_BUDGET_MS,
       });
     } else {
@@ -315,6 +353,16 @@ async function walkActiveStep(page, step, report, opts) {
         progressKind: "advance",
         screenshotOpts: perClickOpts,
       });
+    }
+
+    // After the interaction settles, run the material-area assertion: every
+    // targeted member subpart carries the authored material and its fill
+    // changed, and every OTHER rendered subpart kept its prior material/fill.
+    // A mismatch throws material_area_mismatch / material_area_no_overlay, which
+    // fails this step (and reds the protocol in the sweep) -- exactly the silent
+    // material no-op class the bespoke all-wells test caught, now generic.
+    if (materialEffect !== null && materialBeforeOverlay !== null) {
+      await verifyMaterialAreaAfterInteraction(page, materialEffect, materialBeforeOverlay, report);
     }
 
     // Per-interaction screenshot after the interaction's click completes.
@@ -363,6 +411,11 @@ async function main() {
 
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+
+  // Capture uncaught page exceptions (see docs/active_plans/audits/
+  // adjust_did_not_advance_rootcause.md) so the wait-for-progress drivers can
+  // report the real runtime error instead of a bare "did_not_advance" timeout.
+  attachPageErrorCapture(page);
 
   const consoleErrors = [];
   page.on("console", (msg) => {

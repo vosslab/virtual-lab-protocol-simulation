@@ -4,13 +4,15 @@
 //
 // Asserts contractual data-* attributes on the current renderer output.
 // Tests the CONTRACTUAL selectors (frozen as interface):
-//   - data-item-id        (walker-addressable identity)
+//   - data-item-id        (walker-addressable identity; present ONLY when the
+//                          object's declared capabilities include "clickable",
+//                          per M6 "Enforce capabilities in renderer and
+//                          candidate enumeration")
 //   - data-object-name    (object YAML name)
 //   - data-placement-name (scene placement key)
 //   - data-zone           (zone name)
 //   - data-kind           (object kind enum)
 //   - data-depth          (depth tier enum; conditionally present)
-//   - data-target-id      (reserved, always present, may be empty)
 //   - data-asset          (asset registry key)
 //   - data-missing-svg    (present only on missing-svg placeholders)
 //   - data-label          (present on every label element)
@@ -175,7 +177,6 @@ async function testSceneSelectorContract(page, sceneName) {
         zone: el.getAttribute("data-zone"),
         kind: el.getAttribute("data-kind"),
         depth: el.getAttribute("data-depth"),
-        targetId: el.getAttribute("data-target-id"),
         asset: el.getAttribute("data-asset"),
         missingSvg: el.getAttribute("data-missing-svg"),
         hasSvg: svgEl !== null,
@@ -210,11 +211,16 @@ async function testSceneSelectorContract(page, sceneName) {
       `${sceneName}[${id}]: data-placement-name non-empty`,
     );
 
-    // data-item-id: present and non-empty (walker-addressable identity).
-    assert(
-      typeof item.itemId === "string" && item.itemId.length > 0,
-      `${sceneName}[${id}]: data-item-id non-empty`,
-    );
+    // data-item-id: when present, non-empty (walker-addressable identity).
+    // Absent entirely on a non-clickable item (decoration_only capability, or
+    // a missing-object placeholder bound with capabilities: []) -- see M6
+    // "Enforce capabilities in renderer and candidate enumeration".
+    if (item.itemId !== null) {
+      assert(
+        typeof item.itemId === "string" && item.itemId.length > 0,
+        `${sceneName}[${id}]: data-item-id non-empty when present`,
+      );
+    }
 
     // data-object-name: present and non-empty.
     assert(
@@ -241,12 +247,6 @@ async function testSceneSelectorContract(page, sceneName) {
         `${sceneName}[${id}]: data-depth in closed enum when present (got "${item.depth}")`,
       );
     }
-
-    // data-target-id: attribute is present (may be empty string).
-    assert(
-      item.targetId !== null,
-      `${sceneName}[${id}]: data-target-id attribute present (reserved)`,
-    );
 
     // data-asset: present and non-empty on all items.
     assert(

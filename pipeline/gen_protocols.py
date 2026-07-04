@@ -25,7 +25,12 @@ Validation:
   sequence_complete, final_state_matches
 - outcome.on_success is "complete" and outcome.on_failure is "retry"
 - scene_operations are valid (discriminated by type field)
-- unknown YAML fields raise an error
+- unknown top-level fields raise an error, enforced by invoking the canonical
+  closure check in validation/yaml_schema/protocol_validator.py
+  (ProtocolValidator.validate_closure, backed by PROTOCOL_ALL_KEYS in
+  validation/yaml_schema/constants.py). This is the single schema source for
+  top-level key closure; the checks below do not re-derive their own
+  allow-list.
 - missing required fields raise an error
 
 Output ordering: PROTOCOLS_INDEX sorted by cluster then protocol_name (deterministic).
@@ -33,8 +38,18 @@ Output ordering: PROTOCOLS_INDEX sorted by cluster then protocol_name (determini
 
 import os
 import subprocess
+import sys
 
 import yaml
+
+# Cross-package import: the canonical protocol closure check lives in
+# validation/yaml_schema/, a sibling top-level directory to pipeline/.
+# pipeline/ generator scripts add the repo root to sys.path so the
+# package-qualified import resolves regardless of the caller's PYTHONPATH
+# (pipeline/build_generated.sh invokes this script directly, without
+# sourcing source_me.sh).
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import validation.yaml_schema.protocol_validator
 
 #============================================
 
@@ -262,8 +277,27 @@ def validate_step(step: dict, protocol_name: str, all_step_names: set) -> None:
 		)
 
 
-def validate_protocol(protocol_data: dict, cluster: str, is_dev_smoke: bool) -> None:
+def enforce_top_level_closure(protocol_data: dict, path: str) -> None:
+	"""
+	Enforce top-level protocol key closure by invoking the canonical
+	validator (validation/yaml_schema/protocol_validator.py), the single
+	schema source for PROTOCOL_ALL_KEYS. Raises ValueError naming every
+	unknown/escape-hatch top-level field so the always-run build fails
+	loudly instead of silently accepting it.
+	"""
+	validator = validation.yaml_schema.protocol_validator.ProtocolValidator()
+	closure_findings = validator.validate_closure(protocol_data, path)
+	if closure_findings:
+		messages = "; ".join(finding.format() for finding in closure_findings)
+		raise ValueError(f"Protocol closure violation: {messages}")
+
+
+def validate_protocol(
+	protocol_data: dict, cluster: str, is_dev_smoke: bool, path: str
+) -> None:
 	"""Validate a protocol against the closed schema."""
+	enforce_top_level_closure(protocol_data, path)
+
 	required_top = {"protocol_type", "protocol_name", "entry_step"}
 	missing = required_top - set(protocol_data.keys())
 	if missing:
@@ -731,7 +765,9 @@ def main() -> None:
 		raise RuntimeError("No protocols found in content/protocols or tests/content/dev_smoke")
 
 	for protocol_name, (protocol_data, cluster, is_dev_smoke) in protocols.items():
-		validate_protocol(protocol_data, cluster, is_dev_smoke)
+		protocol_path = os.path.join(protocol_dirs[protocol_name], "protocol.yaml")
+		protocol_rel_path = os.path.relpath(protocol_path, repo_root)
+		validate_protocol(protocol_data, cluster, is_dev_smoke, protocol_rel_path)
 
 	emit_protocols_ts(repo_root, protocols)
 	emit_protocols_index_slim_ts(repo_root, protocols)

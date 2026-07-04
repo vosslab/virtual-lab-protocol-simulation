@@ -9,11 +9,18 @@ import assert from "node:assert/strict";
 
 import {
   SEVERITY_TABLE,
+  BUILD_GATE_EXEMPT_SCENES,
+  isBuildGateExemptScene,
   severityRuleFor,
   buildDiagnostic,
   failsBuild,
   countBuildFailures,
 } from "../src/scene_runtime/layout/diagnostics/severity_model.ts";
+import { buildUnifiedDiagnostics } from "../src/scene_runtime/layout/diagnostics/unified.ts";
+import {
+  promoteBelowViewport,
+  collectUnfittableAssets,
+} from "../src/scene_runtime/layout/diagnostics/promote.ts";
 import { buildActionablePayload } from "../src/scene_runtime/layout/diagnostics/payload.ts";
 import {
   buildRowZoneDecision,
@@ -70,6 +77,153 @@ test("failsBuild and countBuildFailures track only Error diagnostics", () => {
   assert.equal(failsBuild(errorDiag), true);
   assert.equal(failsBuild(warnDiag), false);
   assert.equal(countBuildFailures([errorDiag, warnDiag, warnDiag]), 1);
+});
+
+//============================================
+// M17: preventive art_below_viewport + unfittable_asset codes
+//============================================
+
+test("art_below_viewport is a build-failing Error in the closed vocabulary", () => {
+  const rule = severityRuleFor("art_below_viewport");
+  assert.equal(rule.severity, "Error");
+  assert.equal(rule.failBuild, true);
+  assert.equal(rule.pointerLevel, "placement");
+});
+
+test("unfittable_asset is a non-failing Warning in the closed vocabulary", () => {
+  const rule = severityRuleFor("unfittable_asset");
+  assert.equal(rule.severity, "Warning");
+  assert.equal(rule.failBuild, false);
+  assert.equal(rule.pointerLevel, "placement");
+});
+
+// A synthetic off-canvas finding shaped like the report-only offcanvas stream.
+function offCanvasFinding(classification, scene, zone, placementName) {
+  return {
+    scene,
+    zone,
+    placementName,
+    classification,
+    severity: classification === "fully_off_canvas" ? "error" : "warning",
+    overflow: { left: 0, right: 0, top: 0, bottom: 30 },
+    worstOverflow: 30,
+    tier: "severe",
+  };
+}
+
+test("a synthetic below-viewport item fires the art_below_viewport Error", () => {
+  // Inject one fully-off-canvas item plus one partial overflow. Only the fully
+  // off-canvas item promotes to a build-failing Error; the partial stays report-only.
+  const offCanvas = [
+    offCanvasFinding("fully_off_canvas", "demo_scene", "rear", "sunk_flask"),
+    offCanvasFinding("partial_overflow", "demo_scene", "front", "edge_bottle"),
+  ];
+  const promoted = promoteBelowViewport(offCanvas);
+  assert.equal(promoted.length, 1);
+  const diag = promoted[0];
+  assert.equal(diag.code, "art_below_viewport");
+  assert.equal(diag.severity, "Error");
+  assert.equal(diag.failBuild, true);
+  assert.equal(diag.pointer.scene_name, "demo_scene");
+  assert.equal(diag.pointer.zone_name, "rear");
+  assert.equal(diag.pointer.placement_name, "sunk_flask");
+  // The promoted Error is a build failure the gate will count.
+  assert.equal(countBuildFailures(promoted), 1);
+});
+
+test("no fully-off-canvas item means no art_below_viewport (0 scenes trip it)", () => {
+  const offCanvas = [offCanvasFinding("partial_overflow", "demo_scene", "front", "edge_bottle")];
+  const promoted = promoteBelowViewport(offCanvas);
+  assert.deepEqual(promoted, []);
+});
+
+// A synthetic final item carrying the fields collectUnfittableAssets reads.
+function finalItem(placementName, zone, scale) {
+  return { placement_name: placementName, zone, _scale: scale };
+}
+
+test("an item below the readable floor fires an unfittable_asset Warning", () => {
+  const items = [
+    finalItem("big_flask", "bench", 0.9), // readable, no warning
+    finalItem("tiny_tube", "bench", 0.4), // below floor, warns
+    finalItem("floor_item", "bench", 0.55), // exactly at floor, no warning
+  ];
+  const warnings = collectUnfittableAssets(items, "demo_scene", 0.55);
+  assert.equal(warnings.length, 1);
+  const diag = warnings[0];
+  assert.equal(diag.code, "unfittable_asset");
+  assert.equal(diag.severity, "Warning");
+  assert.equal(diag.failBuild, false);
+  assert.equal(diag.pointer.placement_name, "tiny_tube");
+  assert.equal(diag.pointer.zone_name, "bench");
+  // Warnings never fail the build.
+  assert.equal(countBuildFailures(warnings), 0);
+});
+
+//============================================
+// M17: build-gate scene exemptions
+//============================================
+
+test("the exempt set covers the intentional-void scenes and the adversarial fixture", () => {
+  assert.equal(isBuildGateExemptScene("adversarial_overflow_smoke"), true);
+  assert.equal(isBuildGateExemptScene("hood_basic"), true);
+  assert.equal(isBuildGateExemptScene("microscope_basic"), true);
+  assert.equal(isBuildGateExemptScene("hemocytometer_view"), true);
+  assert.equal(isBuildGateExemptScene("passage_hood_detachment_microscope_view"), true);
+  // A normal curriculum scene is NOT exempt.
+  assert.equal(isBuildGateExemptScene("staining_bench"), false);
+  assert.ok(BUILD_GATE_EXEMPT_SCENES.has("adversarial_overflow_smoke"));
+});
+
+//============================================
+// M17: unified diagnostics stream
+//============================================
+
+test("buildUnifiedDiagnostics folds all four streams into one normalized array", () => {
+  const legacy = [{ stage: "bind", severity: "info", kind: "label_row_staggered", zone: "z1" }];
+  const passes = [
+    {
+      pass: 1,
+      diagnostics: [
+        { stage: "horizontal", severity: "warn", kind: "zone_overflow_negative_gap", zone: "z2" },
+      ],
+      zones_shrunk: ["z2"],
+    },
+  ];
+  const severity = [
+    buildDiagnostic("art_below_viewport", {
+      scene_name: "demo_scene",
+      zone_name: "rear",
+      placement_name: "sunk_flask",
+    }),
+  ];
+  const offCanvas = [offCanvasFinding("fully_off_canvas", "demo_scene", "rear", "sunk_flask")];
+
+  const unified = buildUnifiedDiagnostics({
+    sceneName: "demo_scene",
+    legacy,
+    passes,
+    severity,
+    offCanvas,
+  });
+
+  // One entry per source input, in stable source order.
+  const sources = unified.map((u) => u.source);
+  assert.deepEqual(sources, ["legacy", "pass", "severity", "offcanvas"]);
+  // Every entry carries the scene name and a message.
+  for (const u of unified) {
+    assert.equal(u.scene, "demo_scene");
+    assert.equal(typeof u.message, "string");
+    assert.ok(u.message.length > 0);
+  }
+  // Only the severity-sourced entry is authoritative for the build gate.
+  const failing = unified.filter((u) => u.failBuild);
+  assert.equal(failing.length, 1);
+  assert.equal(failing[0].source, "severity");
+  assert.equal(failing[0].code, "art_below_viewport");
+  // The pass entry carries its pass number; the legacy entry does not.
+  const passEntry = unified.find((u) => u.source === "pass");
+  assert.equal(passEntry.pass, 1);
 });
 
 //============================================

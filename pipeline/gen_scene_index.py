@@ -377,6 +377,19 @@ def discover_per_protocol_scenes(repo_root: str) -> dict:
 						)
 					composite_key = scene_name_field
 
+					# Two per-protocol scene files declaring the same scene_name
+					# would silently collide in this dict: the second file's entry
+					# would overwrite the first, and any SceneChange.to_scene
+					# reference to that scene_name would resolve to the wrong
+					# file at runtime. Fail loudly at generation time instead.
+					if composite_key in protocol_scenes:
+						_prev_protocol, _prev_basename, prev_yaml_path = protocol_scenes[composite_key]
+						raise ValueError(
+							f"Duplicate scene_name '{composite_key}' declared in both "
+							f"{prev_yaml_path} and {yaml_path}; scene names must be "
+							"unique across all per-protocol scene files."
+						)
+
 					protocol_scenes[composite_key] = (
 						protocol_name,
 						scene_basename,

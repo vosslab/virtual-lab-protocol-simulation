@@ -1,667 +1,711 @@
 # Changelog
 
-## 2026-07-03
+## 2026-07-04
+
+### Additions and New Features
+
+- Generic structured material-area verification in the general walker. The
+  schema-driven walker (`tests/playwright/e2e/protocol_walkthrough_yaml.mjs`)
+  now asserts subpart material writes, not just progress signals. `walker_debug.ts`
+  gains a read-only `activeMaterialEffect` projection on the frozen `gameState`
+  surface: for the active interaction it exposes `{object_name, material_field,
+  material_value, expected_subparts}`, computed purely from the interaction's
+  `ObjectStateChange` ops, the object's declared material-tint subpart contract
+  (`find_material_tint_subpart_field`), and the SAME group fan-out the runtime
+  applies (`expand_subpart_group_target`). `walker_helpers.mjs` gains a generic
+  `readSubpartOverlay` (reads every `[data-subpart-overlay] [data-subpart-name]`
+  shape's material + fill) and `verifyMaterialAreaEffect`: after each material-
+  writing interaction it asserts EVERY targeted member subpart carries the
+  authored material (fill changed on a real transition) AND every other rendered
+  subpart kept its prior material/fill ("and nothing else", MATERIAL_DESIGN.md
+  spatial correspondence). This generalizes the bespoke 5-of-96-well
+  `test_all_wells_group_write_walkthrough.mjs` to all 96 members plus the
+  negative check, with no per-protocol branch. Added
+  `tests/test_material_area_verify.mjs` (node unit test) exercising the positive,
+  silent-no-op, stray-change negative, missing-overlay, and bulk paths.
 
 ### Behavior or Interface Changes
 
+- The general walker now reds a protocol whose subpart material write silently
+  no-ops or leaks to the wrong subpart (previously only progress signals were
+  asserted). Full sweep after the change: 26 PASS / 5 FAIL (of 31), the SAME 5
+  pre-existing non-material failures as the baseline (load-timeout and
+  scene-target-missing bugs upstream of any material step). Newly-red count: 0 --
+  every reachable well-plate write verifies correctly. Coverage spans both bulk
+  and PARTIAL group writes: `mtt_solubilization_readout` and
+  `cell_seeding_plate_setup` (`all_wells`, 96/96 members) exercise the positive
+  path; `plate_drug_treatment_media_adjustment` (`block_*` group writes) exercises
+  the NEGATIVE "and nothing else" path live, verifying 6 members with 90 other
+  subparts unchanged and 42 members with 54 unchanged.
+
+### Fixes and Maintenance
+
+- Confirmed the per-subpart material overlay (the `data-subpart-overlay` /
+  `data-subpart-name` / `data-material-name` DOM stamping) is rendered only for
+  objects declaring the material-tint contract (`subpart_geometry` + a
+  `material_tint` subpart visual_state). In the current corpus that is
+  `well_plate_96` only. `gel_cassette` declares its per-lane `material_name` as a
+  `kind: svg` subpart swap whose three cases all emit the SAME asset
+  (`mini_protean_gel`), so a lane load produces no per-lane visual change and no
+  overlay stamping; `dilution_tube_rack_8` renders per-tube `material_volume` as a
+  `kind: composite` field with no `subpart_geometry`, so tubes get no overlay
+  either. These are flagged render-coverage gaps (per-subpart material STATE with
+  no proven visible per-area rendering), surfaced by the generic verifier as a gap
+  rather than fixed here; a per-area gel/tube render is a separate renderer change.
+
+### Decisions and Failures
+
+- The single-subpart, single-lane, and single-tube writes remain unexercised
+  end-to-end by the generic verifier: single-well writes live only in
+  `plate_drug_treatment_drug_addition`, blocked upstream by a pre-existing
+  non-material scene-target bug (`rear_center_carb_stocks.tube_A` missing in DOM,
+  outside the walker task boundary); single-lane and single-tube writes render on
+  gel/tube objects that carry no material-tint overlay (see the stamping gap
+  above). The single-subpart positive + negative comparison logic is pinned
+  deterministically by `tests/test_material_area_verify.mjs`. The bespoke
+  `test_all_wells_group_write_walkthrough.mjs` is now subsumed by the generic path
+  and flagged for human `git rm` (agents do not run git).
+
+- M19b "Commit the durable layout baseline": added `docs/SCENE_LAYOUT_BASELINE.md`, a
+  committed, hand-refreshed snapshot of the settled corpus after the M19 failBuild gate
+  went live (38 scenes, `countBuildFailures` on non-exempt scenes = 0, health scorecard
+  top-10 plus the `severityDiagnostics` Error table). The only Error-level residuals are
+  `unresolved_overlap` x2 in the exempt `adversarial_overflow_smoke` fixture and
+  `unresolved_label_overlap` x3 in the exempt `hemocytometer_view`; both scenes are named
+  in `BUILD_GATE_EXEMPT_SCENES`. Added a pointer note at
+  `docs/active_plans/reports/scene_layout_baseline_pointer.md` and a refresh-command
+  section in `docs/USAGE.md`. This file is refreshed by hand at each release, not
+  auto-regenerated.
+
+- M19 "Honor the failBuild gate + carry diagnostics through production paths":
+  the layout never-crop/never-off-canvas gate is now enforced at build time and
+  the build-time diagnostics travel into the shipped artifact. `pipeline/
+  precompute_layout.mjs` main now calls `countBuildFailures` on each scene's
+  `severityDiagnostics`, skipping `isBuildGateExemptScene` scenes, and exits
+  nonzero naming the scene, object/placement, and code for every non-exempt scene
+  with a `failBuild` diagnostic; `build_github_pages.sh` (`set -euo pipefail`,
+  which invokes precompute directly) and the `run_all_checks.sh` umbrella both
+  fail when the gate fails. Separately, the `unifiedDiagnostics` report stream is
+  serialized alongside `final` into `generated/precomputed_layout.ts` (the
+  `PrecomputedSceneLayout` interface gains a `unifiedDiagnostics:
+  UnifiedDiagnostic[]` field), and `src/scene_runtime/layout/precomputed_result.ts`
+  rehydrates that field into the resolved `PipelineResult` instead of hard-coding
+  an empty list, so report tooling reading a resolved result sees the same
+  findings the engine produced.
+
+### Decisions and Failures
+
+- M19 gate flip followed a verify-first hold. The first corpus scan found 8
+  non-exempt scenes tripping `unresolved_label_overlap` (Error, failBuild:true) on
+  the shared placements `front_right_gel_comb` and
+  `right_tool_area_p10_gel_loading_tip_box` (electrophoresis_bench,
+  extraction_workspace, and six sdspage_* workspaces), so the gate was held rather
+  than break the build on known-bad scenes; the blocker was recorded as item 5 of
+  the scene-manager handshake in
+  `docs/active_plans/audits/walker_click_bug_register.md`. After the scene-manager
+  placement edits landed, a fresh reconciliation confirmed all 8 clean and
+  `countBuildFailures` on non-exempt scenes is 0 (the only remaining
+  `unresolved_label_overlap` is on the exempt `hemocytometer_view`), so the gate
+  was flipped. The 3 historical object-overlap scenes (`seeding_workspace`,
+  `hood_workspace`, `imaging_bench`) are clean; the only remaining corpus
+  `unresolved_overlap` is the exempt `adversarial_overflow_smoke` fixture. Gate
+  proven by a scratch broken non-exempt scene (real overflowing layout under a
+  non-exempt name): `precompute_layout.mjs` exited 1 naming it, and the clean tree
+  exits 0 after the scratch was removed.
+
+- M17 "Layout diagnostics result + preventive below-viewport code": consolidated the
+  layout engine's four parallel diagnostic streams and added two closed-vocabulary
+  codes. `PipelineResult` (`layout/types.ts`) gains `unifiedDiagnostics`, one flat
+  normalized array folding the legacy `diagnostics`, per-pass `passes[].diagnostics`,
+  `severityDiagnostics`, and `offCanvasDiagnostics` streams (built by the new
+  `diagnostics/unified.ts`); it is the long-term single source of truth report tooling
+  reads instead of recomputing. Added the PREVENTIVE never-crop code `art_below_viewport`
+  (Error, `failBuild:true`) to the closed `severity_model.ts` vocabulary: the
+  report-only `fully_off_canvas` off-canvas classification is now promoted into
+  `severityDiagnostics` (`diagnostics/promote.ts` `promoteBelowViewport`). It is a
+  regression guard, not a fix -- 0 of 38 real scenes trip it today (the historical
+  below-viewport clipping was fixed by the uniform rescale); it fails loud if one ever
+  regresses. Added the D2 advisory code `unfittable_asset` (Warning, `failBuild:false`):
+  a final item shrunk below the readable floor (`READABLE_FLOOR_SCALE`, tied to
+  `MIN_SCALE`) emits a named Warning (`collectUnfittableAssets`); 40 such Warnings fire
+  across ~10 dense shrink scenes, making the degradation legible for the scene-manager
+  pass WITHOUT failing the build. Added `BUILD_GATE_EXEMPT_SCENES` /
+  `isBuildGateExemptScene` naming the intentional-void scenes plus the
+  `adversarial_overflow_smoke` dev fixture, for the M19 gate to skip. M17 does NOT wire
+  the build gate (M19 owns `countBuildFailures` in `precompute_layout.mjs`);
+  `precomputed_result.ts` gets an empty `unifiedDiagnostics: []` default to satisfy the
+  type until M19 wires the serialize/rehydrate path. Eleven new unit tests in
+  `tests/test_layout_diagnostics.mjs` cover the two codes, the promotion (synthetic
+  below-viewport item fires the code), the exempt set, and the unified builder.
+
+- M13 "Gesture load-time invariant": added
+  `src/scene_runtime/protocol/gesture_affordance_check.ts`, the PERMANENT load-time
+  gesture-affordance invariant that replaces the M2 temporary runtime guard. It exports the
+  named author-facing error `UnaffordancedGestureError` and the pass
+  `validate_gesture_affordances(config)`, following the `authored_value_check.ts` pattern
+  (named error, shared location suffix, single pass entry point). The pass reads
+  `GESTURE_REGISTRY` (the single source of registered/wired gestures) and throws at protocol
+  load, with full locating fields (protocol, step, interaction index, target, gesture), when any
+  authored interaction names a gesture whose registry row is absent or `wired: false`. It fires
+  inside `create_step_machine` beside `validate_protocol_presets` and
+  `validate_authored_validator_values`, BEFORE the emitter/handlers build and before any browser
+  session, so an unaffordanced gesture fails loud once at load instead of trapping a student
+  mid-walk. The invariant is data-driven off the registry: it hardcodes no gesture list and
+  grows automatically as the registry adds gestures or flips a `wired` flag.
+
+- M12 "Adjust/drag primitives": wired the two M11 registry seams into real visible
+  affordances. Added `src/shell/hud/set_point_editor.tsx`, the ONE shared numeric
+  set-point editor serving every `adjust` field (`set_volume`, `set_rpm`,
+  `set_temperature`, `set_voltage`, timed duration, pH): a stepper (decrement /
+  increment) plus a direct numeric input, mounted to `document.body` so it works
+  under `?shell=off`, shown only while `active_interaction_gesture === "adjust"`,
+  mirroring `type_input.tsx` slot-for-slot (`data-adjust-panel` / `-input` /
+  `-target` / `-decrement` / `-increment` / `-commit` / `-reject-message`). Added
+  `step_machine.handle_adjust_commit(target, committed_number)` and
+  `handle_drag_commit(target, destination_placement)` as the sole advance paths
+  for those gestures, each returning an accept/reject boolean like
+  `handle_type_commit`. `handle_adjust_commit` coerces the committed number to the
+  field's DECLARED type through the same authored-value-directed path
+  `handle_type_commit` uses (`build_typed_value_map`), so a float set-point
+  (voltage 3.5) compares as a float and an int (`set_volume` 1000) as an int; a
+  hard-coded numeric type would truncate a float. `handle_drag_commit` derives the
+  accepted destination from EXISTING authored slots (the `zone` of the first
+  `LayoutMove` in the interaction response) with no new YAML field. Added the
+  read-only `activeAdjustValue` and `activeDragDestination` projections to
+  `walker_debug.ts` gameState (derived the same way as `activeTypeValue`), and the
+  `adjustCommitAndWaitProgress` / `dragToAndWaitProgress` visible-UI walker drivers
+  to `walker_helpers.mjs`. Ten new step-machine unit tests cover adjust
+  accept/reject, float preservation vs truncation, and drag source/destination
+  validation (453 Node tests, 451 pass, 2 skipped).
+
+- M11 "Affordance registry": added `src/scene_runtime/protocol/gesture_registry.ts`, one
+  registry keyed by the closed `Gesture` union (`GESTURE_REGISTRY`) that co-locates the five
+  frozen affordance-contract slots per gesture (render shape, stable `data-*` selectors, value
+  extraction, single step-machine dispatch entry, walker-driver reference), transcribed from
+  `docs/active_plans/decisions/affordance_contract.md`. The module also owns
+  `scene_click_to_command` (the single home of the click-vs-select promotion that used to be an
+  inline ternary in `protocol_host.tsx`) and `dispatch_gesture`, the ONE gesture-routing point,
+  whose `switch` mirrors `scene_operations.ts`'s exhaustive `never` default so a new gesture is a
+  compile error rather than a runtime fallthrough. `click`/`select`/`type` route to live
+  step-machine methods (`handle_click`, `handle_type_commit`); `adjust`/`drag` carry the frozen
+  contract shape with `wired: false` and their `dispatch_gesture` arm is the single obvious seam
+  M12 plugs `handle_adjust_commit` / `handle_drag_commit` into. No affordance emits an
+  adjust/drag command at this milestone, so an active adjust/drag interaction reached by a bare
+  click still falls to the step machine's M2 temporary guard, unchanged. The M2 guard
+  (`step_machine.ts`) is preserved (M13 removes it).
+- M8 "Target adapter": added `src/scene_runtime/protocol/target_adapter.ts`, the single
+  protocol-target-to-DOM identity adapter, and `tests/test_target_adapter.mjs` (15 unit tests).
+  `build_target_adapter(bindings)` builds a scene-scoped adapter from a scene's
+  `{object_name, placement_name}` placements and exposes `resolve_to_placement` (semantic/object
+  target -> the unique DOM `placement_name`) and `resolve_to_object` (semantic/placement target
+  -> the `object_name` state-store key), both preserving a `.subpart` suffix. It FAILS LOUD with
+  `AmbiguousTargetError` when an authored target names a non-unique `object_name` (an object
+  placed more than once) with no disambiguating `placement_name`; a specific `placement_name` of
+  that same twice-placed object still resolves uniquely (the disambiguation path). The module
+  also owns the DOM click-key name (`TARGET_DOM_ATTR` / `TARGET_DOM_SELECTOR`), the read-back
+  helper `placement_name_from_element`, and `IDENTITY_TARGET_ADAPTER` (the adapter-less default).
+  `tests/test_target_adapter.mjs` constructs the twice-placed case in-memory (no content fixture)
+  as the disambiguation probe.
+- Added `tests/playwright/e2e/walk_all_protocols.mjs`, an all-protocols walker sweep runner
+  (also `npm run walk:all`) that enumerates every `content/protocols/**/protocol.yaml` id and
+  spawns the existing single-protocol walker per id, classifying each run PASS /
+  `unsupported_gesture` / FAIL / error and writing a worst-first summary to
+  `test-results/walker/sweep_summary.json`. First sweep against `dist/`: 6 PASS, 15
+  `unsupported_gesture` (all `adjust` gesture, expected pending affordance work), 10 FAIL
+  (mostly `page.waitForFunction` timeouts on sequence-runner protocols and missing scene item
+  ids such as `hood_surface`, `kimwipe_pad`, `waste_container`).
+- Added `tests/content/dev_smoke/decoration_noninteractive_check/`, a dev_smoke fixture that
+  places a `decoration_only` object (`micropipette_tip_box`) beside a `clickable` object
+  (`ethanol_bottle`). Added `tests/playwright/test_decoration_noninteractive.mjs`, browser
+  evidence (production `mountScene` path, no internal API calls) proving the decoration object
+  renders with no `data-item-id` and a real click on it produces no observable progress, while
+  the clickable object beside it does.
+- M16-D "Load-time target-existence invariant": added
+  `src/scene_runtime/protocol/target_existence_check.ts`, the load-time pass that verifies every
+  authored interaction target resolves to a placed scene object before any browser session, so a
+  scene-placement gap (missing `hood_surface`, `plate_reader`, `kimwipe_pad`) fails loud at
+  protocol load with a named author-facing error instead of trapping a student mid-walk.
+- Added `run_all_checks.sh`, the umbrella gate that runs the repo's check suite in one entry
+  point (alongside the existing `run_validate.sh`).
+
+### Behavior or Interface Changes
+
+- M12 "Adjust/drag primitives": `dispatch_gesture`'s single `adjust`/`drag` seam arm
+  (previously a throw "declared seam not yet wired (M12)") now routes to
+  `handle_adjust_commit` / `handle_drag_commit` and returns the runtime accept
+  signal; both `GESTURE_REGISTRY` rows flip `wired: false` -> `wired: true`.
+  `protocol_host.tsx` mounts the `SetPointEditor` overlay in its own body-appended
+  root beside the type-input overlay, routing its committed number through the same
+  single registry dispatch point. The walker's `SUPPORTED_GESTURES` grows to
+  include `adjust` (drag stays sweep-unsupported only because no content protocol
+  authors a drag yet; the wired path is proven by the step-machine unit test plus
+  the walker driver). Walker evidence: `mtt_reagent_prep` now COMPLETES all 4 steps
+  through visible UI via a real adjust interaction (`set_volume` 1000 filled and
+  committed on the visible `[data-adjust-input]` / `[data-adjust-commit]`), where it
+  previously classified `unsupported_gesture`. The all-protocols sweep moved from
+  6 PASS / 15 `unsupported_gesture` / 10 FAIL to 12 PASS / 0 `unsupported_gesture`
+  / 19 FAIL: every previously adjust-blocked protocol is now driven by the affordance
+  (unsupported dropped to zero), 6 of them now PASS, and the rest fail on unrelated
+  pre-existing content defects (missing scene item ids, sequence-runner timeouts,
+  and M8 ambiguous-target reducer crashes on interactions AFTER the adjust). The M2
+  gesture-collapse guard in `step_machine.ts` is preserved (M13 removes it).
+- M12 content fix (`content/protocols/cell_culture/mtt_reagent_prep/protocol.yaml`):
+  disambiguated the `prepare_solution_tube` PBS target from the bare object_name
+  `pbs_bottle` (which the scene places twice: inherited `rear_center_pbs` plus the
+  workspace-added `rear_center_pbs_bottle` "for dissolving MTT") to the specific
+  placement_name `rear_center_pbs_bottle`. The bare object_name is ambiguous to the
+  M8 target adapter and crashed the snapshot reducer once the walker (now driving
+  adjust) reached that interaction; naming the placement is the M8-sanctioned
+  disambiguation path. A parallel `media_bottle` double-placement blocks
+  `plate_drug_treatment_media_adjustment` the same way and remains for a later pass.
+
+- M11 "Affordance registry": `protocol_host.tsx` no longer routes gestures inline. The click
+  resolver callback now derives a `GestureCommand` from the live snapshot via
+  `scene_click_to_command` and hands it to `dispatch_gesture`; the `TypeInput` `on_commit`
+  routes the `type` gesture through the same `dispatch_gesture` and returns the runtime's accept
+  signal for the visible rejection message. The behavior of `click`, `select`, and `type` is
+  unchanged: select still promotes a click on the active target and rejects a non-active target,
+  and type still fills + commits `[data-type-input]` / `[data-type-commit]`. Walker evidence:
+  `sdspage_assemble_electrode_module` completes all 4 click steps; `select_check --wrong-order`
+  rejects the wrong-order click on `ethanol_placement` (no advance) then advances on the correct
+  `pbs_placement` select; `type_check` commits "42" and advances. The 443-test Node suite stays
+  green (441 pass, 2 skipped).
+- M8 "Target adapter": the protocol-target-to-DOM key moved from the non-unique `object_name`
+  to the unique-per-placement `placement_name`, resolved through the single new
+  `target_adapter.ts` (per the M7 decision `docs/active_plans/decisions/target_identity.md`). No
+  existing protocol `target` string changed: the adapter auto-derives `object_name -> its unique
+  placement_name` for every singly-placed object. `scene_item.tsx` now sources `data-item-id`
+  from `item.placement_name` (both the placeholder and normal render paths), keeping M6's
+  `is_clickable` gate, and the affordance highlight compares the item's `placement_name`;
+  `affordance_candidates.ts` enumerates the candidate set in `placement_name` space;
+  `click_resolver.ts` reads the DOM key back through the adapter (`TARGET_DOM_SELECTOR` /
+  `placement_name_from_element`). The snapshot reducer (`create_snapshot_reducer`, new optional
+  resolver arg) normalizes `active_interaction_target` to the resolved `placement_name`, so the
+  walker's `activeTarget`, the `protocol_host.tsx` select-promotion equality, and the affordance
+  ring all agree with the DOM `data-item-id`. `step_machine.ts` takes a new optional
+  `target_adapter` option and normalizes BOTH sides of the `handle_click` and `handle_type_commit`
+  target equality to `placement_name`, feeds the same resolved values into the interaction
+  validator (which re-checks `clicked_target === interaction.target`), and normalizes the
+  `target_with_value` / `final_state_matches` state reads to the `object_name` store key (the
+  scene store stays `object_name`-keyed, so two placements of one object share one state). The
+  new resolver args default to identity, so pure unit tests (target == placement == object) stay
+  green. `protocol_host.tsx` rebuilds the scene-scoped adapter from each mounted scene's
+  `PipelineResult.final` and threads a stable delegating wrapper into the step machine and
+  reducer. Walker evidence: `sdspage_assemble_electrode_module` completes all 4 steps clicking
+  real placement_names that differ from their object_names (`center_electrode_module`,
+  `rear_center_electrophoresis_tank`), and the `--wrong-order` run rejects a wrong placement
+  before advancing on the correct one.
+- M6 "Enforce capabilities in renderer and candidate enumeration": interactivity is now a
+  modeled property instead of an emergent side effect of "every rendered item gets an id".
+  `src/scene_runtime/renderer/scene_item.tsx` stamps `data-item-id` only when
+  `item.capabilities` includes `"clickable"`; a `decoration_only` object or a missing-object
+  placeholder (bound with `capabilities: []`) now renders with no `data-item-id`, so it gets no
+  cursor/hover/ring CSS affordance and is invisible to the delegated `click_resolver`.
+  `src/scene_runtime/renderer/affordance_candidates.ts` `enumerate_candidate_targets` applies the
+  same capability gate, so the resolver-accepted candidate set can never include a non-clickable
+  item. Removed the dead, always-empty `data-target-id=""` attribute from the renderer, from
+  `docs/specs/INTERFACE_VOCABULARY.md`, and from `tests/playwright/test_scene_dom_contract_selectors.mjs`
+  / `tests/playwright/test_interaction_attrs.mjs` (both updated to assert `data-item-id` only
+  when present, since a scene may now legitimately render non-clickable items).
+- M9 "Typed gesture/validator unions": `ValidatorReference`
+  (`src/shell/adapter/types.ts`) is now a discriminated union keyed on `preset`,
+  mirroring the existing `SceneOperation` union, replacing the loose bag where any
+  preset could carry any field. Five member interfaces (`CorrectTargetValidator`,
+  `CorrectChoiceValidator`, `TargetWithValueValidator`, `SequenceCompleteValidator`,
+  `FinalStateMatchesValidator`) encode field legality per preset: `target_with_value`
+  carries the flat `value` map, `final_state_matches` carries `target` plus the flat
+  `contains` map, and the three field-free presets carry `preset` only. Illegal fields
+  are typed `never` on each variant so they cannot be authored on the wrong preset,
+  while remaining declared optional keys so the step machine's and authored-value
+  checker's union-wide reads keep resolving without narrowing (no changes forced in
+  `step_machine.ts`). The second, looser `Interaction` in
+  `src/scene_runtime/protocol/validators.ts` had its `gesture: string` field tightened
+  to the canonical closed `Gesture` union so the validator DTO cannot carry an
+  out-of-vocabulary gesture. `Gesture` itself stays the closed string-literal union
+  (the canonical payload-free discriminated form); giving it object payloads is
+  deferred to the affordance-registry work. Validator dispatch keeps its `never`
+  exhaustiveness. `./check_codebase.sh` stays green.
+- M2 "Gesture-guard truth (temporary)": a bare pointer click can no longer silently satisfy an
+  `adjust` or `drag` interaction. `src/protocol_host.tsx` now promotes a bare click ONLY to
+  `select` (the one gesture that legitimately reuses the visible-click affordance); `adjust`,
+  `drag`, and `type` are no longer relabeled from a bare click, so the raw `"click"` gesture
+  reaches the step machine and is rejected instead of falsely completing the step. A matching
+  TEMPORARY guard in `src/scene_runtime/protocol/step_machine.ts` `handle_click` loudly rejects an
+  active `adjust`/`drag` interaction reached by a bare `"click"`. Both are gesture-data-driven, not
+  per-protocol, and are marked TEMPORARY: M13's load-time gesture-affordance invariant replaces and
+  deletes them once real `adjust`/`drag` affordances exist (M12). `select` and `click` are
+  unaffected; the M1 adjust unit test (which drives an `adjust` gesture directly) stays green.
+- `handle_modal_close` and `handle_timer_elapsed` in `step_machine.ts` now emit a `no_active_step`
+  `interaction_rejected` in the no-active-step condition instead of returning silently, matching
+  `handle_click`/`handle_type_commit`, so a dropped modal-close or timer-elapsed event is observable
+  to emitter subscribers (`window.gameState`) rather than vanishing.
 - `docs/COLOR_CONTRAST_ACCESSIBILITY.md` reduced to the generic WCAG contrast method; the
   previously bundled concept-map palette tables were re-homed to `concept-map-maker`'s new
   `docs/PALETTE_CONTRAST_AUDIT.md`.
+- Walker diagnosability: the walker now registers a `pageerror` listener
+  (`tests/playwright/e2e/walker_helpers.mjs`) so an uncaught page exception thrown during
+  next-target resolution (for example `AmbiguousTargetError` from a twice-placed object) is
+  surfaced as the real exception instead of a bare `waitForFunction` timeout.
 
-## 2026-07-02
+### Fixes and Maintenance
 
-### Additions and New Features
+- Label-overlap handshake (walker M19 failBuild gate): cleared `unresolved_label_overlap` Errors
+  on the 8 SDS-PAGE/electrophoresis scenes with one base edit -- placed the `front_right_gel_comb`
+  label below the comb in `content/base_scenes/electrophoresis_bench.yaml`, moving it out of the
+  bottom-right corner it shared with the `right_tool_area_p10_gel_loading_tip_box` label. Also
+  cleared the same Error class in the microscope family: pushed the `left_microtube_rack` and
+  `right_hemocytometer_slide` labels below their bench objects in `content/base_scenes/microscope_basic.yaml`
+  (they rose into the rear shelf band), and applied the same fix to the re-added
+  `right_hemocytometer_slide_clear` in `passage_hood_detachment/scenes/microscope_view.yaml`. All
+  fixes reposition labels only; no object shrunk, no target moved. `hemocytometer_view` keeps one
+  residual label overlap that stems from its intentional cross-zone density (overlap_count 6); left
+  as authored and flagged for a density decision.
+- Downscaling sweep: ranked every scene by `final_scale` and lifted the worst floor. In
+  `passage_hood_detachment/scenes/hood_workspace.yaml` (T7) collapsed a sparse third tier-row
+  (hood surface tier 2 -> tier 1, sharing the flask's wide center row); the scene-wide uniform
+  rescale is a vertical stack fit, so removing a tier-row's label overhead raised the whole-scene
+  factor 0.461 -> 0.499 and lifted every readable glassware bottle (mean 0.427 -> 0.462), with no
+  large-by-design object shrunk. Documented the finding that the single global uniform-rescale
+  factor couples one over-tall row to every object (7 of 9 T7 objects are uncrowded yet dragged
+  down); that layout-model change (per-zone/per-band scale floors) routes to the architect. See
+  `docs/active_plans/audits/downscaling_sweep_and_uniform_rescale_coupling.md`.
+- Scene-manager handshake (walker certified register): five placement/dedupe edits that clear the
+  walker's remaining `target_missing` and ambiguous-target reds, all inside the scene-content
+  boundary. Placed the `hood_surface` return affordance in
+  `passage_hood_detachment/scenes/microscope_view.yaml` (freeing rear_right by removing the
+  non-target ethanol) and the `plate_reader` doorway in
+  `mtt_solubilization_readout/scenes/bench_workspace.yaml` (freeing rear_right by removing the
+  non-target vortex); placed a real clickable `kimwipe_pad` in `content/base_scenes/staining_bench.yaml`
+  (tier-2 above the waste, resolving the noted collision) so the two destain protocols can complete;
+  deduped `media_bottle` in `plate_drug_treatment_media_adjustment/scenes/plate_workspace.yaml`
+  (removed inherited `base_rear_right_media`, kept `rear_center_media`) and `laemmli_4x_bottle` in
+  `content/base_scenes/sample_prep_bench.yaml` (removed the working-surface duplicate, kept the
+  reagent-shelf placement), both clearing an `AmbiguousTargetError`. Each bare target now resolves to
+  exactly one placement. Layout gate re-run on all touched scenes: no new overflow or overlap
+  (flag set unchanged from the de-shrink baseline). Also removed the never-targeted `sterile_water`
+  staging bottle from `drug_dilution_setup/scenes/bench_setup.yaml` (the diluent is `media_bottle`,
+  clicked in `dilution_workspace`) to reconcile the diluent narrative.
+- M14b "Reconcile the three walker docs": brought `docs/specs/WALKTHROUGH_GUIDE.md`,
+  `docs/FILE_STRUCTURE.md`, and `docs/CODE_ARCHITECTURE.md` in line with the landed single-walker
+  tree in one patch. WALKTHROUGH_GUIDE.md gained the `run_playwright_tests.sh` front-door run path
+  (build-as-needed browser sweep, kept separate from the fast `check_codebase.sh` gate), dropped
+  every stale `M4-D` planning token, corrected the `--list-protocols` glob to the recursive
+  `content/protocols/**/protocol.yaml` (clustered layout via `rglob`), and updated the gesture
+  coverage to current reality (`click`/`select`/`type`/`adjust` supported through visible
+  affordances; `drag` wired and unit-tested but sweep-classified `unsupported_gesture` only because
+  no content protocol authors one yet). FILE_STRUCTURE.md replaced the deleted-per-M14a
+  `tests/playwright/walker/` "shared Playwright walker engine" line with the single canonical
+  `tests/playwright/e2e/` walker (`protocol_walkthrough_yaml.mjs`, `walk_all_protocols.mjs`,
+  `walker_helpers.mjs`), added the new protocol modules (`target_adapter.ts`, `gesture_registry.ts`,
+  `gesture_affordance_check.ts`, `target_existence_check.ts`, `flatten_sequence_runner.ts`,
+  `authored_value_check.ts`), the `set_point_editor.tsx` adjust affordance, and root scripts
+  `run_all_checks.sh` / `run_playwright_tests.sh`. CODE_ARCHITECTURE.md documented the same six
+  protocol modules, retired the stale "Known gaps" (walker cannot complete a protocol,
+  sequence_runners not runnable, `tests/playwright/walker/` supersession question -- all resolved by
+  M4/M5/M16-A/M14a), and added the umbrella and sweep gates. Docs-only; no code, test, or protocol
+  YAML changed.
 
-- Added `devel/clean_build.sh`, the light build cleaner wired to the `npm run clean` target. It
-  wipes build output, tool caches, and test artifacts while keeping `node_modules` (and Rust
-  `target/`) intact, so the next build is ab initio with no reinstall.
-- Updated `devel/dist_clean.sh` (the deep reset) to keep the committed `package-lock.json`, so a
-  distribution-clean checkout still drives a reproducible `npm ci`.
-- Repointed the `clean` npm alias in `package.json` from `./dist_clean.sh` to
-  `./devel/clean_build.sh`.
-- Started tracking `package-lock.json` (removed it from `.gitignore`) so this GitHub Pages repo
-  carries a reproducible lockfile.
-- Added a "Try it live" GitHub Pages link near the top of README.md pointing to https://vosslab.github.io/virtual-lab-protocol-simulation/, so readers can launch the live app in one click.
+- Scene layout de-shrink pass: rebalanced 22 crowded curriculum scenes (four base-scene
+  families -- `electrophoresis_bench`, `hood_basic`, `staining_bench`, `bench_basic` -- plus
+  `imaging_bench`) so the solver no longer shrinks whole scenes toward the packing floor.
+  Base-scene `zones`/`placements` were spread across added front bands and widened rear zones;
+  per-child `add_placements` were redistributed and inherited non-target clutter
+  (`center_water_bath`, `center_centrifuge`, `center_well_plate_96`, spare pipettes) removed with
+  `remove_placements` (target-scanned: an object is removed only when the mounting `protocol.yaml`
+  never clicks it in that scene). Cleared all three engine `unresolved_overlap` errors
+  (`seeding_workspace`, `hood_workspace`, `imaging_bench` now report `overlap_count == 0`) and the
+  one `post_rescale_overflow` scene (`passage_hood_detachment_hood_workspace`). Fixed four
+  contract item-4 missing-target gaps where a protocol clicked an object its scene never placed:
+  added `microscope`+`incubator` (`passage_hood_detachment/hood_workspace`),
+  `biohazard_decant`+`media_bottle` (`passage_pellet_reseed/centrifuge_workspace`), and kept the
+  inherited `media_bottle` in `drug_dilution_setup/dilution_workspace` (the diluent clicked every
+  step, previously removed while only an untargeted `sterile_water_bottle` was staged). Resized
+  the incubator asset (`display_width_cm` 55 -> 40) so it fits `rear_right` without overflow.
+  Corpus gate: every rebalanced scene holds `post_rescale_overflow == false`, `off_canvas == 0`,
+  object `overlap_count == 0`, and `mean final_scale >= 0.50`, except the documented
+  `passage_hood_detachment_hood_workspace` per-scene floor (0.4272, structurally unreachable with
+  its three large required objects; flagged for a visual read). The three `bench_basic` healthy
+  children and the four intentional dense-by-design scenes (`microscope_basic`,
+  `passage_hood_detachment_microscope_view`, `hemocytometer_view`, `adversarial_overflow_smoke`)
+  are unchanged. All edits are `content/**` YAML only; no engine, pipeline, or runtime source
+  touched.
+
+- Implemented sequence-runner mini-protocol chaining (M16-A), fixing all 5
+  `protocol_type: sequence_runner` protocols (`cell_culture_full`,
+  `routine_passage`, `sdspage_full`, `sdspage_load_samples_batch`,
+  `sdspage_prepare_sample_mix_batch`) that previously threw
+  `Unknown step_name in protocol` at page load because
+  `protocol_host.tsx` resolved the runner config once and
+  `create_step_machine` was handed an empty steps list. Added
+  `src/scene_runtime/protocol/flatten_sequence_runner.ts`, a pure function that
+  expands a runner into one flat `mini_protocol`-shaped config: each
+  constituent's steps are namespaced (`mp{i}__<name>`) so a mini listed multiple
+  times keeps distinct ids, each constituent's terminal step is rechained to the
+  next constituent's entry step, and each constituent's entry step carries its
+  resolved entry scene. `mount()` now flattens every config unconditionally
+  (non-runners pass through unchanged), so the step machine, reducer, walker
+  surface, and HUD run the runner as one steps list with no `protocol_name`
+  branch. `step_machine.ts` gained a data-driven step-entry scene render:
+  `enter_step` transitions to `step.scene` (the documented
+  "initial/transition scene for this step") before emitting `step_started` when
+  it differs from the tracked current scene, so each mini boundary renders the
+  correct scene and rebinds the target adapter before the student interacts; a
+  new `initial_scene` option seeds the tracker so no redundant re-render fires
+  for normal protocols. Walker evidence: `sdspage_load_samples_batch` now walks
+  all 9 flattened steps to completion (three chained instances of
+  `sdspage_load_sample_single_lane`), and `sdspage_full` chains through its whole
+  first constituent into `mp1` before stalling on a separate constituent bug.
+  Added `tests/test_flatten_sequence_runner.mjs` and step-entry-scene cases in
+  `tests/test_step_machine.mjs`. The remaining 4 runners now load and chain
+  correctly but cannot yet walk to completion because a constituent mini
+  (`passage_hood_detachment` `hood_surface`;
+  `sdspage_prepare_sample_mix_single_lane` `adjust`) still fails standalone under
+  separate M16 waves.
+- Fixed the repo-wide `eslint` gate: background-agent git worktree checkouts under
+  `.claude/worktrees/agent-*` were matched by the canonical `**/*.{ts,tsx,mts,cts,js,mjs,cjs}`
+  glob, and each worktree's own `tsconfig.json` caused typescript-eslint to fail every one of
+  its files with "No tsconfigRootDir was set, and multiple candidate TSConfigRootDirs are
+  present", flooding `./check_codebase.sh` step 3 with hundreds of unrelated errors. Added a
+  `.claude/**` ignore entry to consumer-owned `eslint.config.local.js` (the propagated
+  `eslint.config.js` is not edited directly), matching the existing `OTHER_REPOS/**` sibling-repo
+  ignore convention.
+- Updated `tests/test_affordance.mjs` fixtures for the M6 capability gate: the
+  `make_pipeline_result` helper now stamps `capabilities: ["clickable"]` on its fixture items
+  (`enumerate_candidate_targets` now reads `item.capabilities`), and added two dedicated unit
+  tests asserting a `decoration_only` item and a `capabilities: []` placeholder are excluded from
+  the candidate set.
+- Made the two state-touching validators read real scene state (M1 validator truth). The
+  `target_with_value` click path in `step_machine.ts` sourced its "observed" value map from the
+  authored validator parameters, so the expected value was compared against itself and the check
+  was always `ok`; it now reads the live scene-store state through a new read-only
+  `read_object_state` seam on `StepMachineOptions` (wired over `scene_store` in
+  `protocol_host.tsx`), so a click whose target state does not match the authored value fails with
+  `wrong_value`.
+- Fixed `final_state_matches` so it can actually pass or fail at runtime instead of retrying
+  forever. `to_validator_step` now projects the step-validator parameters from the authored
+  `target` + `contains` fields (it previously read `step_validator.value`, which is undefined for
+  this preset and starved the validator of parameters), and `emit_step_validator_outcome` builds
+  and passes the real observed object-state snapshot. The `validators.ts` `final_state_matches`
+  dispatch no longer masks a missing snapshot with a silent `?? {}` default; a missing snapshot now
+  throws loudly. Removed the now-stale "runtime projection is broken" acknowledgement comment in
+  `authored_value_check.ts`.
+
+- M16-C-safe "Subpart-click retarget, 3 auto-safe protocols": applied the ratified
+  `docs/active_plans/decisions/subpart_click_pattern.md` recipe to the three protocols the
+  architect pedagogy-cleared as auto-apply-safe (whole-object action; subpart is the recorded
+  effect, not the graded skill). In each, changed the failing interaction `target` from
+  `<base>.<subpart>` to `<base>` (the clickable scene object); left the response
+  `ObjectStateChange` target and any `final_state_matches` field reference on the subpart
+  unchanged, matching the passing `cell_seeding_plate_setup` shape. `mtt_plate_reaction`:
+  `add_mtt_to_wells` interaction `well_plate_96.all_wells` -> `well_plate_96` (one occurrence).
+  `mtt_solubilization_readout`: `add_dmso_to_wells`, `trituration_to_dissolve`, and
+  `read_absorbance` interactions `well_plate_96.all_wells` -> `well_plate_96` (three
+  occurrences). `sdspage_load_sample_single_lane`: `dispense_lane` interaction
+  `gel_cassette.lane_1` -> `gel_cassette` (one occurrence). Walked all three post-fix:
+  `mtt_plate_reaction` and `sdspage_load_sample_single_lane` PASS all steps through visible UI.
+  `mtt_solubilization_readout` clears its own subpart-click FAIL (`add_dmso_to_wells` and
+  `trituration_to_dissolve` now pass) but `read_absorbance` still fails on an unrelated,
+  pre-existing gap: `scenes/bench_workspace.yaml` has no `plate_reader` placement, so the
+  step's own `target: plate_reader` entry interaction (untouched by this fix) has no DOM node to
+  click from that scene. Left `sdspage_load_protein_ladder` and
+  `plate_drug_treatment_drug_addition` untouched per the decision's pedagogy-call gate (subpart
+  discrimination is explicit taught skill in both).
+
+- M16-B "waitForExports honest-budget one-liner": fixed `waitForExports` in
+  `tests/playwright/e2e/walker_helpers.mjs` passing `{ timeout: timeoutMs }` into the `arg`
+  position of `page.waitForFunction(pageFunction, arg, options)` instead of `options`, since
+  the zero-parameter predicate left no slot for it to land correctly. The intended 8000ms
+  budget was silently replaced by Playwright's 30000ms default, so a genuinely dead export
+  took 30s to surface instead of 8s. Added the missing `undefined` `arg` argument so
+  `{ timeout: timeoutMs }` lands in `options`. Verified with a scratch page that never defines
+  the exports: the wait now times out at 8007ms (was previously falling through to 30000ms).
 
 ### Removals and Deprecations
 
-- Removed the root `dist_clean.sh`; both cleaners now live only under `devel/`
-  (`devel/clean_build.sh` light, `devel/dist_clean.sh` deep).
+- M14a "Delete stale walker tree (staleness check)": confirmed `tests/playwright/walker/`
+  (`audit_all.mjs`, `click_resolver.js`, `engine.mjs`, `index.js`, `run.mjs`, `screenshot.js`,
+  `tsconfig.json`) is dead. The tree targets an extinct runtime contract
+  (`data-testid` selectors, a `__RUNTIME_PROTOCOL_CONFIG` global) superseded by the live walker
+  (`tests/playwright/e2e/protocol_walkthrough_yaml.mjs` + `walker_helpers.mjs`). A repo-wide grep
+  found no external reference to any file in the folder (only self-referencing usage-comment
+  docstrings and agent worktree copies under `.claude/worktrees/`), and `grep -rn
+  "__RUNTIME_\|data-testid" src/` returned empty, confirming no live runtime still emits the old
+  contract. Full evidence and the exact `git rm` file list are recorded in
+  `docs/active_plans/audits/stale_walker_staleness_check.md`. No files were deleted by this
+  check; a human runs the listed `git rm` to complete the removal.
 
-## 2026-07-01
-
-### Additions and New Features
-
-- Added a light root `dist_clean.sh` (`rm -rf dist _site *.tsbuildinfo .eslintcache`,
-  rooted via `git rev-parse --show-toplevel`), modeled on `sports-life-game/dist_clean.sh`.
-  Repointed `npm run clean` to `./dist_clean.sh` so the clean front door removes build
-  output while keeping `node_modules/` and dependency installs intact. `devel/dist_clean.sh`
-  remains in place as the separate deep-reset tool (also removes `node_modules`).
-- Added missing `npm run test:playwright` alias mirroring `./run_playwright_tests.sh`
-  (canonical shell-script/npm-alias pair per `docs/TYPESCRIPT_STYLE.md`).
-
-### Fixes and Maintenance
-
-- Reformatted 7 files with `prettier --write` after the prettier 3.9.4 floor bump. The
-  fleet-wide prettier floor bump changed formatting output such that these previously-clean
-  files failed `prettier --check`. Ran `npx prettier --write
-  '**/*.{ts,tsx,mts,cts,js,mjs,cjs}'` to conform to the canonical `.prettierrc`;
-  whitespace-only, no logic change.
-- Aligned the `build`, `serve`, and `check` `package.json` script aliases to the canonical
-  `./X.sh` front-door form (`./build_github_pages.sh`, `./run_web_server.sh`,
-  `./check_codebase.sh`), matching the other TypeScript repos instead of the outlier
-  `bash X.sh` form.
-- Set `tsconfig.json` `jsx` to `preserve` to match the Solid convention used by the sibling
-  Solid repos (`concept-map-maker`, `pseudo-code-mapper`); `jsxImportSource: solid-js` is
-  unchanged. `tsc` runs `--noEmit` (typecheck only) and `esbuild-plugin-solid` performs the
-  actual JSX transform, so this affects only how tsc type-checks JSX, not the emitted bundle.
-- Fixed `./check_codebase.sh` lint gate: added browser-context globals in
-  `eslint.config.local.js` for `tools/protocol_to_png.mjs`, `tools/scene_to_png.mjs`,
-  `tools/scorecard_m2.mjs`, `tools/svg_picker/**`, and `tests/test_walker_debug.mjs`.
-  These files reference `window`/`document` inside Playwright `page.evaluate` /
-  `page.waitForFunction` browser callbacks (or, for the test file, a `globalThis.window`
-  stub), not real Node globals, so `no-undef` was flagging correct code. Mechanical fix
-  per the documented pattern; gate now passes clean (typecheck, lint, format, unit tests).
-
-## 2026-06-27
-
-### Additions and New Features
-
-- Added `run_scene_health.py` (root-level): visible single-command entry point for non-technical scene authors.
-  Runs the full two-step chain (`layout_metrics.mjs --all` then
-  `layout_health_report.mjs --all`) with no npm or node knowledge required.
-  `python3 run_scene_health.py` checks all scenes and streams the scorecard;
-  `python3 run_scene_health.py <scene_name>` checks one scene and prints a
-  compact summary (finding, categories, verdict, severity, target) plus the
-  report path; `python3 run_scene_health.py --list` lists known scene names.
-  Friendly prereq checks (node on PATH, tools present) with plain-language
-  errors. No precompute step required: metrics tool runs the pipeline live.
-- Extended `docs/specs/SCENE_METRICS.md` with task-first workflow section "How do
-  I get scene metrics for my new scene?" (6-step workflow: edit YAML, run
-  `python3 run_scene_health.py <scene_name>` -- script does everything, read
-  scorecard row, open `health_report.md` for full detail, revise YAML, rerun
-  until acceptable) and a troubleshooting mini-list (scene not found, report did
-  not update, metrics look wrong, borderline warning). Single-scene mode prints
-  to stdout only; all-scenes mode writes `test-results/layout_health/health_report.md`.
-- Added `tools/layout_golden_diff.mjs` (M1/WS-A): ephemeral regression harness that
-  captures a gitignored snapshot at `test-results/layout_reference_snapshot.json`
-  and compares engine output after changes. Snapshot includes provenance (scene count,
-  generated-layout hash, command, timestamp) and staleness warnings when older than the
-  current engine state. Accessible via `npm run layout:diff` and `npm run layout:refresh`.
-- Added `tools/layout_metrics.mjs` (M1/WS-B): raw per-scene geometry tool reporting
-  rectangle-union fill, largest-empty-rect, per-zone and per-grid occupancy, per-object
-  scale and floor proxies, label overlaps, AABB overlap graph, and balance. Generates a
-  per-scene overlay summary; accessible via `npm run layout:metrics`.
-- Added `tools/layout_health_report.mjs` (M2/WS-C): interprets raw geometry metrics
-  into provisional health categories (`healthy`, `shrink-stressed`,
-  `high-empty-space-plus-shrink`, `crowded`, `label-stressed`, `sparse`). Classifies
-  each scene finding as `engine-fit`, `authoring`, `intentional`, or `healthy` with
-  per-scene diagnoses and a worst-first author scorecard. Distribution-derived
-  PROVISIONAL bands (pending human approval); shrink fields labeled PROXY; borderline
-  tagging. Accessible via `npm run layout:health`.
-- Added `npm run layout:health` alias (`node --import tsx tools/layout_health_report.mjs --all`)
-  to `package.json`.
-- Extended `docs/LAYOUT_REMAINING_WORK.md` with sections 8-10 (M2/WS-D): section 8
-  explains the health report for scene designers (how to generate, category reference,
-  finding reference, reading evidence blocks); section 9 documents the PROVISIONAL
-  metric bands (fill, LER, shrink, label conflict) with distribution-derived values;
-  section 10 lists the 16 authoring-class scenes worst-first with one-line diagnoses
-  and authoring targets.
-- Added `docs/active_plans/audits/layout_geometry_audit.md` (M3/WS-E): documents the
-  audit contract, constraint set, and objective function; the three shrink mechanisms
-  as a greedy rescue heuristic; the sparse-and-shrunk answer; ranked findings; and
-  filled M5 decision templates. M5 verdict: NO-GO (see Decisions below).
-- Added report-only off-canvas validation diagnostic stream (M3/WS-F): the validate
-  phase classifies each item against scene_bounds as `fully_off_canvas` (error-level)
-  or `partial_overflow` (magnitude-scaled warning). Findings surface on
-  `PipelineResult.offCanvasDiagnostics` as a separate stream that never blocks the
-  build gate. New `tools/offcanvas_baseline.mjs` writes a baseline report to
-  `docs/active_plans/audits/offcanvas_baseline.md` (0 of 38 scenes flagged).
-  New `src/scene_runtime/layout/diagnostics/offcanvas.ts` holds the diagnostic type
-  and classifier. Placement output is byte-identical to HEAD.
-  New `tests/test_layout_offcanvas.mjs` exercises the off-canvas classifier.
-- Added `tests/test_layout_config.mjs` (M4/WS-J): 16 behavioral config-precedence
-  tests covering zone_gap split (confirmed intentional; no disagreeing duplicate),
-  scene-level and zone-level overrides, and strategy-local values.
-- Added `docs/specs/SCENE_METRICS.md`: canonical scene-metrics reference for scene
-  writers. Five-section structure: quickstart (commands, output path, scorecard
-  columns), category meanings (sparse, crowded, shrink-stressed, label-stressed,
-  off-canvas, high-empty-space-plus-shrink), finding-to-action table (authoring,
-  engine-fit, intentional, validation) with practical authoring moves, evidence-field
-  glossary (fill ratio, largest empty rectangle, scale, floor hits, overlap graph,
-  balance; PROVISIONAL bands and PROXY shrink signals noted), and maintainer notes
-  (band derivation, current provisional values, severity scoring weights). Content
-  moved from `docs/LAYOUT_REMAINING_WORK.md` sections 8.2-8.4 and 9; those sections
-  now point here. Linked from `AGENTS.md` specs list and
-  `docs/specs/PROTOCOL_AUTHORING_GUIDE.md` related references.
-
-### Fixes and Maintenance
-
-- Audit-fix pass: scrubbed planning-scaffold tags (WP-#, WS-#, M#) from all
-  comments and docstrings in `tests/test_normalize_svg_v3.py`; renamed 8 test
-  functions to drop the `wp3b_` prefix; added `pathlib` import and annotated 3
-  unannotated helper params. Replaced `sys.exit(1)` with `raise SystemExit(1)`
-  in `run_scene_health.py` (PYTHON_STYLE: avoid sys.exit). Corrected
-  `docs/specs/SCENE_METRICS.md` single-scene-mode description (the command
-  DOES write `health_report.md`, contrary to the prior text). Added
-  `run_scene_health.py` and `docs/specs/SCENE_METRICS.md` to
-  `docs/FILE_STRUCTURE.md` table. Reordered `docs/LAYOUT_REMAINING_WORK.md`
-  section 8.1 so the designer-facing `python3 run_scene_health.py` command
-  leads, with node/npm forms moved to a maintainer subsection. Fixed
-  `docs/CODE_ARCHITECTURE.md` normalize_svg_v3 deps filename from
-  `pip_requirements.txt` to `pip_requirements-dev.txt`.
-- Removed the fixture-manifest harness from `tests/test_normalize_svg_v3.py`
-  (`_MANIFEST_PATH`, `_load_manifest`, `_manifest_normalize_params`,
-  `test_manifest_entries_normalize`, `_manifest_rejection_params`,
-  `test_manifest_rejection_entries`, `_manifest_viewbox_params`,
-  `test_manifest_viewbox_entries`): the external file
-  `tests/fixtures/svg_normalizer/expected_bboxes.json` is banned per
-  PYTEST_STYLE.md (no fixtures in the repo) and its absence was aborting
-  collection of all 4556+ tests. Replaced with five inline real-SVG cases
-  covering the manifest scope areas not already exercised by existing inline
-  tests: relative `h`/`v` path commands (bbox width/height round-trip),
-  relative `l` (lineto) commands (triangle bbox), relative `a` arc command
-  (arc-bulge capture), viewBox with padding (dimensions include 2x padding),
-  and viewBox with zero padding (dimensions tight to geometry). Collection no
-  longer errors; `pytest tests/` passes 4677 tests.
-- Repaired a dead ancestor-walk in `tests/playwright/test_bench_basic_render.mjs`
-  Assertion A (M3/WS-G): replaced with a real `parentElement` clip-detection walk up
-  to `#scene-root` that checks for `overflow`, `clip`, `mask`, and `contain` CSS
-  properties. Spec result stays 9/11 (Assertions B/C are pre-existing missing-SVG
-  failures unrelated to this change).
-- ESLint config (task #11): added browser-globals override for browser-context files
-  (suppresses false-positive `window`/`document` errors); added `^_` ignore pattern
-  for `no-unused-vars`; removed genuinely dead symbols; added `{cause}` to two
-  rethrows. `check_codebase.sh` now passes all 5 checks.
+- M13 "Gesture load-time invariant": deleted the M2 TEMPORARY gesture-collapse guard from
+  `src/scene_runtime/protocol/step_machine.ts` (the explanatory comment block plus the
+  `if ((interaction.gesture === "adjust" || interaction.gesture === "drag") && gesture ===
+  "click")` runtime reject). The generic wrong_target check immediately below
+  (`interaction.gesture !== gesture`) already rejects that same bare-click-on-adjust/drag
+  mismatch, so removing the M2 block does not regress runtime behavior; the existing
+  "M2 temporary gesture-collapse guard" unit tests still pass through the generic check. The
+  real gain moves to load time: the new `validate_gesture_affordances` invariant now rejects an
+  unaffordanced gesture before any browser session.
+- Removed `set -u` from `source_me.sh` and `run_validate.sh`: unset-variable strictness tripped
+  on optional environment fallbacks; `run_validate.sh` retains `set -e`.
 
 ### Decisions and Failures
 
-- M5 audit verdict NO-GO (M3/WS-E): the geometry audit found zero same-tier collisions
-  across all 38 scenes. The 6 engine-fit scenes are authoring-bounded (packed zones
-  narrower than their content), not solver defects. A fixed-row reformulation is
-  theoretically feasible but unmotivated given that authoring edits resolve all flagged
-  cases. Decision and full analysis recorded in
-  `docs/active_plans/audits/layout_geometry_audit.md`.
-- Golden baseline refresh deferred to human (M1/WS-A): the `test-results/layout_reference_snapshot.json`
-  snapshot must be captured from a clean committed tree. It is currently stale-but-harmless;
-  a byte-identical precompute confirms no layout change occurred. Run
-  `npm run layout:refresh` from a clean committed tree to establish the post-wave baseline.
-- M4 (WS-H/WS-I): confirmed the layered config module (`src/scene_runtime/layout/config/`)
-  and all call-site wiring already shipped before this wave; no new config module was added
-  to avoid duplication. The `label_offset_y` reconciliation (canonical 3.5) was confirmed
-  already present.
-
-## 2026-06-26
-
-### Behavior or Interface Changes
-
-- Redesigned `tools/layout_golden_diff.mjs` to use an ephemeral, gitignored snapshot
-  at `test-results/layout_reference_snapshot.json` instead of `tests/fixtures/`.
-  The snapshot is never committed; it is captured with `--refresh` from a clean engine
-  state at the start of a refactor session and compared after changes. The compare mode
-  exits non-zero with a clear message when the snapshot is absent, instructing the user
-  to run `--refresh` first. Added `fs.mkdirSync` in the refresh path so `test-results/`
-  is created automatically on a fresh clone.
-- Added `layout:refresh` npm script alias (`npm run layout:refresh`) alongside the
-  existing `layout:diff` alias.
-- Updated `docs/USAGE.md` layout regression harness section to document the ephemeral
-  lifecycle; removed the three-condition committed-fixture refresh procedure.
-
-### Decisions and Failures
-
-- Moved the snapshot from `tests/fixtures/` (not gitignored, commit-eligible) to
-  `test-results/` (gitignored at line 7 of `.gitignore`) after the user ruled out
-  committed fixtures. The prior snapshot at `tests/fixtures/layout_reference_snapshot.json`
-  is now orphaned (no longer read or written by the tool) and is safe to delete manually.
-
-## 2026-06-11
-
-### Fixes and Maintenance
-
-- Ran a pre-commit six-pass audit of the vertical-layout-reflow change and applied
-  the resulting fixes.
-- Removed planning-scaffolding work-package tags (`WP-*`) from committed code
-  comments across the layout engine and `tools/scene_scale_report.mjs`. The
-  explanations are preserved; only the tags are stripped, since work-package tags
-  are forbidden in committed code under the planning-terminology rule.
-- `tools/scene_scale_report.mjs` now surfaces the per-scene `labelDominant` flag in
-  both the single-scene view and the `--all` table, so the label-dominant review
-  signal is readable without re-deriving it from the pipeline.
-- Trimmed corpus-snapshot prose (a specific scene name, raw scale digits, a headroom
-  margin, and "today") from the `UNIFORM_RESCALE_MIN_SCALE` comment in
-  `layout/constants.ts`, keeping the durable structural explanation.
-- Corrected a stale comment in `tests/e2e/e2e_layout_parity_16x9.mjs` that claimed
-  the convergence loop keys on the `item_escapes_zone_vertically` diagnostic; that
-  keying was removed, and the loop now iterates on horizontal signals only.
-- Rewrote the stale "Build pipeline" section of `docs/specs/SCENE_YAML_FORMAT.md`
-  (left over from the PRECOMP3 cleanup) to the current chain:
-  `gen_scene_index.py` -> `generated/scenes.ts` -> `precompute_layout.mjs` ->
-  `generated/precomputed_layout.ts`.
-- Refreshed `docs/LAYOUT_REMAINING_WORK.md`: converted now-committed "untracked
-  file" notes to Markdown links and closed the completed git-add closeout row.
-
-### Decisions and Failures
-
-- Confirmed four pre-existing issues are out of scope for this change and tracked
-  them separately in `docs/LAYOUT_REMAINING_WORK.md` section 7: `extraction_workspace`
-  renders blank (empty authored content), the `long_labels_smoke` dev fixture
-  references an undeclared object `dmf_bottle`, and the `SCENE_YAML_FORMAT.md`
-  PRECOMP3 staleness (now fixed above).
+- Subpart-click fix pattern (architect decision): adopted direction A as the MECHANISM for the
+  dominant M16 walker-FAIL cluster (5 protocols authoring `gesture: click` on a `.<subpart>`
+  target). A protocol interaction always clicks the BASE placement (plate/rack/gel scene object);
+  the subpart is named only inside the response `ObjectStateChange` or a `final_state_matches`
+  reference. Grounded in PRIMARY_CONTRACT item 3 (subparts are interior geometry, not clickable
+  scene objects), the well-plate-as-material model, the `pointer-events: none` subpart-overlay
+  contract, and the 12 passing protocols that already click base placements. Added a pedagogy
+  gate: the rewrite changes what the student does and can drop subpart specificity, so the
+  5-file fanout is per-protocol pedagogy-owner-reviewed. `mtt_plate_reaction` and
+  `mtt_solubilization_readout` (whole-plate uniform) are auto-apply-safe;
+  `sdspage_load_protein_ladder` ("verify correct lane targeting") and
+  `plate_drug_treatment_drug_addition` (well-by-row dose targeting) are held for a pedagogy call;
+  `sdspage_load_sample_single_lane` is borderline. The `select` gesture was evaluated and does
+  not recover subpart specificity (it only chooses among present base placements); genuine
+  subpart-picking is a future direction-B RFC under the PRIMARY_DESIGN new-primitive evidence
+  bar. Recorded in
+  [docs/active_plans/decisions/subpart_click_pattern.md](active_plans/decisions/subpart_click_pattern.md).
 
 ### Developer Tests and Notes
 
-- Derived test expectations from imported layout constants instead of hardcoded
-  literals: `REAR_CONTENT` / `FRONT_CONTENT` in `tests/test_layout_reflow_zones.mjs`
-  (from `ZONE_PADDING` and `DEPTH_TIER_GAP`) and `LABEL_OFFSET_Y` in
-  `tests/test_layout_vertical_footprint.mjs` (from `buildGlobalDefaults`).
-  `test_layout_engine.mjs` now uses the live item aspect instead of a pinned 1.35.
-- Post-fix gates: `tsc` clean (both configs), 103 layout tests pass,
-  `check_codebase.sh` 6/6, pytest markdown-links and ascii pass, and zero `WP-*`
-  tags remain in code.
-- Produced the full per-scene WP-4 evidence table for all 34 non-fixture scenes
-  and committed it at
-  [vertical_reflow_wp4_evidence_table.md](active_plans/reports/vertical_reflow_wp4_evidence_table.md).
-  Both hard contracts hold: zero never-crop hard fails and zero own-art label
-  overlaps across all populated scenes (G4 hard gate met). The sweep surfaced
-  four label-on-label crowding scenes (`hemocytometer_view`, `microscope_basic`,
-  `passage_hood_detachment_microscope_view`, `seeding_workspace`) logged as a
-  legibility follow-up in `docs/LAYOUT_REMAINING_WORK.md` section 7.6;
-  `extraction_workspace` was reconfirmed as a pre-existing load failure (empty
-  authored content), out of scope for the reflow.
+- M16 walker-scope closeout: recorded the scene-manager handshake in
+  `docs/active_plans/audits/walker_click_bug_register.md`. Marked the `drug_dilution_setup` /
+  `media_bottle` register row RESOLVED/STALE (the scene's `remove_placements` now documents
+  keeping the inherited `rear_left_media_bottle`, so the bug no longer reproduces), and added a
+  "Scene-manager handshake (out of walker scope)" section listing the remaining
+  scene-placement gaps with fix owner = scene-manager plan: missing `hood_surface`
+  (passage_hood_detachment microscope-view), missing `plate_reader` (mtt_solubilization_readout
+  bench), missing `kimwipe_pad` (staining_bench base), and two duplicate-placement
+  `AmbiguousTargetError` cases (`media_bottle` for plate_drug_treatment_media_adjustment,
+  `laemmli_4x_bottle` for the sample-prep sdspage protocols). None are walker-scope.
 
-## 2026-06-10
+- M15 "Certified walker sweep register": ran the sound post-M13 walker (`npm run build`
+  then `npm run walk:all`) across all 31 curriculum protocols and confirmed the totals match
+  the pre-M13 triage exactly (PASS=12, unsupported_gesture=0, FAIL=19; no protocol flipped
+  membership). Added a wrong-order negative pass (`--wrong-order` on 3 sampled PASS
+  protocols) and confirmed the runtime rejects every injected out-of-order click while the
+  protocol still completes. Promoted the pre-triage into the certified register at
+  `docs/active_plans/audits/walker_click_bug_register.md`, ranked most-severe first and
+  cross-checked row-by-row against `test-results/walker/sweep_summary.json`, with sampled
+  before/after screenshots for the subpart-click, target-missing, and adjust-commit
+  clusters. One wording drift noted (not a category change): `trypan_blue_counting` now
+  surfaces as `click_did_not_advance` instead of a step-validator-shaped message, same
+  failing step and root cause as before.
 
-### Additions and New Features
+- M13 "Gesture load-time invariant": added a `tests/test_step_machine.mjs` describe block
+  covering the load-time gesture-affordance invariant. A negative test synthesizes an out-of-set
+  gesture (`levitate`) and asserts `create_step_machine` throws `UnaffordancedGestureError` at
+  load with the offending protocol, step, target, and gesture in the message. Positive tests
+  assert a normal all-click protocol and a wired `adjust` protocol both construct without
+  throwing (48 step-machine Node tests pass; 456 Node tests overall, 454 pass, 2 skipped).
 
-- Added `tools/scene_scale_report.mjs`: developer tool that runs the real layout
-  pipeline read-only and reports, per scene, the reflow overflow ratio, required
-  uniform scale, health label (healthy/dense/overloaded), and the heaviest vertical
-  band group with its top contributing items. `--scene <name>` prints the per-zone
-  breakdown; `--all` prints a sorted table (densest first) plus a count summary.
-  Read-only; never writes to `generated/` or `dist/`. Exit 0 on success; exit 1 on
-  unknown scene name or bad arguments.
-
-- Vertical reflow WP-3a: connected the measured-extent spine end to end. Reordered
-  the placement phases (`phases.ts`) to the final serial order
-  `place-horizontal -> measure-vertical -> reflow-zones -> place-vertical ->
-  place-labels -> resolve-collisions -> validate`, so `measure-vertical` now runs
-  BEFORE `place-vertical`. Because `_height` is 0 before placement, the measure
-  stage sources the NATURAL object height (`_visualWidth * viewportAspect /
-  aspect`) and threads it to `verticalFootprintFor` as an explicit `objectHeight`
-  trailing parameter (the single `wrapLabel` call site is preserved; the resolved
-  wrap-tuning config is threaded). Rewrote `vertical_layout.ts` to CONSUME the
-  computed `ComputedZoneBand`: each item's object strip is placed inside its
-  depth-tier row (`objectTopInRow` per label side -- top label below its label
-  strip, bottom label at the row top) and the baseline is back-solved per anchor
-  mode via `baselineFromObjectTop` (`bottom | tip | center`, the algebraic inverse
-  of `anchorTop`, which is kept). The per-object vertical shrink (`fitFactor` +
-  `maxHeightInZone`) is removed; objects keep natural `_height` / `_visualWidth`
-  (aspect preserved, never-crop safe by construction). The existing `depth_tier` ->
-  vertical layering is preserved: `DEPTH_BASELINE_OFFSET.back = -4` (rear toward the
-  top), and reflow places the rear tier (lowest `depth_tier`) first at the band top,
-  ascending downward. Pointed the label clamps (`layout_labels.ts` `verticalBandFor`
-  and `resolveLabelCollisions` `LabelWork.bandTop/bandBottom`) at the computed band,
-  not the authored zone bounds, and added the terminal safety flip: a label flips
-  side when its candidate box overlaps its own object's art OR exits the computed
-  band and the other side fully clears; when neither side clears it picks the
-  lowest-overlap side and emits a label-clearance diagnostic. Threaded
-  `reflowOverflow` / `reflowTotalContent` / `reflowSceneRange{Top,Bottom}` from
-  `reflowZones` through `phases.ts` onto `PipelineResult` (`run_pipeline.ts`,
-  `types.ts`) so WP-3b can trigger the uniform rescale; WP-3a leaves the honest
-  overflow signal and the compressed bands. The keystone defect is fixed:
-  `sdspage_recycle_buffer_workspace`'s `recycle_buffer_bottle` is now a 2-line top
-  label whose bottom edge (`_labelY` 38.75, box 4.40 -> bottom 43.15) sits clear of
-  its own object top (47.15), no longer occluding its own cap. New unit tests
-  (`tests/test_layout_engine.mjs`): object keeps natural height, top/bottom-label
-  tier spacing, anchor back-solve for all three modes, missing-band fallback,
-  computed-band vertical clamp, and a terminal flip staying inside its measured row
-  extent. Precompute regenerated and byte-identical across two runs; parity e2e GO
-  38/38 (`all_exact=true`, `sweep_ok=true`); `check_codebase.sh` 6/6.
-
-- Vertical reflow WP-3b: added the terminal scene-wide uniform OBJECT rescale.
-  When reflow content overflows the scene vertical range, one aspect-preserving
-  factor is applied to every object's width AND height together (never-crop safe
-  by construction; an object cannot distort or crop when its width and height
-  shrink by the same factor). The fixed layout magnitudes -- label line height,
-  label gap, depth-tier gap, and zone padding -- stay constant under the rescale;
-  only object art scales. Threads `reflowUniformScale` through `phases.ts` /
-  `vertical_layout.ts`, repurposes the per-item `item_escapes_zone_vertically`
-  diagnostic into the scene-level `scene_reflow_overflow` signal, and emits a
-  `labelDominant` review flag for scenes where labels rather than art dominate
-  the vertical budget after rescale.
-
-- Vertical reflow WP-3c: corrected the uniform-rescale denominator. The first
-  WP-3b draft divided the available scene range by `totalContent`, but
-  `totalContent` includes fixed non-scaling overhead (zone padding, tier gaps,
-  per-item label box plus label gap) that the rescale must NOT shrink. Dividing
-  by it under-scaled over-full scenes, so front-zone art still placed past
-  `scene_bounds.bottom` and rendered cropped. The corrected factor shrinks only
-  the scalable object-height portion:
-  `scale = (sceneRange - fixedOverhead) / (totalContent - fixedOverhead)`, with a
-  deterministic fixed-point refinement that re-solves when the heaviest tier row
-  switches under the new scale.
-
-- Vertical reflow WP-2: added the zone-band reflow stage
-  `src/scene_runtime/layout/reflow_zones.ts` (`reflowZones`), the zone-level
-  vertical fold that lifts WP-1a's per-item `_combinedHeight` to bands. Per zone:
-  items bucket into depth tiers (one row per `depth_tier`, default 0), each tier
-  row height is the MAX `_combinedHeight` over the tier's side-by-side items (a
-  per-tier-max sum, not a union), and
-  `zoneContentExtent = sum_tier(rowHeight) + (tierCount-1)*tierGap + 2*zonePad`.
-  The scene's vertical range reflows across zones in depth order (rear -> front =
-  authored band-top order): when content fits, each zone gets its content extent
-  plus a share of the leftover distributed proportionally to authored band height;
-  when content overflows, zones compress to their content extent and the overflow
-  is handed to the WP-3b uniform object rescale. Produces
-  `ComputedZoneBand { id, top, bottom, baseline, tiers }` (with
-  `ComputedTierRow { depthTier, rowTop, rowHeight, placementNames }`) added to
-  `types.ts`; the authored baseline is recomputed by the fraction formula
-  (`baselineFraction = (baseline - authoredTop) / authoredHeight` clamped to
-  `[0, 1]`, then `computedBaseline = computedTop + fraction * computedHeight`),
-  with absent baselines mapped to the band center and out-of-range fractions
-  reported in `baselineClamps`. Added a `reflow-zones` phase in `phases.ts` after
-  `measure-vertical` (read-only w.r.t. position; writes only `ctx.zoneBands`), a
-  `DEPTH_TIER_GAP` constant aliasing the existing depth spacing magnitude
-  (`tierGap = depthOffset`, no new magic constant), and a `zoneBands` field on
-  `PipelineResult`. New unit tests in `tests/test_layout_reflow_zones.mjs` assert
-  per-tier-max content extent, depth-order placement (independent of input order),
-  proportional leftover distribution, the baseline fraction formula, a reported
-  out-of-band clamp, the overflow compression path, and tier-row spacing.
-
-  Reflow range source (hard acceptance): the reflow range is `scene.scene_bounds`
-  verbatim -- `sceneRangeTop = scene_bounds.top`, `sceneRangeBottom =
-  scene_bounds.bottom`. This is the same `SceneBoundsRect` rect
-  `clamp_scene_bounds.ts` validates item bboxes against and that
-  `structural_guards.ts` requires every zone and label to lie inside, so the band
-  reflow shares the rendered viewport (no header-band or clipping drift). WP-2
-  only PRODUCES the bands; `vertical_layout.ts` still owns object geometry, so the
-  precompute is byte-identical (regenerated, zero git diff; deterministic
-  double-run byte-identical) and `ComputedZoneBand` is produced for every zone in
-  all 38 scenes. WP-3a rewrites `place-vertical` to CONSUME the bands.
-
-- Vertical reflow WP-1a: added the vertical measured-extent helper
-  `src/scene_runtime/layout/vertical_footprint.ts` (`verticalFootprintFor`), the
-  vertical mirror of `footprint.ts`. It folds the width-stable wrapped label box
-  into an item's vertical extent and returns
-  `{ labelLines, labelBoxHeight, combinedHeight }` where
-  `combinedHeight = _height + labelOffsetY + labelBoxHeight` using the REAL
-  wrapped line count. The combined extent magnitude is side-independent (the same
-  whether the label sits above or below the object). Added a `measure-vertical`
-  stage in `phases.ts` that records `_combinedHeight`, `_labelBoxHeight`,
-  `_labelPlacement`, and the reused `_labelLines` onto placed items without
-  changing any object geometry. New `ComputedItem` fields `_combinedHeight`,
-  `_labelBoxHeight`, `_labelPlacement` (optional, magnitude + side recorded
-  separately). New unit tests in `tests/test_layout_vertical_footprint.mjs` assert
-  the 1-line and 2-line combined extents and that the value is identical for `top`
-  and `bottom` placement. `generated/precomputed_layout.ts` regenerated:
-  geometry and label-line fields byte-identical across all 38 scenes / 437 items;
-  only the three new fields were added. This is the measured base every later
-  reflow work package depends on; placement and labels are unchanged.
-
-  Decision: the plan specified inserting `measure-vertical` between
-  `place-horizontal` and `place-vertical`, but `_height` is filled by
-  `place-vertical` (`place-horizontal` leaves `_height = 0`), so the combined
-  extent would be meaningless there. WP-1a keeps `place-vertical` unchanged, so the
-  stage is placed AFTER `place-vertical` (the only point where `_height` is real);
-  a later work package that rewrites `place-vertical` reorders the stage ahead of
-  it and sources the object height differently.
-
-- Vertical reflow WP-1b: established a SINGLE `wrapLabel` call site and decoupled
-  the vertical-escape signal from the convergence loop. `layout_labels.ts` now
-  consumes the `_labelLines` / `_labelBoxHeight` the `measure-vertical` stage
-  already computed instead of re-wrapping the label a second time; the only
-  operative `wrapLabel` call is now in `vertical_footprint.ts`
-  (`verticalFootprintFor`), with a guarded fallback in `layout_labels.ts` that
-  fires only for direct-call unit tests where `_labelLines` is absent. The two
-  sites can no longer diverge: `verticalFootprintFor` gained optional
-  `avgCharWidthPct` / `budgetTolerance` parameters and the measure-vertical phase
-  threads the resolved `config.avgCharWidthPct` / `config.wrapBudgetTolerance`, so
-  the measure wrap and the fallback wrap read the same config values. Proof:
-  `generated/precomputed_layout.ts` regenerated with all 437 `_labelLines` arrays
-  byte-identical before/after (including all 129 two-line wraps, e.g. the six in
-  `sdspage_recycle_buffer_workspace`); deterministic double-run byte-identical.
-
-  `item_escapes_zone_vertically` was removed from `run_pipeline.ts`
-  `FITTABLE_KINDS`, so the convergence loop's per-zone `_width_scale` shrink +
-  re-entry now triggers on HORIZONTAL fit signals only (`zone_overflow_negative_gap`,
-  `tab_stop_overflow`). A vertical escape is a height problem; shrinking a zone's
-  width to "fix" it was the wrong lever (the legacy mechanism this reflow plan
-  removes). The diagnostic is still emitted by `vertical_layout.ts` as a
-  scene-level reflow-overflow signal (WP-3b repurposes it into the scene-wide
-  uniform object rescale). Convergence iteration count DECREASED, not increased:
-  total passes 46 -> 43; `hood_workspace` 3 -> 1 and `seeding_workspace` 3 -> 2
-  (both were vertical-driven), while horizontal-driven scenes
-  (`adversarial_overflow_smoke`, `imaging_bench`) stayed at 3.
-
-- `tools/normalize_svg_v3.py`: no-op clip elimination shipped. When a clip
-  region fully contains the clipped target (the common editor-emitted
-  page-bounds safety clip), the clip-path reference is dropped and the target
-  geometry is left unchanged -- render-identical, no precision loss. New
-  helpers: `_clip_is_noop`, `_clip_polygon_for_flatten`,
-  `_target_envelope_polygon`, `_target_is_stroke_only`,
-  `_resolved_stroke_width`; `_flatten_one_clip` and
-  `_target_segments_for_clip` rewritten. 10 new unit tests and 5 fixtures
-  added. Measured effect: normalized files rose from 721 to 1757
-  (`CLIPPATH_UNSUPPORTED_COMPLEX` fell from 1120 to 84).
-
-- Patch 2: `label_placement` added as a closed `top|bottom` enum scene-object
-  field. Spec docs updated (`docs/specs/LAYOUT_ENGINE.md` label-anchor
-  convention, `docs/specs/SCENE_YAML_FORMAT.md`,
-  `docs/specs/SCENE_VOCABULARY.md`) plus validator coverage in
-  `src/scene_runtime/validation/yaml_schema` and new
-  `tests/test_label_placement_validator.py`.
-
-### Behavior or Interface Changes
-
-- Vertical reflow WP-1b: two items change geometry as a direct, intended result
-  of the loop decouple -- `rear_right_incubator` in `hood_workspace` and
-  `seeding_workspace` (the `rear_right` 138% uniform-fallback scenes named in the
-  plan's blast-radius analysis). The object sits at the `MIN_SCALE` (0.55) vertical
-  auto-fit floor in both before and after; the only change is that the loop no
-  longer applies an EXTRA vertical-escape-driven `_width_scale` shrink on top of
-  the floored object, so `_width_scale` rises (1.40625 -> 1.736), `_shrunk_passes`
-  drops to 0, and the object renders slightly larger. All other 435 items and 36
-  scenes are byte-identical. The item still emits `item_escapes_zone_vertically`
-  as a diagnostic; full handling of these two scenes (uniform fallback rescale)
-  lands in WP-3b.
-- Sibling overlap-detector hardening: removed the own-placement exclusion from
-  all four label-over-art overlap detectors so a label overlapping its OWN
-  object's art is now counted and gated, not silently skipped. Affected
-  detectors: `scene_stats` `label_art_overlap_count`, `scene_lint` check B8,
-  `structural_guards` Guard 8, and Playwright Assertion H. Assertion H now
-  resolves label-to-object ownership through `data-label-for` (the rendered
-  sibling relationship) instead of a DOM ancestor walk that matched nothing, and
-  it now loud-fails when zero comparable label-art pairs are found rather than
-  passing vacuously. Guard 8 own-art overlap is promoted to a hard fail at live
-  render.
-- Patch 1a: convention rename `_x`->`_centerX` and `_y`->`_baselineY` across
-  `src/scene_runtime`, with `generated/precomputed_layout.ts` regenerated
-  value-identical (no geometry change).
-- Patch 1b: renderer and `structural_guards` boundary conversion to center
-  semantics (`left = _centerX - _visualWidth/2`); fixed the label-bbox height
-  bug; precompute output byte-identical.
-- Patch 3a: layout engine enum plumbing for `label_placement` plus top/bottom
-  seed geometry.
-- Patch 3b: per-zone direction-aware stagger -- top labels stagger up and clamp
-  at the zone top edge.
-- Patch 4a: global resolve-collisions made direction-aware, distinguishing
-  clamp-drift from collision-displacement for cause context.
-- Patch 4b: diagnostics baseline refreshed with 4 authored
-  `label_placement: bottom` overrides; main-corpus `unresolved_label_overlap`
-  count fell from 5 to 1.
-
-### Fixes and Maintenance
-
-- Vertical reflow WP-3a defect fix: `reflow_zones.ts` stacked EVERY authored zone
-  into its own vertical band, but real scenes lay out 5-7 zones as a grid of 2-3
-  horizontal rows (side-by-side zones share an authored vertical extent, e.g.
-  `rear_left` / `rear_center` / `rear_right` all at the same authored
-  `top..bottom`). Stacking the side-by-side zones summed their content extents into
-  the scene's vertical range, producing a false 1.5x-4.4x overflow and placing
-  most objects off-screen (13 of 16 in `sdspage_recycle_buffer_workspace`, bottoms
-  at y=124..322 in a 95-unit scene) -- the exact "deterministic but wrong stacking"
-  risk from the plan risk register. Added `groupVerticalBands`: zones whose
-  authored vertical ranges OVERLAP (transitively, by a sweep on authored top) merge
-  into one vertical band group, the group's height is the MAX of its member zones'
-  content extents, and every member zone gets the same computed band top/bottom
-  with its tier rows placed inside that shared band. This restores the pre-reflow
-  authored-grid semantics (each zone placed in its own authored bounds, never
-  stacked) while still reflowing across the distinct vertical bands in depth order.
-  The off-screen count for the recycle scene dropped from 13/16 to the residual
-  genuine multi-tier overflow handed to WP-3b. New unit tests
-  (`tests/test_layout_reflow_zones.mjs`) assert that exact side-by-side zones share
-  one computed band (content counted once, no false overflow) and that partially
-  overlapping authored bands (the real `[38,76]` center vs `[72,94]` front sdspage
-  pair) merge into one vertical band.
-
-- `src/scene_runtime/layout/layout_labels.ts`: fixed the rear-zone top-label
-  clamp-onto-own-art defect. The seed-level top-clamp used to raise a top label
-  DOWN to `zone.top + padding` with no guard that the label must stay above its
-  own object's visual top, so a rear-zone object near the scene top got its label
-  pushed onto its own cap (the `recycle_buffer_bottle` "bott" occlusion). Top
-  labels now clamp their TOP edge into `[topClamp, _top - labelHeight]` so a label
-  with room above its object stays fully clear of its own art. When the object
-  sits so high that even `topClamp` leaves no room above it, the label flips to a
-  zone-confined BOTTOM fallback (effective `label_placement: bottom` carried
-  forward to the stagger and resolve-collisions phases) so the text moves off the
-  cap rather than overprinting it. Clean top/bottom scenes are byte-identical.
-  `generated/precomputed_layout.ts` regenerated (deterministic, double-run
-  identical). Two new fixtures in `tests/test_layout_engine.mjs` cover the
-  no-room-above flip and the tall-object recycle geometry. Known residual: a tall
-  rear object whose zone is too short for either placement (recycle_buffer_bottle:
-  zone [5,36], object span [9.946,32], 2-line label needs 4.4% but only ~3.4%
-  gap exists above) still overlaps its own body; this is a surfaced
-  zone-sizing/label-width infeasibility, not a silent cap overprint, and is left
-  for a follow-up (widen `label_width` to one line or extend the rear zone).
-
-- Patch 5: deleted the stale `[data-label]` CSS block from `src/style.css`; the
-  block no longer matched any rendered element after the center-anchor
-  conversion.
-
-- `docs/active_plans/audits/top_label_collision_forecast.md`: WS-O read-only
-  forecast artifact for WP-4b. Confirms the WP-3a count of 14 down-staggered
-  top labels (centrifuge_workspace 3; dilution_workspace, drug_dilution_setup_bench_setup,
-  electrophoresis_bench, extraction_workspace, seeding_workspace, and 6 sdspage_*
-  scenes at 1 each). Total predicted conflicts: 4 across 2 non-fixture scenes
-  (dilution_workspace 2 L-A, hood_workspace 1 L-L + 1 L-A). Worst-3 scenes:
-  dilution_workspace, hood_workspace, centrifuge_workspace. Cross-checked against
-  stats JSON `label_overlap_pair_count`/`label_art_overlap_count` fields.
-
-- `docs/active_plans/audits/missing_svg_degradation_ledger.md`: audit of all
-  38 scenes in `generated/scene_render_stats/` for placeholder/degraded status.
-  34 curriculum/smoke scenes degrade (advisory_flags=degraded); 2 are intentional
-  dev fixtures; 2 are clean. 16 distinct missing object_id types found; 13 are
-  undocumented in `assets/SVG_ASSET_GAPS.md` (centrifuge, water_bath, vortex,
-  p10_gel_loading_tip_box, gel_comb, hood_surface, incubator, lightbox,
-  rocking_shaker, microscope, microwave, plate_reader, and heat_block overlap
-  discrepancy). Includes per-scene bbox/label note and WP-6 reviewer guidance.
-  Two discrepancies flagged: heat_block and cell_counter are listed in
-  SVG_ASSET_GAPS.md as having assets but still appear as missing_object_names
-  in stats (likely asset path or registration mismatch).
-
-- `docs/active_plans/audits/playwright_label_assertion_inventory.md`: static
-  inventory of label-related assertions in `tests/playwright/` as WP-6
-  pre-flight. Classifies each assertion as BREAKS-LEGITIMATELY (H, I overlap
-  checks in bench_basic and generalization), NEEDS-JUDGMENT (G containment),
-  or UNAFFECTED (J readability, dom_contract selectors, reactivity SVG-safety).
-  Includes file:line citations and recommended pre-WP-6 actions.
-
-- `test-results/scene_label_alignment/after_p1_metrics.json`: generated
-  after-metrics artifact for the G1 gate / WP-1b review advisory. Computed
-  from `generated/scene_render_stats/*.stats.json` (post-WP-1b renderer
-  boundary fix). 38 scenes, 437 labeled placements, 307 pass (70.3%), 130
-  fail. WP-1b reported 113 failures over non-fixture scenes; the full-corpus
-  count is 130, the difference being exactly the 17 failures in the
-  adversarial_overflow_smoke dev fixture. Remaining failures are horizontal
-  label-center displacement -- engine rework deferred to WP-3a+.
-
-- `tools/normalize_svg_v3.py`: conservative-containment follow-up -- corrected
-  the buffer direction in `_clip_is_noop` so the safety margin shrinks the
-  clip polygon inward rather than growing the target envelope outward,
-  preventing borderline clips from being incorrectly classified as no-ops.
-  Genuine stroke trims (57 cases) and complex clip sides remain rejected.
-
-- `docs/LAYOUT_REMAINING_WORK.md`: new durable reference doc covering all remaining scene layout and aesthetic work after the grounding-cue and label-disambiguation-spacing shipped; includes scene-by-scene void/focal/label/Error status for all 9 review scenes, the 4 Error diagnostic cross-reference table, the two pending non-authoring decisions (label-Error severity contract and baseline-tool gap), recommended priority sequence, and human-only git/closeout items; added row to `docs/FILE_STRUCTURE.md` docs table.
-
-- Applied close-out audit fixes across the vertical-reflow surface:
-  corrected the stale `(0.40)` floor comment in `vertical_layout.ts` to
-  reference `UNIFORM_RESCALE_MIN_SCALE` by name; fixed the B8
-  label-intersection comment in `rules_group_b.py` to say it checks all
-  placements including the label's own object; replaced the `34-scene corpus`
-  hard count in `constants.ts` with `every non-fixture scene`; removed the
-  dead `itemEscapesZoneTolerance` config field and the
-  `ITEM_ESCAPES_ZONE_TOLERANCE` constant (no remaining consumers after the
-  per-object-shrink removal); fixed `tools/scene_scale_report.mjs` to report
-  the pipeline's actual `reflowUniformScale` instead of the superseded
-  `sceneRange/totalContent` ratio, and renamed its functions to camelCase;
-  exported `UNIFORM_RESCALE_MIN_SCALE`, `ZONE_PADDING`, `DEPTH_TIER_GAP`, and
-  `LABEL_LINE_HEIGHT_PCT` from the layout barrel so four test files assert
-  against the constants instead of copy-pasted literals; corrected the
-  phase-order lists and retired verification commands in
-  `docs/specs/LAYOUT_ENGINE.md`; added a two-pass vertical reflow SHIPPED
-  entry to `docs/LAYOUT_REMAINING_WORK.md`.
+- Read-only triage: classified the 19 `npm run walk:all` post-M12 FAILs into layer
+  categories (`docs/active_plans/audits/walk_all_fail_triage.md`), pre-M13 evidence for M16.
+  Dominant cluster (5 protocols) is a `target_not_actionable` bug: several protocols author a
+  `gesture: click` directly on a `.<subpart>` target (a well, tube, or gel lane), but subparts
+  render as a non-interactive material-tint overlay only (`pointer-events: none`); no passing
+  protocol uses this pattern. Also found 4 `target_missing` protocols (2 sharing one
+  `kimwipe_pad` never-placed root cause), 2 `no_active_interaction` step-transition gaps, 2
+  unresolved `adjust_did_not_advance` cases, and one `validator_rejected` step-validator
+  threshold gap (`trypan_blue_counting`, 92.5 vs an exact-match `contains: 90`). No
+  `AmbiguousTargetError` (the pre-M12 dominant class) appears in the current 19; that class is
+  confirmed retired.
 
 ### Decisions and Failures
 
-- Uniform-rescale floor recalibration (0.40 -> 0.27) to honor never-crop.
-  `UNIFORM_RESCALE_MIN_SCALE` was lowered from 0.40 to 0.27 in
-  `src/scene_runtime/layout/constants.ts`. The prior 0.40 floor rested on the
-  flawed `sceneRange / totalContent` estimate (the WP-3c denominator bug); once
-  the denominator was corrected to the scalable-object-height-only form, the true
-  fixed-point minimum across every non-fixture scene is 0.2879
-  (`passage_hood_detachment_hood_workspace`, the densest). A 0.27 floor leaves
-  ~0.018 headroom so every non-fixture scene fits with zero scientific art past
-  the scene bottom. Keeping 0.40 would have re-clamped the densest scenes above
-  their required scale and reintroduced cropping, violating the never-crop
-  invariant; the floor was lowered to the smallest value that still fits the
-  measured corpus. This is the vertical uniform-rescale floor and is distinct
-  from the horizontal packer `MIN_SCALE` (0.55), which is unchanged.
-
-- Viewport-overflow regression learning note (root cause + fix). After the first
-  WP-3b uniform rescale shipped, over-full scenes still rendered front-zone art
-  clipped past the viewport bottom even though the rescale was active. Root cause:
-  the rescale denominator divided by `totalContent`, which folds in fixed
-  non-scaling overhead (zone padding, tier gaps, per-item label box + gap), so the
-  computed factor was too large and only partly closed the overflow. The fix
-  (WP-3c) subtracts the fixed overhead from both sides of the ratio so the factor
-  shrinks only the object-height portion that can actually scale, plus a
-  fixed-point refinement for winning-row switches. The 0.40 floor recalibration
-  above is a direct consequence: the corrected denominator changed the measured
-  minimum scale. Recorded as a debugging record -- a too-large rescale factor that
-  "looked active" but did not clear overflow traces to a denominator that mixed
-  scalable and non-scalable height. See
-  `docs/active_plans/audits/viewport_overflow_reflow_investigation.md` (a new
-  untracked file this cycle; it becomes a link once a human commits it).
-
-- Pipette label offset root-cause audit: the ~6px pipette/tool label offset is
-  not label misplacement. Two contributing causes: (a) un-normalized
-  pipette/tool SVGs that `tools/normalize_svg_v3.py` rejects with
-  `CLIPPATH_UNSUPPORTED_COMPLEX` -- a `PRIMARY_CONTRACT` item-3 gap, deferred per
-  user; and (b) the alignment gate's `visual_bbox` measures the SVG element rect
-  rather than the drawn-path `getBBox`, which is harmless for normalized assets.
-  Decision: labels attach to `_centerX` (footprint center); no engine
-  `_visualCenterX` is added. Normalized-only alignment is 78% with zero genuine
-  label-on-ink misplacement. See
-  `docs/active_plans/audits/pipette_label_offset_root_cause.md` and
-  `docs/LAYOUT_REMAINING_WORK.md` section 4.3.
+- Release closeout (velvet-napping-tower plan, Release 1 + Release 2 + follow-on fixes):
+  `FinalDiffReview` found the full diff merge-ready, and the full walker corpus is
+  clean-except-owned (`FullSweep` 26/31 PASS, the 5 remaining reds all triaged and
+  owned). This closes the release. Release 1 landed the trustworthy-walker chain end
+  to end: `target_with_value` and `final_state_matches` now read the real scene store
+  instead of trusting authored intent, the M2 temporary adjust/drag-collapse runtime
+  guard was replaced by the permanent `validate_gesture_affordances` load-time
+  invariant, actionability is capability-gated, target resolution is unified on one
+  adapter keyed by placement-name identity, gesture and validator dispatch moved to
+  discriminated unions, the affordance contract and `GESTURE_REGISTRY` are frozen
+  and intentionally never-exhaustive, `adjust`/`drag` are wired runtime primitives,
+  four load-time invariants now fail loud at protocol load
+  (`UnknownAuthoredTargetError`, `AmbiguousAuthoredTargetError`,
+  `UnseededSceneOpTargetError`, `UnknownAuthoredSubpartTargetError` in
+  `target_existence_check.ts`, plus `pedagogy_consistency_check.ts`), codegen closure
+  delegates to the one canonical validator, `run_all_checks.sh` plus a rewired
+  `run_playwright_tests.sh` and a root `ci.yml` seed give the repo one check entry
+  point, the extinct `tests/playwright/walker/` tree was confirmed dead and removed
+  from the doc set, and the certified walker sweep fixed the click-bug cluster it
+  found. Release 2 landed the layout side: `PipelineResult` gained the unified
+  `unifiedDiagnostics` stream plus the preventive `art_below_viewport` /
+  `unfittable_asset` codes, the `failBuild` gate now runs live in
+  `precompute_layout.mjs` (`countBuildFailures` / `isBuildGateExemptScene`, nonzero
+  exit on a real non-exempt failure), `tools/layout_metrics.mjs` (D6) gives the
+  scorecard a durable CLI, and `docs/SCENE_LAYOUT_BASELINE.md` commits the settled
+  corpus snapshot. Release 2 also landed the pedagogy side: `pipeline/gen_flow_view.py`
+  gives authors a flow-view audit as the first authoring-guide step, the gesture
+  rubric closes the `adjust` vs `click` ambiguity, `drug_dilution_setup` was
+  right-sized to Direction-A base-retarget, and a pedagogy-drift check plus prose and
+  prompt fixes tightened step wording. Follow-on fixes closed the remaining gaps:
+  `trypan_blue_counting`'s viability gate moved from an exact-match 90 to 92.5 to match
+  the authored data, `mtt_solubilization_readout` fixed same-step `SceneChange`
+  active-target re-resolution (the scene-change-completion family), the orphan
+  `validate.py` bugs in `validation/yaml_schema/` converged on one resolver of record
+  for placement-name targets and `add_placements` (3 errors -> 0), and the `all_wells`
+  material cascade fan-out was wired end to end with a generated
+  `subpart_groups`/`subparts` vocabulary, moving it from ratified-but-unimplemented to
+  live. Two decisions carry forward as owned, not release-blocking: subpart-click
+  discrimination stays held at Direction-A base-retarget, with genuine subpart-picking
+  parked as a Direction-B RFC owned by the architect (`all_wells` is explicitly
+  excluded from that RFC as a bulk write/group fan-out, not a subpart pick); and the
+  M16-D load-time subpart-suffix guard landed at 0/30 blast radius against the current
+  corpus. The 5 known owned reds: O1 (`conical_15ml` seeding) and O4 (hood
+  pointer-overlap) route to the scene-manager plan; OP1 (subpart-click) routes to the
+  architect's Direction-B RFC.
 
 ### Developer Tests and Notes
 
-- Vertical reflow WP-4 evidence sweep. Regenerated the precompute and rendered
-  before/after PNGs plus stats for every scene. Direct label-vs-own-art bbox
-  check = 0 overlaps; never-crop hard fails = 0; parity e2e GO 38/38; pytest
-  1753 passing; `check_codebase.sh` 6/6. The `image_evaluator` visual verdict
-  marked all twelve densest scenes (uniform scale 0.27-0.32, `labelDominant`)
-  SHIP-OK, confirmed viewport-bottom clipping is visually gone, and confirmed the
-  `sdspage_recycle_buffer_workspace` keystone (`recycle_buffer_bottle`) survived
-  the rescale without re-occluding its own cap.
+- Release closeout verification snapshot (velvet-napping-tower plan): Node test suite
+  501 pass / 2 skip, `check_codebase.sh` 5/5 green, `run_validate.sh` YAML validation 0
+  errors, pytest 4794 pass, and the full walker sweep 26/31 PASS with the 5 remaining
+  FAILs clean-except-owned (see the Decisions and Failures entry above for ownership).
+  This is the last entry for the trustworthy-walker/layout-gate release; the
+  in-progress material-oracle general-walker verification work (WP2-4) is a separate,
+  later milestone and gets its own changelog entry when it lands.
 
-- Patch 6: global retune evidence sweep. Labels now render centered above
-  objects (default flip). The Playwright suite was repaired for the
-  `scene_viewer.html` architecture: bundle path `dist/main.js`->`scene_viewer.js`,
-  `scene_viewer.html?scene=` navigation, `.first()` locators, and dead-code
-  removal. Before/after PNG sets and stats are under
-  `test-results/scene_label_alignment/`; the per-scene review table is at
-  `docs/active_plans/reports/label_alignment_wp6_review.md`. All 34 non-fixture
-  scenes were visually evaluated (0 never-crop, 0 clipping); never-crop hard
-  fails 0.
+## 2026-07-03
+
+### Additions and New Features
+
+- Scene-layout tier-collapse pass: added `tools/rank_scene_layout.py`, a read-only developer
+  inspection helper that ranks every scene by layout-quality metrics from
+  `test-results/layout_metrics` plus content protocol data. It computes six
+  geometric/pedagogy rankers (`collapsibility`, `coupling_loss`, `victim_fraction`,
+  `crowd_bound_count`, `zone_spread`, `mean_scale`), plus a pedagogy axis
+  `target_prominence` (lowest clicked-target `final_scale` divided by non-target median),
+  flagging scenes where a clicked target renders smaller than a typical non-target. It
+  produces a combined per-scene table and a priority roll-up, and also reports
+  `label_dominant` and a derived `tier_collapsible` routing flag so label-dominant
+  false-positives are visibly marked. `crowd_bound_count == 0` predicts a clean
+  full-decouple; `crowd_bound_count > 0` or `label_dominant` predicts engine-only work.
+
+### Fixes and Maintenance
+
+- Tier-collapse wins: three sparse scenes collapsed from 2 tier-rows to 1, lifting the
+  scene-wide uniform rescale factor to 1.000 (full-size art) with no object shrunk and no
+  overlap/overflow regression:
+  `content/protocols/cell_culture/drug_dilution_setup/scenes/bench_setup.yaml`
+  (0.604 -> 1.000);
+  `content/protocols/cell_culture/mtt_solubilization_readout/scenes/bench_workspace.yaml`
+  (0.653 -> 1.000; also removed the non-target inherited `center_water_bath`, mirroring the
+  `bench_setup` precedent, to clear a same-tier collision);
+  `content/protocols/cell_culture/mtt_plate_reaction/scenes/incubator_workspace.yaml`
+  (0.667 -> 1.000; incubator kept at full authored size). All clicked targets stayed placed
+  and clickable.
+
+### Decisions and Failures
+
+- Engine-only finding: a measured base-scene tier-collapse of
+  `content/base_scenes/electrophoresis_bench.yaml` (7 SDS-PAGE children plus extraction) was
+  rejected and reverted net-zero. The base is label-dominant (its uniform factor 0.584 is set
+  by label vertical overflow, not tier-row overhead), so a tier collapse yields zero factor
+  gain and a full collapse even reopened unresolved `unresolved_label_overlap` errors. Routed
+  to the architect as label-space / engine work. The rank tool's `collapsibility` metric
+  flagged it as a false positive, which motivated the new `label_dominant` /
+  `tier_collapsible` flags.

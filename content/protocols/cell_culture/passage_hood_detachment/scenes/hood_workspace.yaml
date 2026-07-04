@@ -6,6 +6,24 @@ remove_placements:
   - base_rear_center_pbs
   # Base media_bottle removed; protocol adds its own at rear_right (rear_right_media)
   - base_rear_right_media
+  # Non-target inherited clutter removed (fully, not deactivated, because the gate
+  # and renderer still lay out and draw a deactivated placement). The detachment
+  # protocol never clicks these, and removing them frees the space the two
+  # required instruments (microscope, incubator) need:
+  #  - well_plate_96: detachment operates on the t75_flask, not a plate, so
+  #    removing it makes the flask the unambiguous center object.
+  #  - sterile_water_bottle: pure rear-shelf decoration (matches the sibling hood
+  #    children, which also remove it).
+  #  - serological_pipette: detachment uses the aspirating pipette only, so the
+  #    second pipette is a non-target that crowds the right tool band.
+  #  - micropipette_tip_box and waste_container: rear-shelf decoration the
+  #    protocol never clicks; removing them lets each rear bottle sit two-per-
+  #    zone so the tall incubator can own rear_right without squeezing a bottle.
+  - center_well_plate_96
+  - base_rear_right_sterile_water
+  - base_right_serological_pipette
+  - base_rear_left_tip_box
+  - rear_center_waste
 
 add_placements:
   # T75 flask in the center working area (left of center)
@@ -29,11 +47,35 @@ add_placements:
     depth_tier: 0
     align_stop: left
 
-  # Media bottle in rear_right (protocol-specific, left of base items)
-  - placement_name: rear_right_media
+  # Media bottle in rear_center, right slot (beside trypsin at the left slot).
+  # Moved out of rear_right so the tall incubator can own that band alone.
+  - placement_name: rear_center_media
     object_name: media_bottle
+    zone: rear_center
+    depth_tier: 1
+    align_stop: right
+
+  # Incubator alone in rear_right (the 2-minute trypsin detachment wait, step
+  # incubate_for_detachment). A required protocol target that the scene did not
+  # previously place. rear_right is the appliance slot; owning it alone keeps
+  # the 40cm asset from squeezing a zone-mate, and align_stop center keeps it
+  # clear of the zone edges.
+  - placement_name: rear_right_incubator
+    object_name: incubator
     zone: rear_right
-    depth_tier: 0
+    depth_tier: 1
+    align_stop: center
+
+  # Microscope in the right tool band beside the aspirating pipette (steps
+  # inspect_confluence and confirm_detachment click it to inspect the flask). A
+  # required protocol target that the scene did not previously place. The tall
+  # right band suits the tall 35cm instrument. (Placing two large required
+  # instruments -- this microscope plus the rear_right incubator -- is what keeps
+  # this scene below the 0.50 scale target; see the handoff notes.)
+  - placement_name: right_microscope
+    object_name: microscope
+    zone: right_tool_area
+    depth_tier: 1
     align_stop: center
 
 reposition_placements:
@@ -42,9 +84,17 @@ reposition_placements:
     zone: rear_left
     depth_tier: 1
 
-  # Hood surface stays center
+  # Hood surface stays center (the work-surface backdrop the flask sits on; the
+  # confirm/inspect steps click it to return from the microscope view). Placed at
+  # depth_tier 1 to share the center row with the flask rather than opening a
+  # third tier-row. The scene-wide uniform rescale is a vertical stack fit: each
+  # extra tier-row adds label-height overhead that lowers the single factor
+  # applied to every object. Collapsing this from tier 2 to tier 1 raises the
+  # whole-scene factor (0.461 -> 0.499), lifting every readable glassware bottle,
+  # with no object shrunk and no target moved. The wide center zone fits the
+  # flask and hood surface side by side.
   - placement_name: center_hood_surface
     zone: center
-    depth_tier: 2
+    depth_tier: 1
 
-scene_notes: "Hood workspace for passage_hood_detachment mini-protocol. T75 flask in center work area, reagent bottles (PBS, trypsin, media) positioned in rear zones, ethanol spray bottle for sterilization, and aspirating pipette in right tool area."
+scene_notes: "Hood workspace for passage_hood_detachment mini-protocol. T75 flask center-stage, reagent bottles (PBS, trypsin, media) in rear zones, ethanol spray bottle for sterilization, the microscope and aspirating pipette in the right tool band, and the incubator in rear_right for the detachment wait. Inherited non-target clutter (well plate, sterile water, second pipette, tip box, waste) removed."

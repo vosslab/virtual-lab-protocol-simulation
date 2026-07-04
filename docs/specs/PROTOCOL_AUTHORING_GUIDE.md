@@ -57,6 +57,32 @@ responses.
 A Python builder reads these files, validates them, and emits TypeScript
 modules that the browser bundle imports. No YAML is parsed at runtime.
 
+## Write the flow sketch first
+
+Before writing any YAML, sketch the flow. [PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md)
+requires this: the author works out the click path and the visible state
+changes before touching `protocol.yaml`. The sketch may be a diagram or a
+short table, but it must name, in order:
+
+- the objects that matter for the mini-protocol;
+- the first object the student clicks;
+- for each step, the target that receives the action and the gesture used
+  on it;
+- the state change the student sees after each interaction;
+- the next step the flow moves to.
+
+This sketch is the design source for the `learning` block, the step chain,
+the `sequence` of interactions, and the screenshot checkpoints a walker
+verifies. Write the sketch, then encode it as `protocol.yaml` following the
+schema in the rest of this guide.
+
+[gen_flow_view.py](../../pipeline/gen_flow_view.py) generates a flow
+view from an already-written `protocol.yaml` (steps, click path, gestures,
+state changes, transitions). That generated view is an AUDIT/consistency
+artifact for checking a finished protocol against its intended flow -- it is
+not the design source. The design source is the flow sketch an author writes
+before implementation, described above.
+
 ## The two-level model
 
 Every protocol is a tight linear spec with three nested levels: `protocol`,

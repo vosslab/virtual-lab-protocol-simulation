@@ -22,13 +22,13 @@ by DOM-element presence, not by URL.
 
 | File | Purpose |
 | --- | --- |
-| [src/dist_entry.tsx](../src/dist_entry.tsx) | Bundle entry; routes to launcher, protocol host, or bench by DOM root presence |
-| [src/launcher_entry.tsx](../src/launcher_entry.tsx) | Launcher bundle entry; mounts Solid `Launcher` into `#launcher-root` |
-| [src/protocol_host_entry.tsx](../src/protocol_host_entry.tsx) | Protocol-host bundle entry; imports `protocol_host.tsx` |
-| [src/protocol_host.tsx](../src/protocol_host.tsx) | Wires layout pipeline, renderer, step machine, click resolver, and HUD for one protocol page |
-| [src/launcher/Launcher.tsx](../src/launcher/Launcher.tsx) | Solid component; renders the protocol selector from `PROTOCOLS_INDEX_SLIM` |
-| [src/index.html](../src/index.html) | Bench page (render smoke target; copied to `dist/bench_basic.html`) |
-| [src/launcher/index.html](../src/launcher/index.html) | Launcher page (copied to `dist/index.html`) |
+| [dist_entry.tsx](../src/dist_entry.tsx) | Bundle entry; routes to launcher, protocol host, or bench by DOM root presence |
+| [launcher_entry.tsx](../src/launcher_entry.tsx) | Launcher bundle entry; mounts Solid `Launcher` into `#launcher-root` |
+| [protocol_host_entry.tsx](../src/protocol_host_entry.tsx) | Protocol-host bundle entry; imports `protocol_host.tsx` |
+| [protocol_host.tsx](../src/protocol_host.tsx) | Wires layout pipeline, renderer, step machine, click resolver, and HUD for one protocol page |
+| [Launcher.tsx](../src/launcher/Launcher.tsx) | Solid component; renders the protocol selector from `PROTOCOLS_INDEX_SLIM` |
+| [index.html](../src/index.html) | Bench page (render smoke target; copied to `dist/bench_basic.html`) |
+| [index.html](../src/launcher/index.html) | Launcher page (copied to `dist/index.html`) |
 | `src/protocol_host_template.html` | Six-region framed-interface shell for per-protocol pages (`#scene-root`, `#shell-root`, named `data-region` targets) |
 
 `protocol_host.tsx` mount order:
@@ -68,23 +68,23 @@ precomputed layout via `precomputed_result.ts` instead.
 
 | File | Purpose |
 | --- | --- |
-| [src/scene_runtime/layout/precomputed_result.ts](../src/scene_runtime/layout/precomputed_result.ts) | Production seam (WP-PRECOMP3): `resolve_precomputed_result` / `make_precomputed_result` build a renderer-ready `PipelineResult` from `PRECOMPUTED_LAYOUT[scene_name]` (throws on a missing entry). Imports `buildDecisionMetadata` directly (not the barrel) so the shipped bundle drags in no `runPipeline` call path. This is the only layout module the production bundle reaches at render time. |
-| [src/scene_runtime/layout/phases.ts](../src/scene_runtime/layout/phases.ts) | Phase registry: named phase sequence (`prepare -> resolve-metadata -> measure -> partition -> place-horizontal -> place-vertical -> place-labels -> resolve-collisions -> validate -> report`) with explicit read/mutate boundaries and bounded convergence loop |
-| [src/scene_runtime/layout/run_pipeline.ts](../src/scene_runtime/layout/run_pipeline.ts) | Top-level pipeline runner; drives named phases from the registry (build-only since WP-PRECOMP3) |
-| [src/scene_runtime/layout/types.ts](../src/scene_runtime/layout/types.ts) | All layout type definitions (`PipelineResult`, `ComputedItem`, `PlacementAuthored`, etc.) |
-| [src/scene_runtime/layout/constants.ts](../src/scene_runtime/layout/constants.ts) | Layout constants (`DEFAULT_VIEWPORT`, `WORKSPACE_PX_PER_CM`, shrink factor) |
-| [src/scene_runtime/layout/bind_objects.ts](../src/scene_runtime/layout/bind_objects.ts) | Stage: bind object YAML to placements |
-| [src/scene_runtime/layout/resolve_inheritance.ts](../src/scene_runtime/layout/resolve_inheritance.ts) | Stage: resolve base-scene inheritance chain |
-| [src/scene_runtime/layout/normalize_schema.ts](../src/scene_runtime/layout/normalize_schema.ts) | Stage: normalize Schema A scene fields and apply layout-rule defaults |
-| [src/scene_runtime/layout/scale_to_real_world.ts](../src/scene_runtime/layout/scale_to_real_world.ts) | Stage: convert real-world dimensions to pixels |
-| [src/scene_runtime/layout/horizontal_layout.ts](../src/scene_runtime/layout/horizontal_layout.ts) | Stage: compute x positions |
-| [src/scene_runtime/layout/vertical_layout.ts](../src/scene_runtime/layout/vertical_layout.ts) | Stage: compute y positions |
-| [src/scene_runtime/layout/group_by_zone.ts](../src/scene_runtime/layout/group_by_zone.ts) | Stage: group placements by zone |
-| [src/scene_runtime/layout/footprint.ts](../src/scene_runtime/layout/footprint.ts) | Footprint helpers |
-| [src/scene_runtime/layout/clamp_scene_bounds.ts](../src/scene_runtime/layout/clamp_scene_bounds.ts) | Clamp placements to scene bounds |
-| [src/scene_runtime/layout/layout_labels.ts](../src/scene_runtime/layout/layout_labels.ts) | Label positioning |
-| [src/scene_runtime/layout/wrap_label.ts](../src/scene_runtime/layout/wrap_label.ts) | Label line-wrap helper |
-| [src/scene_runtime/layout/index.ts](../src/scene_runtime/layout/index.ts) | Barrel re-export: `runPipeline` |
+| [precomputed_result.ts](../src/scene_runtime/layout/precomputed_result.ts) | Production seam (WP-PRECOMP3): `resolve_precomputed_result` / `make_precomputed_result` build a renderer-ready `PipelineResult` from `PRECOMPUTED_LAYOUT[scene_name]` (throws on a missing entry). Imports `buildDecisionMetadata` directly (not the barrel) so the shipped bundle drags in no `runPipeline` call path. This is the only layout module the production bundle reaches at render time. |
+| [phases.ts](../src/scene_runtime/layout/phases.ts) | Phase registry: named phase sequence (`prepare -> resolve-metadata -> measure -> partition -> place-horizontal -> place-vertical -> place-labels -> resolve-collisions -> validate -> report`) with explicit read/mutate boundaries and bounded convergence loop |
+| [run_pipeline.ts](../src/scene_runtime/layout/run_pipeline.ts) | Top-level pipeline runner; drives named phases from the registry (build-only since WP-PRECOMP3) |
+| [types.ts](../src/scene_runtime/layout/types.ts) | All layout type definitions (`PipelineResult`, `ComputedItem`, `PlacementAuthored`, etc.) |
+| [constants.ts](../src/scene_runtime/layout/constants.ts) | Layout constants (`DEFAULT_VIEWPORT`, `WORKSPACE_PX_PER_CM`, shrink factor) |
+| [bind_objects.ts](../src/scene_runtime/layout/bind_objects.ts) | Stage: bind object YAML to placements |
+| [resolve_inheritance.ts](../src/scene_runtime/layout/resolve_inheritance.ts) | Stage: resolve base-scene inheritance chain |
+| [normalize_schema.ts](../src/scene_runtime/layout/normalize_schema.ts) | Stage: normalize Schema A scene fields and apply layout-rule defaults |
+| [scale_to_real_world.ts](../src/scene_runtime/layout/scale_to_real_world.ts) | Stage: convert real-world dimensions to pixels |
+| [horizontal_layout.ts](../src/scene_runtime/layout/horizontal_layout.ts) | Stage: compute x positions |
+| [vertical_layout.ts](../src/scene_runtime/layout/vertical_layout.ts) | Stage: compute y positions |
+| [group_by_zone.ts](../src/scene_runtime/layout/group_by_zone.ts) | Stage: group placements by zone |
+| [footprint.ts](../src/scene_runtime/layout/footprint.ts) | Footprint helpers |
+| [clamp_scene_bounds.ts](../src/scene_runtime/layout/clamp_scene_bounds.ts) | Clamp placements to scene bounds |
+| [layout_labels.ts](../src/scene_runtime/layout/layout_labels.ts) | Label positioning |
+| [wrap_label.ts](../src/scene_runtime/layout/wrap_label.ts) | Label line-wrap helper |
+| [index.ts](../src/scene_runtime/layout/index.ts) | Barrel re-export: `runPipeline` |
 
 #### Geometry core (`src/scene_runtime/layout/geometry/`)
 
@@ -97,8 +97,8 @@ and object-placement layout phases consume it later and own all mutation.
 
 | File | Purpose |
 | --- | --- |
-| [src/scene_runtime/layout/geometry/types.ts](../src/scene_runtime/layout/geometry/types.ts) | Immutable value types: `Vector`, `Aabb`, `Collision`, `ResolutionCandidate` |
-| [src/scene_runtime/layout/geometry/collision.ts](../src/scene_runtime/layout/geometry/collision.ts) | `aabbFromBounds`, `detectCollision`, `buildResolutionCandidate`, `sortResolutionOrder` |
+| [types.ts](../src/scene_runtime/layout/geometry/types.ts) | Immutable value types: `Vector`, `Aabb`, `Collision`, `ResolutionCandidate` |
+| [collision.ts](../src/scene_runtime/layout/geometry/collision.ts) | `aabbFromBounds`, `detectCollision`, `buildResolutionCandidate`, `sortResolutionOrder` |
 
 #### Layout config (`src/scene_runtime/layout/config/`)
 
@@ -150,15 +150,21 @@ Step machine, validators, scene operations, and click resolver.
 
 | File | Purpose |
 | --- | --- |
-| [src/scene_runtime/protocol/resolve_entry_scene.ts](../src/scene_runtime/protocol/resolve_entry_scene.ts) | `resolve_entry_scene_name` (step.scene -> SceneChange fallback -> throw; runner delegation); `assert_scene_not_empty` guard |
-| [src/scene_runtime/protocol/step_machine.ts](../src/scene_runtime/protocol/step_machine.ts) | Pure step machine: step progression, interaction-index advancement, validator dispatch, scene-op handoff, event emission |
-| [src/scene_runtime/protocol/validators.ts](../src/scene_runtime/protocol/validators.ts) | Interaction and step validator dispatch (`correct_target`, `correct_choice`, `target_with_value`, `sequence_complete`, `final_state_matches`) |
-| [src/scene_runtime/protocol/scene_operations.ts](../src/scene_runtime/protocol/scene_operations.ts) | Routes five `SceneOperation` primitives to injected deps (exhaustive switch over `ObjectStateChange`, `CursorAttach`, `SceneChange`, `LayoutMove`, `TimedWait`) |
-| [src/scene_runtime/protocol/scene_op_deps.ts](../src/scene_runtime/protocol/scene_op_deps.ts) | Store-driven `SceneOpDeps`: `ObjectStateChange`/`CursorAttach` write `scene_store`; `SceneChange` reseeds + applies the reset policy (preserving cursor-held state); `LayoutMove` is a reported no-op (Option A); `TimedWait` keeps observable semantics through the subsequent state write |
-| [src/scene_runtime/protocol/walker_debug.ts](../src/scene_runtime/protocol/walker_debug.ts) | Read-only walker/debug surface: installs `window.PROTOCOL_STEPS` + `window.gameState` projected from the emitter snapshot + scene store (frozen contract) |
-| [src/scene_runtime/protocol/click_resolver.ts](../src/scene_runtime/protocol/click_resolver.ts) | Attaches DOM click listener; maps click target to interaction validator |
-| [src/scene_runtime/protocol/affordance.ts](../src/scene_runtime/protocol/affordance.ts) | Pure affordance-kind mapping: `compute_affordance_kind` + types `AffordanceKind`, `AffordanceGesture` (= canonical `Gesture` \| null), `ActiveAffordanceAccessor`, `ComputeAffordanceKindArgs`; no Solid reactive reads, no I/O, no layout import |
-| [src/scene_runtime/protocol/emitter.ts](../src/scene_runtime/protocol/emitter.ts) | `ProtocolShellEmitter` and `RuntimeEmitterHandle`; snapshot reducer pattern |
+| [resolve_entry_scene.ts](../src/scene_runtime/protocol/resolve_entry_scene.ts) | `resolve_entry_scene_name` (step.scene -> SceneChange fallback -> throw; runner delegation); `assert_scene_not_empty` guard |
+| [step_machine.ts](../src/scene_runtime/protocol/step_machine.ts) | Pure step machine: step progression, interaction-index advancement, validator dispatch, scene-op handoff, event emission |
+| [validators.ts](../src/scene_runtime/protocol/validators.ts) | Interaction and step validator dispatch (`correct_target`, `correct_choice`, `target_with_value`, `sequence_complete`, `final_state_matches`) |
+| [gesture_registry.ts](../src/scene_runtime/protocol/gesture_registry.ts) | `GESTURE_REGISTRY`: one row per closed `Gesture` (render shape, `data-*` selectors, value extraction, single dispatch entry, walker driver); owns `scene_click_to_command` and `dispatch_gesture` (the single gesture-routing point, exhaustive `never` default) |
+| [target_adapter.ts](../src/scene_runtime/protocol/target_adapter.ts) | Protocol-target -> DOM identity adapter: `resolve_to_placement` / `resolve_to_object`, `AmbiguousTargetError` on non-unique object_name, `TARGET_DOM_ATTR` / `TARGET_DOM_SELECTOR` |
+| [flatten_sequence_runner.ts](../src/scene_runtime/protocol/flatten_sequence_runner.ts) | Flattens a `sequence_runner` into the concatenated steps of its constituent mini-protocols so the step machine drives one chained flow |
+| [authored_value_check.ts](../src/scene_runtime/protocol/authored_value_check.ts) | Load-time authored-value guard for `target_with_value` / `final_state_matches` (UnknownAuthored*/BadAuthoredValue errors) |
+| [gesture_affordance_check.ts](../src/scene_runtime/protocol/gesture_affordance_check.ts) | Load-time invariant `validate_gesture_affordances`: an authored gesture whose `GESTURE_REGISTRY` row is absent or `wired: false` throws `UnaffordancedGestureError` at protocol load |
+| [target_existence_check.ts](../src/scene_runtime/protocol/target_existence_check.ts) | Load-time invariant: an authored `target` that does not resolve to a scene object throws at protocol load |
+| [scene_operations.ts](../src/scene_runtime/protocol/scene_operations.ts) | Routes five `SceneOperation` primitives to injected deps (exhaustive switch over `ObjectStateChange`, `CursorAttach`, `SceneChange`, `LayoutMove`, `TimedWait`) |
+| [scene_op_deps.ts](../src/scene_runtime/protocol/scene_op_deps.ts) | Store-driven `SceneOpDeps`: `ObjectStateChange`/`CursorAttach` write `scene_store`; `SceneChange` reseeds + applies the reset policy (preserving cursor-held state); `LayoutMove` is a reported no-op (Option A); `TimedWait` keeps observable semantics through the subsequent state write |
+| [walker_debug.ts](../src/scene_runtime/protocol/walker_debug.ts) | Read-only walker/debug surface: installs `window.PROTOCOL_STEPS` + `window.gameState` projected from the emitter snapshot + scene store (frozen contract) |
+| [click_resolver.ts](../src/scene_runtime/protocol/click_resolver.ts) | Attaches DOM click listener; maps click target to interaction validator |
+| [affordance.ts](../src/scene_runtime/protocol/affordance.ts) | Pure affordance-kind mapping: `compute_affordance_kind` + types `AffordanceKind`, `AffordanceGesture` (= canonical `Gesture` \| null), `ActiveAffordanceAccessor`, `ComputeAffordanceKindArgs`; no Solid reactive reads, no I/O, no layout import |
+| [emitter.ts](../src/scene_runtime/protocol/emitter.ts) | `ProtocolShellEmitter` and `RuntimeEmitterHandle`; snapshot reducer pattern |
 
 Scene operations drive the reactive `scene_store` (WS-M3-D): a validated
 interaction's `ObjectStateChange` writes declared object state, the Solid
@@ -176,20 +182,20 @@ facade and `scene_item.tsx` / `scene_view.tsx` own item and label rendering.
 
 | File | Purpose |
 | --- | --- |
-| [src/scene_runtime/renderer/render_scene.tsx](../src/scene_runtime/renderer/render_scene.tsx) | Public Solid mount facade: creates the scene store, mounts `SceneView` into `#scene-root`, returns a dispose handle |
-| [src/scene_runtime/renderer/affordance_candidates.ts](../src/scene_runtime/renderer/affordance_candidates.ts) | `enumerate_candidate_targets(result)`: renderer-layer candidate-set enumeration over `PipelineResult.final` (top-level object names only, subparts excluded); single source of truth with the click resolver |
-| [src/scene_runtime/renderer/scene_view.tsx](../src/scene_runtime/renderer/scene_view.tsx) | Solid `SceneView`: renders background, one `SceneItem` per placement, and label elements; runs structural guards (collects violations) and sets `data-scene-degraded` |
-| [src/scene_runtime/renderer/scene_item.tsx](../src/scene_runtime/renderer/scene_item.tsx) | Solid `SceneItem`: reactive single-item paint (position, depth, SVG inject, missing-svg placeholder dashed box, `data-*` attributes) |
-| [src/scene_runtime/renderer/visual_state_resolver.ts](../src/scene_runtime/renderer/visual_state_resolver.ts) | Pure (no-DOM, no-Solid) resolver mapping object state + authored `visual_states` + per-protocol material registry to a renderable description |
-| [src/scene_runtime/renderer/render_background.ts](../src/scene_runtime/renderer/render_background.ts) | Render scene background (gradient or asset) |
-| [src/scene_runtime/renderer/structural_guards.ts](../src/scene_runtime/renderer/structural_guards.ts) | Six structural guards (item count, bounds, aspect ratio, asset presence, etc.); collects all violations rather than throwing on the first; throwing wrapper is exposed for tests/CI |
-| [src/scene_runtime/renderer/inject_svg.ts](../src/scene_runtime/renderer/inject_svg.ts) | Manifest-fetch SVG DOM path only: `injectSvgFromManifest` (runtime manifest fetch) and `injectSvgMarkupInto` (raw markup), both routing through `namespaceSvgIds`; plus `resolveAnchor` for namespaced anchor lookup. No `injectSvgInto`, no bundled-registry path |
+| [render_scene.tsx](../src/scene_runtime/renderer/render_scene.tsx) | Public Solid mount facade: creates the scene store, mounts `SceneView` into `#scene-root`, returns a dispose handle |
+| [affordance_candidates.ts](../src/scene_runtime/renderer/affordance_candidates.ts) | `enumerate_candidate_targets(result)`: renderer-layer candidate-set enumeration over `PipelineResult.final` (top-level object names only, subparts excluded); single source of truth with the click resolver |
+| [scene_view.tsx](../src/scene_runtime/renderer/scene_view.tsx) | Solid `SceneView`: renders background, one `SceneItem` per placement, and label elements; runs structural guards (collects violations) and sets `data-scene-degraded` |
+| [scene_item.tsx](../src/scene_runtime/renderer/scene_item.tsx) | Solid `SceneItem`: reactive single-item paint (position, depth, SVG inject, missing-svg placeholder dashed box, `data-*` attributes) |
+| [visual_state_resolver.ts](../src/scene_runtime/renderer/visual_state_resolver.ts) | Pure (no-DOM, no-Solid) resolver mapping object state + authored `visual_states` + per-protocol material registry to a renderable description |
+| [render_background.ts](../src/scene_runtime/renderer/render_background.ts) | Render scene background (gradient or asset) |
+| [structural_guards.ts](../src/scene_runtime/renderer/structural_guards.ts) | Six structural guards (item count, bounds, aspect ratio, asset presence, etc.); collects all violations rather than throwing on the first; throwing wrapper is exposed for tests/CI |
+| [inject_svg.ts](../src/scene_runtime/renderer/inject_svg.ts) | Manifest-fetch SVG DOM path only: `injectSvgFromManifest` (runtime manifest fetch) and `injectSvgMarkupInto` (raw markup), both routing through `namespaceSvgIds`; plus `resolveAnchor` for namespaced anchor lookup. No `injectSvgInto`, no bundled-registry path |
 | `material_color.ts` | D3 color resolver: `resolve_color_result(material_name, registry)` returns `ColorResult` discriminated union (empty/null, built-in mixed/#686868, registry-backed scalar, or `ok:false` failure) |
 | `material_acceptance.ts` | D1 registry-backed acceptance predicate: mirrors Python stepper `mutate_state_field` so TS store and Python stepper accept and reject the same material names |
 | `subpart_dispatch.ts` | JSX-free dispatch predicate (`find_material_tint_subpart_field`): identifies structured objects with a `material_tint`/`subpart` render effect from the declaration, not runtime value |
 | `subpart_visual_state_renderer.tsx` | Solid subpart material-tint overlay: one static `<svg>` per structured object over generated `subpart_geometry`; per-subpart `createMemo` reads via `getSubpartStateField` and `resolve_color_result`; `ok:true`+color paints, `ok:true`+null transparent, `ok:false` degrades |
-| [src/scene_runtime/renderer/svg_manifest_loader.ts](../src/scene_runtime/renderer/svg_manifest_loader.ts) | Runtime SVG manifest fetch/cache layer; loads SVG files from `dist/assets/svg/` via `generated/svg_manifest.ts` |
-| [src/scene_runtime/renderer/index.ts](../src/scene_runtime/renderer/index.ts) | Barrel re-export: `renderScene`, `mountScene`, `SceneView`, `SceneItem`, `renderBackground` |
+| [svg_manifest_loader.ts](../src/scene_runtime/renderer/svg_manifest_loader.ts) | Runtime SVG manifest fetch/cache layer; loads SVG files from `dist/assets/svg/` via `generated/svg_manifest.ts` |
+| [index.ts](../src/scene_runtime/renderer/index.ts) | Barrel re-export: `renderScene`, `mountScene`, `SceneView`, `SceneItem`, `renderBackground` |
 
 ### Shell and HUD (`src/shell/`)
 
@@ -197,13 +203,13 @@ Solid.js observer layer. Subscribes to the emitter; never mutates protocol state
 
 | File | Purpose |
 | --- | --- |
-| [src/shell/adapter/types.ts](../src/shell/adapter/types.ts) | Closed seam contract: `ProtocolConfig`, `ShellViewSnapshot`, all event/op/gesture types |
-| [src/shell/signals.ts](../src/shell/signals.ts) | Re-exports Solid signals; `subscribeEmitterToSnapshot` binding helper |
-| [src/shell/hud/ProtocolHud.tsx](../src/shell/hud/ProtocolHud.tsx) | Mounts four Solid region components into named DOM targets |
-| [src/shell/regions/StepOutline.tsx](../src/shell/regions/StepOutline.tsx) | Read-only ordered step cards (`data-step-status` current/previous/upcoming) |
-| [src/shell/regions/TipsBubble.tsx](../src/shell/regions/TipsBubble.tsx) | Professor-tip bubble (`current_tip` or fallback) |
-| [src/shell/regions/StepCounter.tsx](../src/shell/regions/StepCounter.tsx) | Completed/total counter |
-| [src/shell/regions/GuidanceBar.tsx](../src/shell/regions/GuidanceBar.tsx) | Current-step prompt in the teal guidance bar |
+| [types.ts](../src/shell/adapter/types.ts) | Closed seam contract: `ProtocolConfig`, `ShellViewSnapshot`, all event/op/gesture types |
+| [signals.ts](../src/shell/signals.ts) | Re-exports Solid signals; `subscribeEmitterToSnapshot` binding helper |
+| [ProtocolHud.tsx](../src/shell/hud/ProtocolHud.tsx) | Mounts four Solid region components into named DOM targets |
+| [StepOutline.tsx](../src/shell/regions/StepOutline.tsx) | Read-only ordered step cards (`data-step-status` current/previous/upcoming) |
+| [TipsBubble.tsx](../src/shell/regions/TipsBubble.tsx) | Professor-tip bubble (`current_tip` or fallback) |
+| [StepCounter.tsx](../src/shell/regions/StepCounter.tsx) | Completed/total counter |
+| [GuidanceBar.tsx](../src/shell/regions/GuidanceBar.tsx) | Current-step prompt in the teal guidance bar |
 
 The shell is a sibling of `#scene-root`, never an ancestor (asset-crop rule).
 
@@ -214,20 +220,21 @@ All scripts that emit to `generated/` or produce `dist/` artifacts. Run by
 
 | File | Purpose |
 | --- | --- |
-| [pipeline/gen_object_library.py](../pipeline/gen_object_library.py) | YAML under `content/objects/` -> `generated/object_library.ts`; emits `OBJECT_LIBRARY` (per-object `state_schema`, `visual_states`, `subpart_state_schema`, and for grid-structured objects `subpart_geometry` + `view_box` per PATH-B), `ASSET_SPECS`, `OBJECT_STATE_SCHEMAS` (object-level state-field contract for store validation), `OBJECT_SUBPART_STATE_SCHEMAS` (subpart-level state-field contract). `state_fields` are the contract; `visual_states` are the rendering map. |
-| [pipeline/gen_svg_manifest.py](../pipeline/gen_svg_manifest.py) | `assets/equipment/*.svg` -> `generated/svg_manifest.ts` (asset_name -> relative file path) + copied static SVG files |
-| [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts` + `generated/scene_manifest.json` (per-scene classification: emitted/skipped/errored); `--missing-svg=strict|placeholder` flag (default `placeholder`) |
-| [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` + `generated/protocol_materials.ts` (per-protocol material registry from each package `materials.yaml`) |
-| [pipeline/build_protocol_index.py](../pipeline/build_protocol_index.py) | Protocol index helpers |
-| [pipeline/list_protocols.py](../pipeline/list_protocols.py) | Parses `PROTOCOLS_INDEX` from generated TS; `emit` subcommand writes per-protocol HTML |
-| [pipeline/scene_inheritance.py](../pipeline/scene_inheritance.py) | Scene YAML inheritance resolution library (shared by gen_scene_index) |
-| [pipeline/build_main_bundle.mjs](../pipeline/build_main_bundle.mjs) | esbuild Node API bundle: `src/launcher_entry.tsx` -> `dist/launcher.js`, `src/protocol_host_entry.tsx` -> `dist/protocol_host.js` |
-| [pipeline/precompute_layout.mjs](../pipeline/precompute_layout.mjs) | Runs the layout engine (`runPipeline`) for every scene at canonical 16:9 (1920x1080) -> `generated/precomputed_layout.ts` (`PRECOMPUTED_LAYOUT`: per-scene `{ final: ComputedItem[] }`). Runs via `node --import tsx` in `build_github_pages.sh` after `build_generated.sh`, since it imports the generated `SCENES`, `OBJECT_LIBRARY`, and `ASSET_SPECS`. Deterministic (scenes and items sorted) so two builds are byte-identical. |
+| [gen_object_library.py](../pipeline/gen_object_library.py) | YAML under `content/objects/` -> `generated/object_library.ts`; emits `OBJECT_LIBRARY` (per-object `state_schema`, `visual_states`, `subpart_state_schema`, and for grid-structured objects `subpart_geometry` + `view_box` per PATH-B), `ASSET_SPECS`, `OBJECT_STATE_SCHEMAS` (object-level state-field contract for store validation), `OBJECT_SUBPART_STATE_SCHEMAS` (subpart-level state-field contract). `state_fields` are the contract; `visual_states` are the rendering map. |
+| [gen_svg_manifest.py](../pipeline/gen_svg_manifest.py) | `assets/equipment/*.svg` -> `generated/svg_manifest.ts` (asset_name -> relative file path) + copied static SVG files |
+| [gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts` + `generated/scene_manifest.json` (per-scene classification: emitted/skipped/errored); `--missing-svg=strict|placeholder` flag (default `placeholder`) |
+| [gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` + `generated/protocol_materials.ts` (per-protocol material registry from each package `materials.yaml`) |
+| [gen_flow_view.py](../pipeline/gen_flow_view.py) | Protocol YAML -> `generated/flow_views/<protocol_name>.txt`, a per-protocol audit view rendering the step chain, click path, gestures, and state changes already authored in `protocol.yaml`. An audit/consistency artifact only; the design source is the flow sketch an author writes before implementation, per [PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) and [PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md). Skips `sequence_runner` protocols (no authored `steps` of their own). |
+| [build_protocol_index.py](../pipeline/build_protocol_index.py) | Protocol index helpers |
+| [list_protocols.py](../pipeline/list_protocols.py) | Parses `PROTOCOLS_INDEX` from generated TS; `emit` subcommand writes per-protocol HTML |
+| [scene_inheritance.py](../pipeline/scene_inheritance.py) | Scene YAML inheritance resolution library (shared by gen_scene_index) |
+| [build_main_bundle.mjs](../pipeline/build_main_bundle.mjs) | esbuild Node API bundle: `src/launcher_entry.tsx` -> `dist/launcher.js`, `src/protocol_host_entry.tsx` -> `dist/protocol_host.js` |
+| [precompute_layout.mjs](../pipeline/precompute_layout.mjs) | Runs the layout engine (`runPipeline`) for every scene at canonical 16:9 (1920x1080) -> `generated/precomputed_layout.ts` (`PRECOMPUTED_LAYOUT`: per-scene `{ final: ComputedItem[] }`). Runs via `node --import tsx` in `build_github_pages.sh` after `build_generated.sh`, since it imports the generated `SCENES`, `OBJECT_LIBRARY`, and `ASSET_SPECS`. Deterministic (scenes and items sorted) so two builds are byte-identical. |
 
 ### Validation (`validation/`)
 
 Python validators for YAML content, SVG assets, and protocol step flow.
-Entry point: [validation/validate.py](../validation/validate.py).
+Entry point: [validate.py](../validation/validate.py).
 
 | Subtree | Purpose |
 | --- | --- |
@@ -243,7 +250,7 @@ Entry point: [validation/validate.py](../validation/validate.py).
 
 ### Testing (`tests/`)
 
-Three tiers, isolated by [tests/conftest.py](../tests/conftest.py)
+Three tiers, isolated by [conftest.py](../tests/conftest.py)
 (`collect_ignore = ["e2e", "playwright"]`):
 
 - **Fast pytest** (`tests/test_*.py`): pyflakes, ASCII compliance, tab indentation,
@@ -266,20 +273,20 @@ Developer-only helpers that do not appear in any build chain.
 
 | File | Purpose |
 | --- | --- |
-| [tools/run_smoke.py](../tools/run_smoke.py) | Fast browser smoke test wrapper |
-| [tools/run_protocol_walkthrough.py](../tools/run_protocol_walkthrough.py) | Full protocol E2E wrapper |
-| [tools/build_test_fixture.sh](../tools/build_test_fixture.sh) | Build a single dev-smoke protocol for local testing |
-| [tools/normalize_svg_v2.py](../tools/normalize_svg_v2.py) | SVG asset normalizer (stdlib-only; kept until v3 parity is proven) |
+| [run_smoke.py](../tools/run_smoke.py) | Fast browser smoke test wrapper |
+| [run_protocol_walkthrough.py](../tools/run_protocol_walkthrough.py) | Full protocol E2E wrapper |
+| [build_test_fixture.sh](../tools/build_test_fixture.sh) | Build a single dev-smoke protocol for local testing |
+| [normalize_svg_v2.py](../tools/normalize_svg_v2.py) | SVG asset normalizer (stdlib-only; kept until v3 parity is proven) |
 | `tools/normalize_svg_v3.py` | SVG ingestion-gate normalizer (lxml + tinycss2 + shapely); see below |
-| [tools/check_css_content_policy.py](../tools/check_css_content_policy.py) | CSS content policy checker (invoked by check_codebase.sh) |
-| [tools/html_to_pdf.mjs](../tools/html_to_pdf.mjs) | Playwright-based HTML-to-PDF renderer |
-| [tools/seam_types_compile_check.ts](../tools/seam_types_compile_check.ts) | Compile-time type check for seam interface literals |
-| [tools/svg_picker/README.md](../tools/svg_picker/README.md) | Browser-based SVG asset picker for content authors |
-| [tools/scorecard_m2.mjs](../tools/scorecard_m2.mjs) | M2 scene scorecard runner |
-| [tools/scene_to_png.mjs](../tools/scene_to_png.mjs) | `scene:png` -- renders a scene page to PNG + writes render-yield stats |
-| [tools/protocol_to_png.mjs](../tools/protocol_to_png.mjs) | `protocol:png` -- renders a protocol page to PNG; records load outcomes |
-| [tools/scene_stats.mjs](../tools/scene_stats.mjs) | `computeSceneStats` -- shared scene statistics helper |
-| [tools/bbox_helpers.mjs](../tools/bbox_helpers.mjs) | Shared bounding-box helper utilities used by scene tools |
+| [check_css_content_policy.py](../tools/check_css_content_policy.py) | CSS content policy checker (invoked by check_codebase.sh) |
+| [html_to_pdf.mjs](../tools/html_to_pdf.mjs) | Playwright-based HTML-to-PDF renderer |
+| [seam_types_compile_check.ts](../tools/seam_types_compile_check.ts) | Compile-time type check for seam interface literals |
+| [README.md](../tools/svg_picker/README.md) | Browser-based SVG asset picker for content authors |
+| [scorecard_m2.mjs](../tools/scorecard_m2.mjs) | M2 scene scorecard runner |
+| [scene_to_png.mjs](../tools/scene_to_png.mjs) | `scene:png` -- renders a scene page to PNG + writes render-yield stats |
+| [protocol_to_png.mjs](../tools/protocol_to_png.mjs) | `protocol:png` -- renders a protocol page to PNG; records load outcomes |
+| [scene_stats.mjs](../tools/scene_stats.mjs) | `computeSceneStats` -- shared scene statistics helper |
+| [bbox_helpers.mjs](../tools/bbox_helpers.mjs) | Shared bounding-box helper utilities used by scene tools |
 | `tools/layout_golden_diff.mjs` | `layout:diff` / `layout:refresh` -- ephemeral regression harness; captures and compares a gitignored layout baseline snapshot at `test-results/layout_reference_snapshot.json` with provenance (scene count, generated-layout hash, command, timestamp) and staleness detection |
 | `tools/layout_metrics.mjs` | `layout:metrics` -- raw per-scene geometry metrics (rectangle-union fill, largest-empty-rect, per-zone and per-grid occupancy, per-object scale and floor proxies, label overlaps, AABB overlap graph, balance); per-scene overlay |
 | `tools/layout_health_report.mjs` | `layout:health` -- interprets raw geometry metrics into provisional health categories and a worst-first author scorecard; writes `test-results/layout_health/health_report.{md,json}` |
@@ -450,7 +457,7 @@ student-visible protocol walked end-to-end) is the M4 corpus gate.
 
 Solid.js is the reactive rendering framework. Its imports are permitted only
 in specific subtrees. This boundary is declared here and enforced by
-[tests/test_typescript_boundaries.py](../tests/test_typescript_boundaries.py).
+[test_typescript_boundaries.py](../tests/test_typescript_boundaries.py).
 
 ```text
 Solid ALLOWED:    src/shell/
@@ -500,7 +507,13 @@ npm run pretest:node && node --import tsx --test tests/test_*.mjs
 # Codebase check gate (typecheck, lint, format, node tests)
 bash check_codebase.sh
 
-# Playwright browser tests (requires built dist/)
+# Umbrella gate (build, check_codebase.sh, pytest, content validation)
+bash run_all_checks.sh
+
+# Browser walker sweep (builds dist/ as needed, then walks every protocol)
+bash run_playwright_tests.sh
+
+# Individual Playwright browser tests (requires built dist/)
 bash build_github_pages.sh && bash run_web_server.sh
 # then in another shell:
 node tests/playwright/test_framed_layout_m2.mjs
@@ -518,7 +531,13 @@ What each gate checks:
 - **check_codebase.sh**: TypeScript typecheck (tsconfig.json + tsconfig.lint.json),
   ESLint zero warnings, Prettier format check, CSS content policy, node unit tests.
 - **Playwright**: framed-layout measurable evidence, initial-scene rendering
-  evidence, full-path YAML walker.
+  evidence, single canonical YAML walker under `tests/playwright/e2e/`.
+- **run_all_checks.sh**: umbrella gate that runs the build, `check_codebase.sh`,
+  `pytest tests/`, and content validation; it excludes the slower browser walker
+  sweep, which runs separately through `run_playwright_tests.sh`.
+- **run_playwright_tests.sh**: builds `dist/` as needed, then runs
+  `tests/playwright/e2e/walk_all_protocols.mjs` (the all-protocols sweep) and
+  prints a final PASS/FAIL line.
 
 See [E2E_TESTS.md](E2E_TESTS.md) and [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md)
 for browser-test conventions.
@@ -536,8 +555,8 @@ for browser-test conventions.
   `src/shell/regions/` and mount it in `src/shell/hud/ProtocolHud.tsx`.
 - **New pipeline generator**: add the script to `pipeline/` (not `tools/`);
   register it in `package.json` `prebuild` and `pretest:node` hooks;
-  update [docs/FILE_STRUCTURE.md](FILE_STRUCTURE.md) and
-  [docs/CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md) in the same patch
+  update [FILE_STRUCTURE.md](FILE_STRUCTURE.md) and
+  [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md) in the same patch
   (per `AGENTS.md` binding-location rule).
 - **New validation rule**: add to the appropriate `validation/yaml_schema/`
   or `validation/scene_lint/` module; new rules in `scene_lint` must go
@@ -550,20 +569,11 @@ for browser-test conventions.
   next scene under the reset policy, `TimedWait` is observable through the
   subsequent state write, and `LayoutMove` is an explicit reported no-op (zero
   authored uses, Option A).
-- The canonical walker (`tests/playwright/e2e/protocol_walkthrough_yaml.mjs`)
-  cannot yet complete a new-host protocol end-to-end: its startup contract still
-  targets the legacy cell-culture game (`window.resolveInteractionByIndex`, a
-  `#welcome-start-btn` modal, the `completionPath.kind` step schema, and a
-  scoring screen) that the protocol host does not produce. The read-only
-  `window.PROTOCOL_STEPS` / `window.gameState` surfaces the walker reads ARE
-  restored and verified; rewriting the walker to the new schema-driven model is
-  M4 work, not WS-M3-D.
-- sequence_runner protocols resolve and render their initial scene but are
-  not runnable: the step machine logs "Unknown step_name" because runners
-  carry no `steps` list of their own.
 - End-to-end placeholder rendering through the full pipeline is not yet
   proven: `gen_object_library.py` does not scan `tests/content/dev_smoke/`
   fixtures, so dev_smoke fixture objects are not loaded into `OBJECT_LIBRARY`.
-- Verification task: confirm whether `tools/run_protocol_walkthrough.py` and
-  `tools/run_smoke.py` are the canonical walkthrough entry points, or whether
-  `tests/playwright/walker/` supersedes them.
+- `drag` has no content protocol yet. The drag affordance and
+  `step_machine.handle_drag_commit` are wired and unit-tested, but the walker
+  sweep still classifies a `drag` interaction `unsupported_gesture` because no
+  authored protocol exercises it; adding `drag` to the walker's supported set is
+  a one-line change once a real drag protocol lands.

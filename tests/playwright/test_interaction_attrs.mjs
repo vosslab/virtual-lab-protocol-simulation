@@ -1,6 +1,6 @@
 // Interaction attributes audit for M2b renderer output.
-// Verifies that bench_basic render emits all six data-* attributes:
-// data-placement-name, data-object-name, data-zone, data-kind, data-depth, data-target-id.
+// Verifies that bench_basic render emits the frozen data-* attributes:
+// data-placement-name, data-object-name, data-zone, data-kind, data-depth.
 
 import { chromium } from "playwright";
 import path from "node:path";
@@ -156,7 +156,6 @@ async function main() {
       const zone = await el.getAttribute("data-zone");
       const kind = await el.getAttribute("data-kind");
       const depth = await el.getAttribute("data-depth");
-      const targetId = await el.getAttribute("data-target-id");
 
       const itemId = placementName || `item[${i}]`;
 
@@ -266,23 +265,6 @@ async function main() {
           attr: "data-depth",
           result: "PASS",
           value: depth,
-        });
-        passCount++;
-      }
-
-      // Check 6: data-target-id is present (may be empty string in M2b)
-      if (targetId === null || targetId === undefined) {
-        checks.push({
-          attr: "data-target-id",
-          result: "FAIL",
-          reason: "attribute missing (reserved for M3)",
-        });
-        failCount++;
-      } else {
-        checks.push({
-          attr: "data-target-id",
-          result: "PASS",
-          value: targetId === "" ? "(empty, reserved for M3)" : targetId,
         });
         passCount++;
       }

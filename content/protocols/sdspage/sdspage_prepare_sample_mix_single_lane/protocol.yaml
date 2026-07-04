@@ -162,7 +162,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: microtube_rack_24
+      - target: center_microtube_rack
         gesture: click
         validator:
           preset: correct_target

@@ -21,7 +21,7 @@
 // Frozen DOM contract (plan "Frozen DOM contract"): the item div emits exactly
 // these data-* attributes:
 //   data-placement-name, data-object-name, data-zone, data-kind, data-depth,
-//   data-target-id, data-item-id, data-asset, and (placeholder only)
+//   data-item-id, data-asset, and (placeholder only)
 //   data-missing-svg + data-placeholder-kind.
 // Additive failure-only marker: data-resolver-degraded="<message>" is stamped on
 // the item div when this item's visual-state resolution throws (see the resolver
@@ -30,6 +30,16 @@
 // is owned reactively by SceneView, which this item notifies via the onDegrade
 // callback. SceneView stamps data-scene-root + data-scene-degraded (see
 // scene_view.tsx).
+// Actionability gate (M6 "Enforce capabilities in renderer and candidate
+// enumeration"): data-item-id is stamped ONLY when the item's declared
+// ObjectDef.capabilities includes "clickable" (item.capabilities, bound
+// verbatim onto the ComputedItem by the layout pipeline). A decoration_only
+// object or a missing-object placeholder (bound with capabilities: []) omits
+// data-item-id entirely, so it receives no [data-item-id] CSS affordance
+// (cursor, hover outline, active/candidate ring) and is invisible to the
+// delegated click_resolver and to enumerate_candidate_targets. This makes
+// interactivity a modeled property instead of an emergent side effect of
+// "every rendered item gets an id".
 // Click handling stays on the delegated click_resolver (it reads data-item-id);
 // this component adds NO per-item click handler.
 
@@ -422,10 +432,28 @@ export function SceneItem(props: {
   candidateTargets?: ReadonlySet<string> | undefined;
 }): JSXElement {
   const item = props.item;
+  // object_name is the STATE-store / object-library lookup key (the store is
+  // object_name-keyed; two placements of one object share one state). Used for
+  // OBJECT_LIBRARY, read_object_state, read_flags, and the degrade channel.
   const target = item.object_name;
+  // placement_name is the unique per-placement DOM / click / highlight key
+  // (target-identity decision M7). It is what the click resolver reads back as
+  // data-item-id, what the walker clicks, and what the affordance memo compares
+  // against the resolved active_interaction_target. object_name would collapse
+  // two placements of one object into one DOM key; placement_name keeps them
+  // distinct.
+  const placement_target = item.placement_name;
 
   // Placeholder-mode items skip SVG/state resolution entirely.
   const is_placeholder = item.missing_svg === true;
+
+  // Actionability gate: an item is a click target only when its declared
+  // ObjectDef.capabilities (bound verbatim onto the ComputedItem by the
+  // layout pipeline) includes "clickable". decoration_only objects and
+  // missing-object placeholders (bound with capabilities: []) are excluded,
+  // so they render with no data-item-id and are invisible to the delegated
+  // click_resolver and to enumerate_candidate_targets.
+  const is_clickable = item.capabilities.includes("clickable");
 
   // Resolve the object's authored visual_states map (empty when the object is
   // not in the library, e.g. a missing-object placeholder), filtered to the
@@ -566,7 +594,11 @@ export function SceneItem(props: {
     return compute_affordance_kind({
       active_target: affordance?.active_target ?? null,
       active_gesture: affordance?.active_gesture ?? null,
-      item_target: target,
+      // The affordance space is placement_name: active_target carries the
+      // adapter-resolved placement_name and candidate_targets holds
+      // placement_names, so this item's key must be its placement_name too. A
+      // twice-placed object then rings the one active placement, not both.
+      item_target: placement_target,
       candidate_targets,
     });
   });
@@ -597,8 +629,7 @@ export function SceneItem(props: {
         data-zone={item.zone}
         data-kind={item.kind}
         data-depth={item.depth ?? undefined}
-        data-target-id=""
-        data-item-id={item.object_name}
+        data-item-id={is_clickable ? placement_target : undefined}
         data-asset={item.asset}
         data-missing-svg="true"
         data-placeholder-kind={placeholder_kind}
@@ -625,8 +656,7 @@ export function SceneItem(props: {
       data-zone={item.zone}
       data-kind={item.kind}
       data-depth={item.depth ?? undefined}
-      data-target-id=""
-      data-item-id={item.object_name}
+      data-item-id={is_clickable ? placement_target : undefined}
       data-asset={asset_name()}
       data-resolver-degraded={resolverDegraded().length > 0 ? resolverDegraded() : undefined}
       data-affordance={affordance_kind()}

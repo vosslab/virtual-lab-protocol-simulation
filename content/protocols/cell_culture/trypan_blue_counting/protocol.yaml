@@ -31,13 +31,11 @@ learning:
 
     operation (A25-A28) in sequence, allowing students to understand the
 
-    classical technique before the modern instrument. The 11 steps (A20-A28
+    classical technique before the modern instrument. The 9 steps reflect the
 
-    plus hemocytometer focus + automated capture) reflect the full pedagogical
+    full pedagogical pathway from chamber preparation through viability gate
 
-    pathway from chamber preparation through viability gate and decision point;
-
-    no steps have been compressed or omitted.
+    and decision point; no steps have been compressed or omitted.
 
     "
 steps:
@@ -365,7 +363,7 @@ steps:
       preset: final_state_matches
       target: cell_counter
       contains:
-        viability_percent: 90
+        viability_percent: 92.5
     outcome:
       on_success: complete
       on_failure: retry

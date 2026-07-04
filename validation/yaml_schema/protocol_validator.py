@@ -40,12 +40,19 @@ class ProtocolValidator:
 				return parts[i - 1]
 		return None
 
-	def validate(self, protocol: dict, path: str) -> list:
-		"""Validate a protocol definition."""
-		findings = []
+	def validate_closure(self, protocol: dict, path: str) -> list:
+		"""
+		Check protocol top-level keys against the closed vocabulary
+		(PROTOCOL_ALL_KEYS). Any key not in the documented whitelist is
+		unknown. Subsumes the retired-key check; no allow-list maintained.
 
-		# Closure: any top-level key not in the documented whitelist is unknown.
-		# Subsumes the retired-key check; no allow-list maintained.
+		This is the single schema source for top-level protocol key
+		closure. Callers outside this module (for example
+		pipeline/gen_protocols.py) must invoke this method rather than
+		re-deriving their own key allow-list, so an unknown/escape-hatch
+		field is rejected the same way everywhere.
+		"""
+		findings = []
 		for key in protocol.keys():
 			if key not in PROTOCOL_ALL_KEYS:
 				findings.append(Finding(
@@ -54,6 +61,13 @@ class ProtocolValidator:
 					severity=Severity.ERROR,
 					message=f"[CLOSURE] unknown top-level key '{key}' (allowed: {sorted(PROTOCOL_ALL_KEYS)})",
 				))
+		return findings
+
+	def validate(self, protocol: dict, path: str) -> list:
+		"""Validate a protocol definition."""
+		findings = []
+
+		findings.extend(self.validate_closure(protocol, path))
 
 		for key in PROTOCOL_REQUIRED_KEYS:
 			if key not in protocol:
@@ -484,7 +498,10 @@ class ProtocolValidator:
 							# target when present; fall back to interaction target.
 							if op_type == 'ObjectStateChange' and self.db:
 								op_target = op.get('target') or target
-								obj_data = self.db.resolve_object(op_target) if op_target else None
+								# op_target may be a placement_name (M7 identity model),
+								# not only a declared object_name; resolve_target_prefix
+								# accepts both and returns the underlying object data.
+								obj_data = self.db.resolve_target_prefix(op_target) if op_target else None
 								if obj_data:
 									state_dict = op.get('state', {})
 									if isinstance(state_dict, dict):
@@ -515,27 +532,27 @@ class ProtocolValidator:
 												findings.extend(self._validate_numeric_constraints(
 													field, field_name, field_value, op_target, op_path
 												))
-										# Subpart-target consistency check
-										if field.get('applies_to') == 'subpart':
-											findings.extend(self._validate_subpart_target(
-												op_target, op_path, field_name
-											))
-										# T1_MATERIAL_REF: material_name / held_material_name must exist in protocol materials.
-										# 'empty' and 'mixed' are sentinel values per OBJECT_VOCABULARY.md
-										# (empty container, generic blended material) and do not need
-										# materials.yaml entries.
-										if field_name in ('material_name', 'held_material_name') and field_value not in ('empty', 'mixed'):
-											protocol_name = self._extract_protocol_name(op_path)
-											if protocol_name and field_value is not None:
-												material = self.db.resolve_material(protocol_name, field_value)
-												if not material:
-													findings.append(Finding(
-														path=f"{op_path}.state",
-														lineno=None,
-														severity=Severity.ERROR,
-														message=f"state field '{field_name}' value '{field_value}' does not resolve to a known material entry",
-														tag="T1_MATERIAL_REF",
-													))
+											# Subpart-target consistency check
+											if field.get('applies_to') == 'subpart':
+												findings.extend(self._validate_subpart_target(
+													op_target, op_path, field_name
+												))
+											# T1_MATERIAL_REF: material_name / held_material_name must exist in protocol materials.
+											# 'empty' and 'mixed' are sentinel values per OBJECT_VOCABULARY.md
+											# (empty container, generic blended material) and do not need
+											# materials.yaml entries.
+											if field_name in ('material_name', 'held_material_name') and field_value not in ('empty', 'mixed'):
+												protocol_name = self._extract_protocol_name(op_path)
+												if protocol_name and field_value is not None:
+													material = self.db.resolve_material(protocol_name, field_value)
+													if not material:
+														findings.append(Finding(
+															path=f"{op_path}.state",
+															lineno=None,
+															severity=Severity.ERROR,
+															message=f"state field '{field_name}' value '{field_value}' does not resolve to a known material entry",
+															tag="T1_MATERIAL_REF",
+														))
 
 		return findings
 

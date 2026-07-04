@@ -18,6 +18,7 @@
 //============================================
 
 import type {
+  Gesture,
   InteractionValidatorPreset,
   StepValidatorPreset,
   InteractionRejectReason,
@@ -27,10 +28,15 @@ import type {
 // Input types for validators
 //============================================
 
-// A single interaction from a protocol step.
+// A single interaction from a protocol step. `gesture` uses the canonical
+// closed Gesture union (not a loose string) so the validator DTO cannot carry
+// an out-of-vocabulary gesture. The `validator` block is the normalized internal
+// shape (a flat {field: value} `parameters` map) that step_machine.ts projects
+// from the authored ValidatorReference; it is deliberately distinct from the
+// authored union.
 export interface Interaction {
   readonly target: string;
-  readonly gesture: string;
+  readonly gesture: Gesture;
   readonly validator: {
     readonly preset: InteractionValidatorPreset;
     readonly parameters?: Record<string, unknown>;
@@ -423,7 +429,17 @@ export function dispatch_step_validator(
     }
 
     case "final_state_matches": {
-      return validate_final_state_matches(step, object_state_snapshot ?? {});
+      // No silent `?? {}` default: a missing snapshot for a state-checking step
+      // validator is a construction bug, not a validation failure. Defaulting to
+      // an empty snapshot masked it as a perpetual retry (nothing ever matched an
+      // empty object). Fail loud so the caller supplies the observed store state.
+      if (object_state_snapshot === undefined) {
+        throw new Error(
+          "final_state_matches dispatched without an object_state_snapshot;" +
+            " the step machine must supply the observed scene-store snapshot.",
+        );
+      }
+      return validate_final_state_matches(step, object_state_snapshot);
     }
 
     default: {

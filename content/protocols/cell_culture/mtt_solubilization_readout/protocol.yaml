@@ -54,7 +54,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: well_plate_96.all_wells
+      - target: well_plate_96
         gesture: click
         validator:
           preset: correct_target
@@ -84,7 +84,7 @@ steps:
           preset: correct_target
         response:
           scene_operations: []
-      - target: well_plate_96.all_wells
+      - target: well_plate_96
         gesture: click
         validator:
           preset: correct_target
@@ -128,7 +128,7 @@ steps:
               target: plate_reader
               state:
                 wavelength_nm: 560
-      - target: well_plate_96.all_wells
+      - target: well_plate_96
         gesture: click
         validator:
           preset: correct_target

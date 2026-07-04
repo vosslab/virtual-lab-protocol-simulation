@@ -120,7 +120,7 @@ steps:
       Slowly dispense the 20 &micro;L of protein ladder into lane 5 of the gel
       cassette.
     sequence:
-      - target: gel_cassette.lane_5
+      - target: gel_cassette
         gesture: click
         validator:
           preset: correct_target

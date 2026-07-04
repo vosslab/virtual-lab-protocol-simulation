@@ -101,7 +101,8 @@ placements:
     depth_tier: 1
     align_stop: center
 
-  # Rear center: ddH2O and ethanol bottles
+  # Rear center: ddH2O and ethanol bottles, plus rocking shaker (peripheral
+  # accessory, not an imaging-protocol target; kept off the center stage)
   - placement_name: rear_ddh2o
     object_name: ddh2o_bottle
     zone: rear_center
@@ -112,6 +113,11 @@ placements:
     zone: rear_center
     depth_tier: 1
     align_stop: center
+  - placement_name: rear_center_rocking_shaker
+    object_name: rocking_shaker
+    zone: rear_center
+    depth_tier: 1
+    align_stop: right
 
   # Rear right: tip box and microtube rack
   - placement_name: rear_tip_box
@@ -125,23 +131,23 @@ placements:
     depth_tier: 1
     align_stop: center
 
-  # Left tool area: rocking shaker for stain incubation
-  - placement_name: left_rocking_shaker
-    object_name: rocking_shaker
+  # Left tool area: microtube sample
+  - placement_name: left_microtube
+    object_name: microtube
     zone: left_tool_area
     depth_tier: 1
     align_stop: center
 
-  # Right tool area: micropipette and a microtube sample
+  # Right tool area: micropipette and waste container (protocol target)
   - placement_name: right_micropipette
     object_name: micropipette
     zone: right_tool_area
     depth_tier: 1
     align_stop: left
-  - placement_name: right_microtube
-    object_name: microtube
+  - placement_name: right_waste_container
+    object_name: waste_container
     zone: right_tool_area
-    depth_tier: 2
+    depth_tier: 1
     align_stop: right
 
 layout_rules:
