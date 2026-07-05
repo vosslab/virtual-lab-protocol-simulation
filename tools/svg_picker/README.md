@@ -70,7 +70,7 @@ The applier validates every decision before writing to disk:
 On success, the applier:
 
 - Copies or moves SVGs into `assets/equipment/<asset_name>.svg`.
-- Runs normalization via `tools/normalize_svg_v2.py`.
+- Runs normalization via `tools/normalize_svg_v3.py -i <target_file> --in-place`.
 - Appends attribution rows to `docs/SVG_ATTRIBUTION.md` for CC BY sources.
 - Prints a summary: "X assigned, Y deferred, Z ignored, N attribution rows appended".
 

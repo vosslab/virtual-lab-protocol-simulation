@@ -54,9 +54,45 @@
   test (`npx playwright test` against `playwright.config.ts`); `super_all_tests.sh`'s
   browser step collapsed from a hand-maintained list of individual `.mjs`
   invocations to one call to `run_playwright_tests.sh`.
+- Playwright runner suite: known-routed browser reds are now documented
+  expected-fails via `test.fail()` with inline routing reasons
+  (`cell_culture_full` mp5; `plate_drug_treatment_drug_addition` and
+  `per_well_drug` `tube_A` subpart OP1; `microscope_basic` overlap O6) -- a
+  green suite now means "green minus documented routed items," and an
+  unexpected pass flips the annotation so it self-clears.
 
 ### Fixes and Maintenance
 
+- Converted SVG XML parsing from stdlib `xml.etree` to a hardened lxml
+  parser (`resolve_entities=False`, `no_network=True`) in
+  `pipeline/gen_object_library.py`, `pipeline/gen_svg_manifest.py`,
+  `validation/svg/asset_audit.py`, and `tools/svg_validate.py` -- byte-identical
+  output, closes the XXE/entity-expansion threat class without `# nosec`
+  (owner preference: lxml over `xml.etree`).
+- Marked md5 filename-stem hashes `usedforsecurity=False` in
+  `tests/e2e/e2e_svg_gradient_recheck.py` and
+  `tests/e2e/e2e_svg_visual_regression.py` (non-security use; digest
+  unchanged).
+- `super_all_tests.sh` runs TypeScript-importing `tests/e2e/*.mjs` under
+  `node --import tsx` (per-file selection); fixed the `../src` ->
+  `../../src` import path in `tests/e2e/e2e_generalization_preflight.mjs`.
+  The three TS-importing e2e (preflight, layout_parity_16x9,
+  layout_diagnostics_baseline) now run green.
+- Fixed `tools/svg_picker/apply_decisions.py` (and its README) to call the
+  current `tools/normalize_svg_v3.py` CLI (`-i <file> --in-place`) instead
+  of the deleted `normalize_svg_v2.py`.
+- Removed dead `normalize_svg_v2` doc references in
+  `docs/CODE_ARCHITECTURE.md` and `docs/FILE_STRUCTURE.md`.
+- Inlined the SVG input in
+  `tests/test_validation_clarity.py::test_check_normalization_accepts_real_normalized_svg`
+  (was reading a real asset file; now uses an inline minimal SVG per the
+  PYTEST_STYLE inline-inputs rule).
+- `tests/e2e/e2e_svg_visual_regression.py` render loop now uses
+  `page.setContent(...)` plus an image-decode wait instead of a temp-file
+  `goto(file://...)` with `networkidle` and a fixed 80ms sleep, and the
+  prescreen pass keeps and reuses each passing file's normalized output
+  instead of normalizing it a second time; measured well under 0.15s/render
+  (was ~0.6s/render), a large speedup on the ~300-file default run.
 - Re-typed 7 sub-100 mL reagents from bottle to tube and renamed
   `*_bottle` -> `*_tube` (`bme`, `laemmli_4x`, `trypan_blue` -> 15 mL falcon;
   `dmso`, `carboplatin_stock`, `metformin_stock` -> 50 mL;
@@ -115,8 +151,24 @@
   no longer emits. Each is fixed in its `.spec.ts`, not papered over with a
   skip.
 
+### Removals and Deprecations
+
+- Retired the stale `tests/e2e/e2e_facade_smoke.py` (it smoke-loaded four
+  pre-migration facade modules that no longer exist; module loading and
+  exports are already covered by `tsc`, the node unit tests, and the build --
+  redundant). Removed the dead `normalize_svg_v2` orphans:
+  `tests/test_normalize_svg_geometry.py` (broke pytest collection),
+  `tests/data/scenes_freeze_baseline.json` (unreferenced), and
+  `tests/e2e/e2e_normalize_svg_parity.py` (dead v2 parity harness). Human ran
+  the `git rm`.
+
 ### Decisions and Failures
 
+- Recorded: `xml.etree` -> lxml hardened parser chosen over `# nosec` or
+  `defusedxml` (durable fix, no new dependency; lxml is already a declared
+  requirement). A fragile-test audit found the pytest suite otherwise near
+  the PYTEST_STYLE ideal (inline inputs, no snapshot counts) -- only the
+  normalize_svg_v2 orphans needed removal.
 - Playwright runner adoption is intentional: it reverses an earlier
   library-model resolution per owner decision, aligning this repo with sibling
   repos under `~/nsh/TYPESCRIPT/` (concept-map-maker is the house template).

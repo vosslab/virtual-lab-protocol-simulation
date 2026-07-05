@@ -121,7 +121,8 @@ def normalize_files(target_rels: list[str], tmp_dir: Path) -> dict[str, Path | N
 			print(f"  MISSING: {rel}")
 			norm_map[rel] = None
 			continue
-		stem = hashlib.md5(rel.encode()).hexdigest()[:10]
+		# md5 here names a temp file stem, not a security control.
+		stem = hashlib.md5(rel.encode(), usedforsecurity=False).hexdigest()[:10]
 		out_path = tmp_dir / f"norm_{stem}.svg"
 		result = normalize_svg_v3.normalize_svg_file(svg_path, out_path)
 		if result.normalized:
@@ -157,7 +158,8 @@ def build_engine_manifest(
 		if norm_path is None:
 			continue
 		svg_path = REPO_ROOT / rel
-		stem = hashlib.md5(rel.encode()).hexdigest()[:10]
+		# md5 here names a temp file stem, not a security control.
+		stem = hashlib.md5(rel.encode(), usedforsecurity=False).hexdigest()[:10]
 		# Original PNG (engine-specific path to avoid overwrite)
 		orig_png = tmp_dir / f"png_{stem}_{engine}_orig.png"
 		entries.append({

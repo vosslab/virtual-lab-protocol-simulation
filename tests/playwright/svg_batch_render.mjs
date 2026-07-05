@@ -82,26 +82,34 @@ async function renderBatch(manifest, engineName) {
           continue;
         }
 
-        // Build HTML wrapper as a temp file next to output PNG.
-        const tmpHtmlPath = outputPng + ".tmp.html";
+        // Load the HTML directly into the page. The content is an inline
+        // base64 data-URI image (zero network requests), so no temp file
+        // and no file:// navigation is needed.
         const htmlContent = buildHtmlWrapper(svgPath);
-        fs.writeFileSync(tmpHtmlPath, htmlContent, "utf8");
+        await page.setContent(htmlContent, { waitUntil: "load" });
 
-        const fileUrl = `file://${path.resolve(tmpHtmlPath)}`;
-        await page.goto(fileUrl, { waitUntil: "networkidle" });
-        // Small settle delay for SVG rendering (gradients, fonts).
-        await page.waitForTimeout(80);
+        // Wait for the image to actually finish decoding before the
+        // screenshot, instead of a fixed sleep.
+        await page.evaluate(() => {
+          const img = document.querySelector("img");
+          if (!img) {
+            return Promise.resolve();
+          }
+          if (img.decode) {
+            return img.decode().catch(() => {});
+          }
+          if (img.complete) {
+            return Promise.resolve();
+          }
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        });
 
         // Ensure output directory exists.
         fs.mkdirSync(path.dirname(outputPng), { recursive: true });
         await page.screenshot({ path: outputPng, fullPage: false });
-
-        // Clean up temp HTML.
-        try {
-          fs.unlinkSync(tmpHtmlPath);
-        } catch (_) {
-          /* temp html cleanup is best-effort */
-        }
 
         results.push({ svg_path: svgPath, output_png: outputPng, ok: true, error: null });
       } catch (err) {

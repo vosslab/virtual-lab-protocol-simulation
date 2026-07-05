@@ -6,8 +6,9 @@ Exposes validate() function that returns ValidationReport or raises on errors.
 """
 
 import os
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass
+
+import lxml.etree
 
 
 @dataclass
@@ -60,11 +61,20 @@ def validate(svg_path: str) -> ValidationReport:
 		except ValueError:
 			raise ValueError(f"SVG symlink target outside assets/: {abs_path} -> {target}")
 
-	# Parse XML
+	# Parse XML. Hardened lxml parser: resolve_entities=False blocks XXE entity
+	# expansion, no_network=True blocks external DTD/entity network fetches.
+	# remove_comments=True and remove_pis=True match stdlib ElementTree's
+	# default behavior (comments and processing instructions are dropped from
+	# the tree), so root.iter() below never yields a Comment/PI node whose
+	# .tag is the lxml factory function instead of a string.
+	# First-party repo asset, but the parser stays hardened regardless of source trust.
 	try:
-		tree = ET.parse(abs_path)
+		parser = lxml.etree.XMLParser(
+			resolve_entities=False, no_network=True, remove_comments=True, remove_pis=True
+		)
+		tree = lxml.etree.parse(abs_path, parser)
 		root = tree.getroot()
-	except ET.ParseError as e:
+	except lxml.etree.XMLSyntaxError as e:
 		raise ValueError(f"Malformed XML: {abs_path}: {e}")
 
 	# Check root is <svg>

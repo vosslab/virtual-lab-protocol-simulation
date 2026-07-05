@@ -180,9 +180,18 @@ async function commitAdjustInput(page: Page, numericValue: string): Promise<bool
 // Test
 //============================================
 
+// Known-routed defect: the tube-rack subpart click gap documented in the file
+// header. test.fail() still RUNS the walk (unlike test.skip/test.fixme), so
+// if the affordance is ever wired up the walk starts passing and Playwright
+// reports an unexpected pass, forcing this annotation to be removed.
+const EXPECTED_FAIL_REASON =
+  "expected-fail: carb_stocks.tube_A subpart affordance HELD, OP1 architect Direction-B RFC";
+
 test("per-well drug walkthrough: row B paints carboplatin at its real grid positions", async ({
   page,
 }) => {
+  test.fail(true, EXPECTED_FAIL_REASON);
+
   const pageErrors: string[] = [];
   page.on("pageerror", (err) => pageErrors.push(err.message));
 

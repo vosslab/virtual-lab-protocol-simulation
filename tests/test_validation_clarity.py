@@ -90,9 +90,13 @@ def test_summary_line_drops_failures_word():
 #============================================
 # SVG normalization: xmlns fix did not blind the real check
 #============================================
-def test_check_normalization_accepts_real_normalized_svg():
-	# bottle.svg is a valid normalized asset; the old code wrongly failed it.
-	status, reason = asset_audit.check_normalization("bottle")
+def test_check_normalization_accepts_real_normalized_svg(tmp_path, monkeypatch):
+	# A minimal SVG with the default xmlns namespace and a numeric viewBox is
+	# normalized; the old code wrongly failed real assets shaped like this.
+	svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"></svg>'
+	(tmp_path / "normalized.svg").write_text(svg, encoding="utf-8")
+	monkeypatch.setattr(asset_audit, "ASSETS_DIR", str(tmp_path))
+	status, reason = asset_audit.check_normalization("normalized")
 	assert status == "normalized"
 	assert reason is None
 

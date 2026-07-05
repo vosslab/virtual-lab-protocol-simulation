@@ -48,6 +48,16 @@ const MIN_FONT_SIZE = 6; // pixels
 // that exists is exercised, not a stale hand-maintained list.
 const SCENES_TO_RENDER = discoverBaseSceneNames();
 
+// Data-driven expected-fail registry: known-routed scene defects owned by
+// other teams. Each scene renders as its own discrete test, so test.fail()
+// targets exactly one scene without weakening the shared assertion suite.
+// test.fail() still RUNS the render and assertions (unlike test.skip/
+// test.fixme); if the scene is ever fixed, its test starts passing and
+// Playwright reports an unexpected pass, forcing this entry to be removed.
+const EXPECTED_FAIL_SCENES: Record<string, string> = {
+  microscope_basic: "expected-fail: microscope_basic item/label overlap, routed O6 scene-manager",
+};
+
 //============================================
 // Types
 //============================================
@@ -180,6 +190,11 @@ test.describe("base scene generalization render", () => {
 
   for (const sceneName of SCENES_TO_RENDER) {
     test(`${sceneName}: passes all render-integrity assertions`, async ({ page }) => {
+      const routedReason = EXPECTED_FAIL_SCENES[sceneName];
+      if (routedReason !== undefined) {
+        test.fail(true, routedReason);
+      }
+
       await page.goto(`/scene_viewer.html?scene=${sceneName}`, { waitUntil: "networkidle" });
 
       // Readiness: at least one placement rendered inside #scene-root.

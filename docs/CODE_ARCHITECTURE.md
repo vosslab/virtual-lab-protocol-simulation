@@ -286,7 +286,6 @@ Developer-only helpers that do not appear in any build chain.
 | [run_smoke.py](../tools/run_smoke.py) | Fast browser smoke test wrapper |
 | [run_protocol_walkthrough.py](../tools/run_protocol_walkthrough.py) | Full protocol E2E wrapper |
 | [build_test_fixture.sh](../tools/build_test_fixture.sh) | Build a single dev-smoke protocol for local testing |
-| [normalize_svg_v2.py](../tools/normalize_svg_v2.py) | SVG asset normalizer (stdlib-only; kept until v3 parity is proven) |
 | `tools/normalize_svg_v3.py` | SVG ingestion-gate normalizer (lxml + tinycss2 + shapely); see below |
 | [check_css_content_policy.py](../tools/check_css_content_policy.py) | CSS content policy checker (invoked by check_codebase.sh) |
 | [html_to_pdf.mjs](../tools/html_to_pdf.mjs) | Playwright-based HTML-to-PDF renderer |

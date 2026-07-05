@@ -265,7 +265,6 @@ Key tools:
 
 | File | Purpose |
 | --- | --- |
-| [normalize_svg_v2.py](../tools/normalize_svg_v2.py) | SVG asset normalizer (stdlib-only; kept until v3 parity is proven) |
 | `tools/normalize_svg_v3.py` | SVG ingestion-gate normalizer (lxml + tinycss2 + shapely): normalize-or-reject pipeline; run before adding any SVG to `assets/`; see [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md) for support contract and ingestion workflow |
 | [svg_to_html_render.mjs](../tools/svg_to_html_render.mjs) | Renders an SVG on five color swatches via Playwright Firefox and writes `<stem>_render.{html,png}` to CWD; use `--no-open` to skip auto-open |
 | [svg_identity_sweep.py](../tools/svg_identity_sweep.py) | Perceptual-hash duplicate/mislabel sweep over `assets/**/*.svg`; emits a review report |

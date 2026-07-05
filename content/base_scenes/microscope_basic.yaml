@@ -75,18 +75,12 @@ placements:
     depth_tier: 2
     align_stop: center
 
-  # Rear left: tip box and slide cartridge behind the left bench
+  # Rear left: tip box behind the left bench
   - placement_name: rear_tip_box
     object_name: micropipette_tip_box
     zone: rear_left
     depth_tier: 1
     align_stop: left
-
-  - placement_name: rear_slide_cartridge
-    object_name: counter_slide_cartridge
-    zone: rear_left
-    depth_tier: 1
-    align_stop: right
 
   # Rear right: ethanol bottle behind the right bench
   - placement_name: rear_ethanol_bottle
@@ -95,17 +89,13 @@ placements:
     depth_tier: 1
     align_stop: center
 
-  # Left bench: microtube rack staged for slide prep, microtube in front
+  # left_bench sits directly below the rear_left shelf, so the rack's
+  # default top label would rise into that rear shelf band. Place it below.
   - placement_name: left_microtube_rack
     object_name: microtube_rack_24
     zone: left_bench
     depth_tier: 1
     align_stop: left
-    # left_bench sits directly below the rear_left shelf. With the default top
-    # label, the rack's label rises into the rear shelf band and collides with
-    # the rear_slide_cartridge label above it (unresolved_label_overlap Error).
-    # The bench has room below (baseline 86, zone bottom 92), so place the label
-    # under the rack, clear of the rear shelf.
     layout:
       label_placement: bottom
 

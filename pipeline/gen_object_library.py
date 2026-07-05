@@ -23,10 +23,10 @@ Output: generated/object_library.ts with:
 import os
 import sys
 import subprocess
-import xml.etree.ElementTree as ET
 
 # PIP3 modules
 import yaml
+import lxml.etree
 
 
 #============================================
@@ -116,7 +116,11 @@ def get_svg_aspect(svg_path: str) -> float:
 	Extract aspect ratio from SVG viewBox.
 	Returns width/height ratio. Fails loud if viewBox is missing or invalid.
 	"""
-	tree = ET.parse(svg_path)
+	# Hardened lxml parser: resolve_entities=False blocks XXE entity expansion,
+	# no_network=True blocks external DTD/entity network fetches. First-party
+	# repo asset, but the parser stays hardened regardless of source trust.
+	parser = lxml.etree.XMLParser(resolve_entities=False, no_network=True)
+	tree = lxml.etree.parse(svg_path, parser)
 	root = tree.getroot()
 
 	viewbox = root.get("viewBox")

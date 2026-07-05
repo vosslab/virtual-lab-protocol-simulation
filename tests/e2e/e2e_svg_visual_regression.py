@@ -134,21 +134,23 @@ def prescreen_normalizable(
 	tmp_dir: Path,
 	cap: int | None,
 	seed: int,
-) -> list[Path]:
+) -> dict[Path, Path]:
 	"""Pre-screen SVG paths and return those the current normalizer accepts.
 
-	Runs the normalizer on each candidate to get passing paths. This handles
-	the case where wild verdicts JSON is stale (normalizer has gained new
-	rejection rules since verdicts were generated).
+	Runs the normalizer on each candidate. This handles the case where wild
+	verdicts JSON is stale (normalizer has gained new rejection rules since
+	verdicts were generated). The normalized output for each passing file is
+	kept on disk at a unique path, so a later normalize-once pass can reuse
+	it instead of re-normalizing the same file.
 
 	Args:
 		svg_paths: All candidate SVG paths.
-		tmp_dir: Temp directory for normalized output (files are deleted after check).
+		tmp_dir: Temp directory for normalized output.
 		cap: Max files to screen (None = all). Shuffles before capping for diversity.
 		seed: Random seed for shuffle.
 
 	Returns:
-		Sorted list of SVG Paths that pass the current normalizer.
+		Dict mapping each passing absolute svg_path to its normalized Path.
 	"""
 	rng = random.Random(seed)
 	shuffled = list(svg_paths)
@@ -157,22 +159,23 @@ def prescreen_normalizable(
 	screened = shuffled[:cap] if cap is not None else shuffled
 	print(f"Pre-screening {len(screened)} SVGs for normalizability...")
 
-	passing: list[Path] = []
-	# Fixed output path (overwritten per file, deleted after check).
-	out_path = tmp_dir / "_prescreen_out.svg"
+	passing: dict[Path, Path] = {}
 
 	for idx, svg_path in enumerate(screened):
 		if idx % 200 == 0:
 			pct = 100.0 * (idx + 1) / len(screened)
 			print(f"  prescreen [{idx+1}/{len(screened)}] {pct:.0f}%  passing={len(passing)}")
+		# Unique output filename so passing outputs can be kept and reused.
+		# md5 here names a temp file stem, not a security control.
+		stem = hashlib.md5(str(svg_path).encode(), usedforsecurity=False).hexdigest()[:10]
+		out_path = tmp_dir / f"norm_{stem}.svg"
 		result = normalize_svg_v3.normalize_svg_file(svg_path, out_path)
 		if result.normalized:
-			passing.append(svg_path)
-		# Remove normalized output; we only need to know if it passed.
-		if out_path.exists():
+			passing[svg_path] = out_path
+		elif out_path.exists():
+			# Remove failed-normalize output; nothing to reuse.
 			out_path.unlink()
 
-	passing.sort()
 	print(f"Pre-screen done: {len(passing)} of {len(screened)} passed.")
 	return passing
 
@@ -198,33 +201,29 @@ def select_sample(all_paths: list[Path], sample_size: int, seed: int) -> list[Pa
 
 
 #============================================
-def normalize_corpus(corpus: list[Path], tmp_dir: Path) -> dict[str, Path | None]:
-	"""Normalize all corpus files, returning a map from rel_path -> norm_path.
+def build_norm_map_for_corpus(
+	corpus: list[Path],
+	passing_map: dict[Path, Path],
+) -> dict[str, Path | None]:
+	"""Build rel_path -> normalized Path map for corpus, reusing prescreen output.
 
-	Files that fail normalization (should be rare after pre-screening) map to None.
+	Every corpus path is guaranteed present in passing_map, since corpus is
+	always drawn from the prescreen's passing set. This avoids a second
+	normalize pass over the same files.
 
 	Args:
-		corpus: List of absolute SVG paths to normalize.
-		tmp_dir: Directory to write normalized SVGs.
+		corpus: Selected SVG paths (subset of passing_map keys).
+		passing_map: Map from svg_path -> already-normalized Path (from prescreen).
 
 	Returns:
-		Dict mapping relative path string -> normalized Path or None.
+		Dict mapping relative path string -> normalized Path.
 	"""
-	print(f"Normalizing {len(corpus)} corpus files...")
 	norm_map: dict[str, Path | None] = {}
-
-	for idx, svg_path in enumerate(corpus):
-		if idx % 50 == 0:
-			pct = 100.0 * (idx + 1) / len(corpus)
-			print(f"  normalize [{idx+1}/{len(corpus)}] {pct:.0f}%")
-		# Unique output filename to avoid collisions.
-		stem = hashlib.md5(str(svg_path).encode()).hexdigest()[:10]
-		out_path = tmp_dir / f"norm_{stem}.svg"
-		result = normalize_svg_v3.normalize_svg_file(svg_path, out_path)
+	for svg_path in corpus:
 		rel = str(svg_path.relative_to(REPO_ROOT))
-		norm_map[rel] = out_path if result.normalized else None
+		norm_map[rel] = passing_map[svg_path]
 
-	print(f"Normalization done: {sum(1 for v in norm_map.values() if v)} of {len(corpus)} passed.")
+	print(f"Reusing {len(norm_map)} pre-normalized corpus files (normalize-once).")
 	return norm_map
 
 
@@ -252,7 +251,8 @@ def build_render_manifest(
 		norm_path = norm_map.get(rel)
 		if norm_path is None:
 			continue
-		stem = hashlib.md5(rel.encode()).hexdigest()[:10]
+		# md5 here names a temp file stem, not a security control.
+		stem = hashlib.md5(rel.encode(), usedforsecurity=False).hexdigest()[:10]
 		# Original PNG.
 		orig_png = tmp_dir / f"png_{stem}_orig.png"
 		entries.append({
@@ -363,65 +363,6 @@ def classify_distance(dist: int) -> str:
 	if dist <= MINOR_THRESHOLD:
 		return "minor"
 	return "divergent"
-
-
-#============================================
-def build_results(
-	corpus: list[Path],
-	norm_map: dict[str, Path | None],
-	manifest_entries: list[dict],
-	render_results_by_engine: dict[str, dict[str, dict]],
-	engines: list[str],
-) -> list[dict]:
-	"""Assemble per-file result records from render results + hashes.
-
-	Args:
-		corpus: All corpus SVG paths.
-		norm_map: Map rel_path -> normalized path or None.
-		manifest_entries: All manifest entries (orig + norm, both engines).
-		render_results_by_engine: {engine: {output_png: render_result}} map.
-		engines: List of engine names used.
-
-	Returns:
-		List of per-file result dicts.
-	"""
-	# Build index: rel_path -> {kind: {engine: output_png}}.
-	png_index: dict[str, dict[str, dict[str, str]]] = {}
-	for entry in manifest_entries:
-		rel = entry["rel_path"]
-		kind = entry["kind"]
-		# The same output_png is shared across engines; the manifest entries
-		# hold per-engine output_pngs because render_results_by_engine keys on them.
-		# Actually each entry has one output_png but the batch renderer is called
-		# per engine - we need to rebuild the per-engine png paths.
-		# The manifest was built once; each engine gets the same output_png paths.
-		# So we index by rel+kind -> output_png (same for all engines in this build).
-		if rel not in png_index:
-			png_index[rel] = {"orig": {}, "norm": {}}
-		# For each engine, the output PNG path was in the per-engine manifest.
-		# Since we used the same manifest_entries for all engines, the output_png
-		# is the same path -- the renderer writes to the same destination.
-		# We need to handle per-engine paths differently. Let's use the output_png
-		# as-is (same path, but different engine -- last-write wins in practice since
-		# we run engines sequentially).
-		# Actually: we need separate PNG paths per engine for cross-engine comparison.
-		# Rebuild: engine-specific paths were embedded in the manifest_entries during
-		# build_render_manifest as a shared path. We need to check this.
-		png_index[rel][kind]["shared"] = entry["output_png"]
-
-	# Hmm -- the manifest was built with shared output_png paths, not per-engine.
-	# When chromium runs first it writes to that path; when firefox runs it overwrites.
-	# That means we can't compare cross-engine from a shared path.
-	# We need to handle this properly. Let's build the results from what we have:
-	# the render_results_by_engine gives us which files were rendered OK per engine.
-	# Since the output_png is overwritten by the last engine, we can only hash the
-	# last-written PNG. This is a design flaw in the current approach.
-	# For this first pass: we'll recompute hashes from what's on disk after each
-	# engine. To fix this properly, we'd need engine-specific output paths in
-	# build_render_manifest. Let's just hash per-engine immediately after each
-	# engine's batch render (done in main() below, not here).
-	# This function is vestigial for now; the actual assembly is in assemble_results().
-	return []
 
 
 #============================================
@@ -801,13 +742,16 @@ def main() -> None:
 	with tempfile.TemporaryDirectory() as tmp_dir:
 		tmp_path = Path(tmp_dir)
 
-		# Pre-screen to find which SVGs the current normalizer accepts.
+		# Pre-screen to find which SVGs the current normalizer accepts. The
+		# passing map already holds each file's normalized output on disk, so
+		# no separate normalize pass is needed later (normalize-once).
 		if args.full:
-			normalizable = prescreen_normalizable(all_svgs, tmp_path, None, SAMPLE_SEED)
-			corpus = normalizable
+			passing_map = prescreen_normalizable(all_svgs, tmp_path, None, SAMPLE_SEED)
+			corpus = sorted(passing_map.keys())
 			sample_mode = f"full ({len(corpus)} currently-normalizable files)"
 		else:
-			candidates = prescreen_normalizable(all_svgs, tmp_path, PRESCREEN_CAP, SAMPLE_SEED)
+			passing_map = prescreen_normalizable(all_svgs, tmp_path, PRESCREEN_CAP, SAMPLE_SEED)
+			candidates = sorted(passing_map.keys())
 			corpus = select_sample(candidates, SAMPLE_SIZE, SAMPLE_SEED)
 			sample_mode = (
 				f"sample ({len(corpus)} of {len(candidates)} passing files, "
@@ -817,8 +761,8 @@ def main() -> None:
 
 		print(f"Processing: {sample_mode}")
 
-		# Normalize all corpus files.
-		norm_map = normalize_corpus(corpus, tmp_path)
+		# Reuse the pre-normalized outputs for the selected corpus.
+		norm_map = build_norm_map_for_corpus(corpus, passing_map)
 
 		# Build render manifest (engine-specific output paths).
 		# We need separate PNGs per engine for cross-engine comparison.
@@ -834,7 +778,8 @@ def main() -> None:
 				norm_path = norm_map.get(rel)
 				if norm_path is None:
 					continue
-				stem = hashlib.md5(rel.encode()).hexdigest()[:10]
+				# md5 here names a temp file stem, not a security control.
+				stem = hashlib.md5(rel.encode(), usedforsecurity=False).hexdigest()[:10]
 				# Engine-specific output paths.
 				orig_png = tmp_path / f"png_{stem}_{engine}_orig.png"
 				norm_png = tmp_path / f"png_{stem}_{engine}_norm.png"

@@ -21,11 +21,11 @@ Validates all SVGs under assets/**/*.svg, then emits two outputs:
 import os
 import re
 import sys
-import xml.etree.ElementTree as ET
 import subprocess
 from pathlib import Path
 
 import yaml
+import lxml.etree
 
 # Import the shared validator (lives in tools/ as a dev-tool helper).
 # pipeline/ generator scripts add the sibling tools/ dir to sys.path so the
@@ -47,9 +47,12 @@ USAGE_SCAN_ROOTS = (
 # File extensions that may legitimately reference an SVG key by name.
 USAGE_SCAN_SUFFIXES = (".ts", ".tsx", ".mts", ".js", ".mjs", ".yaml", ".yml", ".json", ".py", ".html")
 
-# Register default namespace so ET.tostring emits <svg> not <ns0:svg>
-ET.register_namespace('', 'http://www.w3.org/2000/svg')
-ET.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
+# No explicit namespace registration is needed here: unlike ElementTree,
+# lxml.etree preserves the original prefix-to-namespace bindings (nsmap) found
+# on each element when it was parsed, so re-serializing with lxml.etree.tostring
+# reproduces the source file's own xmlns="...svg" / xmlns:xlink="..." prefixes
+# (the standard SVG normalization every asset in assets/ already uses) without
+# needing a global prefix registration step.
 
 # requires_dom_svg means the object needs access to the INTERNAL structure of
 # its SVG (reach inside the asset to clip a liquid region, target a subpart id,
@@ -133,19 +136,24 @@ def main() -> None:
 			failed_files.append((abs_path, str(e)))
 			continue
 
-		# Parse and sanitize
+		# Parse and sanitize. Hardened lxml parser: resolve_entities=False blocks
+		# XXE entity expansion, no_network=True blocks external DTD/entity network
+		# fetches. First-party repo asset, but the parser stays hardened
+		# regardless of source trust.
 		try:
-			tree = ET.parse(abs_path)
+			parser = lxml.etree.XMLParser(resolve_entities=False, no_network=True)
+			tree = lxml.etree.parse(abs_path, parser)
 			root = tree.getroot()
-		except ET.ParseError as e:
+		except lxml.etree.XMLSyntaxError as e:
 			failed_files.append((abs_path, f"XML parse error: {e}"))
 			continue
 
 		# Strip unsafe attributes (onclick, onload, etc. are already caught by validator)
 		_strip_unsafe_attrs(root)
 
-		# Convert back to string
-		svg_str = ET.tostring(root, encoding="unicode")
+		# Convert back to string. lxml accepts encoding="unicode" for
+		# ElementTree-API compatibility and returns a str (not bytes).
+		svg_str = lxml.etree.tostring(root, encoding="unicode")
 
 		# Derive registry key from filename (no extension)
 		key = svg_path.stem
@@ -282,13 +290,13 @@ def _is_placeholder_svg(svg_str: str) -> bool:
 	return has_border and has_text
 
 
-def _strip_unsafe_attrs(elem: ET.Element) -> None:
+def _strip_unsafe_attrs(elem: lxml.etree._Element) -> None:
 	"""Recursively strip attributes that could be sanitization risks.
 
 	The safe_attrs set uses both bare names (e.g. 'xlink:href') and
-	ET-internal namespace-expanded forms (e.g. '{http://...}href') because
-	xml.etree.ElementTree stores namespace-prefixed attributes using the
-	Clark-notation expanded form internally. Without both forms, namespace-
+	Clark-notation namespace-expanded forms (e.g. '{http://...}href') because
+	lxml.etree, like ElementTree, stores namespace-prefixed attributes using
+	the Clark-notation expanded form internally. Without both forms, namespace-
 	qualified attributes like xlink:href are silently dropped at serialization.
 
 	Attributes stripped (not safe): event handlers (onclick, onload, etc.),
@@ -296,7 +304,7 @@ def _strip_unsafe_attrs(elem: ET.Element) -> None:
 	validator (svg_validate.py) already rejects files with event handlers and
 	script content; this strip is a defense-in-depth pass.
 	"""
-	# Namespace expansions used by Python xml.etree.ElementTree internally.
+	# Namespace expansion used by lxml.etree (and ElementTree) internally.
 	XLINK_NS = "http://www.w3.org/1999/xlink"
 
 	# Attributes that are safe to keep: standard SVG/XML attributes.

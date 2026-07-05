@@ -12,9 +12,9 @@ It focuses on the three largest reject buckets the user named:
 counts come from the all-reasons census (`tools/svg_feature_census.py`) and a
 joint-yield probe run on 2026-06-10.
 
-Source data: [svg_feature_census.md](active_plans/reports/svg_feature_census.md),
-[svg_imagehash_similarity_3125.md](active_plans/reports/svg_imagehash_similarity_3125.md),
-[normalize_svg_v3_findings.md](active_plans/reports/normalize_svg_v3_findings.md).
+Source data: [svg_feature_census.md](../active_plans/reports/svg_feature_census.md),
+[svg_imagehash_similarity_3125.md](svg_imagehash_similarity_3125.md),
+[normalize_svg_v3_findings.md](normalize_svg_v3_findings.md).
 
 ## The headline finding: blockers stack
 

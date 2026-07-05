@@ -28,7 +28,7 @@ Legend: distance 0-2 = identical, 3-6 = minor, >6 = divergent
 | `dont-convert-short-color-names.svg` | 33 | 33 (divergent) | unchanged |
 | `group-creation.svg` | 33 | 33 (divergent) | unchanged |
 | `path-quad-optimize.svg` | 32 | 32 (divergent) | unchanged |
-| `Xenopus_new.svg` | 18 | 16 (divergent) | unchanged |
+| `Xenopus_new.svg` | 16 | 16 (divergent) | unchanged |
 | `ribosome.svg` | - | 32 (divergent) | no-prior |
 | `variational-autoencoder.svg` | - | 32 (divergent) | no-prior |
 | `nucleotide-a-ul.svg` | - | 28 (divergent) | no-prior |

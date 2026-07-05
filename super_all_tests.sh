@@ -142,10 +142,12 @@ main() {
 		[ -e "$testfile" ] || continue        # skip if none match
 		run "e2e: $(basename "$testfile")" python3 "$testfile"
 	done
-	#     Node E2E tests:
+	#     Node E2E tests. Run under the tsx loader so a .mjs that imports .ts
+	#     source is transformed at import time; a plain .mjs with no .ts import
+	#     runs fine under tsx too. Mirrors check_codebase.sh (node --import tsx).
 	for testfile in tests/e2e/e2e_*.mjs; do
 		[ -e "$testfile" ] || continue
-		run "e2e: $(basename "$testfile")" node "$testfile"
+		run "e2e: $(basename "$testfile")" node --import tsx "$testfile"
 	done
 
 	# --- 4. Browser tests in tests/playwright/ (pytest skips this folder). ---

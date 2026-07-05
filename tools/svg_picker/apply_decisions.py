@@ -172,10 +172,11 @@ def apply_decisions(decisions: list, candidates: dict, options: dict, repo_root:
 				)
 			action = f"cp {source_path} -> assets/equipment/{asset_name}.svg (git add)"
 
-		# Run normalize_svg_v2.py on the target
+		# Run normalize_svg_v3.py on the target, in place (v3 CLI: -i/--input,
+		# --in-place; a rejection exits non-zero and leaves the file untouched).
 		if not options.get("dry_run"):
 			subprocess.run(
-				["python3", "tools/normalize_svg_v2.py", str(target_file)],
+				["python3", "tools/normalize_svg_v3.py", "-i", str(target_file), "--in-place"],
 				check=True,
 				cwd=repo_root,
 			)

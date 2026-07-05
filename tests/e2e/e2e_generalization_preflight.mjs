@@ -8,11 +8,11 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { runPipeline } from "../src/scene_runtime/layout/index.ts";
-import { runStructuralGuards } from "../src/scene_runtime/renderer/structural_guards.ts";
-import { SCENES } from "../generated/scenes.js";
-import { OBJECT_LIBRARY } from "../generated/object_library.js";
-import { ASSET_SPECS } from "../generated/object_library.js";
+import { runPipeline } from "../../src/scene_runtime/layout/index.ts";
+import { runStructuralGuards } from "../../src/scene_runtime/renderer/structural_guards.ts";
+import { SCENES } from "../../generated/scenes.ts";
+import { OBJECT_LIBRARY } from "../../generated/object_library.ts";
+import { ASSET_SPECS } from "../../generated/object_library.ts";
 
 //============================================
 // Helper utilities

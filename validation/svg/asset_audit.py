@@ -15,12 +15,13 @@ Usage:
 """
 
 import os
-import sys
-import yaml
-import hashlib
-import xml.etree.ElementTree as ET
 import re
+import sys
+import hashlib
 from pathlib import Path
+
+import yaml
+import lxml.etree
 
 import validation.shared_toolkit.paths as toolkit_paths
 import validation.shared_toolkit.interactive as toolkit_interactive
@@ -238,7 +239,12 @@ def check_normalization(asset_name: str) -> tuple[str, str | None]:
 		return 'failed', 'file_not_found'
 
 	try:
-		tree = ET.parse(svg_path)
+		# Hardened lxml parser: resolve_entities=False blocks XXE entity
+		# expansion, no_network=True blocks external DTD/entity network fetches.
+		# First-party repo asset, but the parser stays hardened regardless of
+		# source trust.
+		parser = lxml.etree.XMLParser(resolve_entities=False, no_network=True)
+		tree = lxml.etree.parse(svg_path, parser)
 		root = tree.getroot()
 
 		# Check root element
@@ -260,18 +266,18 @@ def check_normalization(asset_name: str) -> tuple[str, str | None]:
 		except (ValueError, AttributeError):
 			return 'failed', 'viewbox_not_numeric'
 
-		# Check xmlns. ElementTree folds the default namespace into the tag
-		# (root.tag becomes '{http://www.w3.org/2000/svg}svg'); it does NOT
-		# expose 'xmlns' as a gettable attribute, so root.get('xmlns') is always
-		# None for a correctly-namespaced SVG. Detect normalization from the
-		# parsed tag namespace instead.
+		# Check xmlns. lxml folds the default namespace into the tag (root.tag
+		# becomes '{http://www.w3.org/2000/svg}svg'); it does NOT expose 'xmlns'
+		# as a gettable attribute, so root.get('xmlns') is always None for a
+		# correctly-namespaced SVG. Detect normalization from the parsed tag
+		# namespace instead.
 		svg_namespace = '{http://www.w3.org/2000/svg}'
 		if not root.tag.startswith(svg_namespace):
 			return 'failed', 'bad_xmlns'
 
 		return 'normalized', None
 
-	except ET.ParseError:
+	except lxml.etree.XMLSyntaxError:
 		return 'failed', 'xml_parse_error'
 	except (IOError, OSError):
 		return 'failed', 'parse_exception'
@@ -329,7 +335,12 @@ def extract_subpart_ids(asset_name: str) -> set[str]:
 		return subpart_ids
 
 	try:
-		tree = ET.parse(svg_path)
+		# Hardened lxml parser: resolve_entities=False blocks XXE entity
+		# expansion, no_network=True blocks external DTD/entity network fetches.
+		# First-party repo asset, but the parser stays hardened regardless of
+		# source trust.
+		parser = lxml.etree.XMLParser(resolve_entities=False, no_network=True)
+		tree = lxml.etree.parse(svg_path, parser)
 		root = tree.getroot()
 
 		for elem in root.iter():
@@ -337,7 +348,7 @@ def extract_subpart_ids(asset_name: str) -> set[str]:
 			if subpart_id:
 				subpart_ids.add(subpart_id)
 
-	except ET.ParseError:
+	except lxml.etree.XMLSyntaxError:
 		pass
 
 	return subpart_ids

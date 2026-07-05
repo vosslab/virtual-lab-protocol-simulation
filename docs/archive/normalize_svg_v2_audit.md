@@ -3,7 +3,8 @@
 **Date:** 2026-06-03
 **Updated:** 2026-06-08 (WP-4a: F8/F9/F10 v3 resolution added; see v3 note below)
 **Plan:** read-the-tools-svg-code-fluttering-clarke, milestone M3 (workstream M3-a)
-**File:** [tools/normalize_svg_v2.py](../../../tools/normalize_svg_v2.py)
+**File:** `tools/normalize_svg_v2.py` (deleted; superseded by
+[normalize_svg_v3.py](../../tools/normalize_svg_v3.py))
 **Scope:** line-by-line correctness review of the SVG normalizer (path command
 conversion, curve/arc bbox math, viewBox rewrite, attribution preservation,
 ASCII id cleanup). The only confirmed defect (arc-extrema undershoot) is fixed
@@ -11,7 +12,7 @@ in M3-b; this audit records its severity plus every other finding.
 
 **v3 note:** F8, F9, and F10 are resolved in `tools/normalize_svg_v3.py`
 (plan: wild-mapping-teacup, milestones M1-M3). v2 itself is unchanged;
-v3 is the new ingestion gate. See [CODE_ARCHITECTURE.md](../../CODE_ARCHITECTURE.md)
+v3 is the new ingestion gate. See [CODE_ARCHITECTURE.md](../CODE_ARCHITECTURE.md)
 for the v3 support contract and ingestion workflow.
 
 Severity labels:
@@ -69,7 +70,7 @@ Concrete before/after (semicircle `M 0 0 A 50 50 0 0 1 100 0`):
 
 Verified by `test_arc_extrema_contains_semicircle_bulge` and
 `test_arc_extrema_quarter_arc_corner` in
-[tests/test_normalize_svg_geometry.py](../../../tests/test_normalize_svg_geometry.py),
+`test_normalize_svg_geometry.py`,
 which fail against the old endpoint-only logic and pass after the fix.
 
 **Asset-bbox impact (flag for M4, NOT applied here):** re-normalizing existing
