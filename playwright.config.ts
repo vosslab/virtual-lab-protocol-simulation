@@ -107,13 +107,19 @@ export default defineConfig({
     },
   ],
   // Build the GitHub Pages artifact, then serve dist/ over HTTP. One managed
-  // server for every worker. reuseExistingServer lets a dev keep a server
-  // running across reruns (off under CI). The build step makes a bare
-  // `npx playwright test` self-sufficient without a prior manual build.
+  // server for every worker. The build step makes a bare `npx playwright test`
+  // self-sufficient without a prior manual build.
+  //
+  // reuseExistingServer is always false: a reused leftover `python3 -m
+  // http.server --directory dist` would keep serving an old dist/ while
+  // generated/ has moved on, so the walker boots a stale bundle (embedded
+  // PROTOCOLS snapshot missing newer protocols). Forcing a fresh build+serve on
+  // every run keeps the served bytes tied to the current build. CI already ran
+  // this way; local now matches.
   webServer: {
     command: `bash build_github_pages.sh && python3 -m http.server ${PORT} --bind 127.0.0.1 --directory dist`,
     url: BASE_URL,
-    reuseExistingServer: !CI,
+    reuseExistingServer: false,
     timeout: 180_000,
   },
 });

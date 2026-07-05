@@ -8,8 +8,8 @@
 #   - Assumption: playwright.config.ts owns the test server via its webServer
 #     block. This script does NOT start run_web_server.sh; Playwright spins up
 #     its own dev/preview server as configured in playwright.config.ts.
-#   - If dist/index.html or dist/main.js is missing, the webServer block will
-#     likely fail. Pass --build (or let the auto-check trigger) to rebuild first.
+#   - If dist/index.html or dist/protocol_host.js is missing, the webServer block
+#     will likely fail. Pass --build (or let the auto-check trigger) to rebuild first.
 #   - Pass --build to force a rebuild even when dist/ is already present.
 #   - Remaining arguments are forwarded to 'npx playwright test'.
 #   - Exits with playwright's exit code.
@@ -87,8 +87,8 @@ fi
 if [ "$FORCE_BUILD" -eq 1 ]; then
 	echo "==> --build flag set: rebuilding dist/..."
 	bash build_github_pages.sh
-elif [ ! -f dist/index.html ] || [ ! -f dist/main.js ]; then
-	echo "==> dist/index.html or dist/main.js missing: running build_github_pages.sh..."
+elif [ ! -f dist/index.html ] || [ ! -f dist/protocol_host.js ]; then
+	echo "==> dist/index.html or dist/protocol_host.js missing: running build_github_pages.sh..."
 	bash build_github_pages.sh
 fi
 
