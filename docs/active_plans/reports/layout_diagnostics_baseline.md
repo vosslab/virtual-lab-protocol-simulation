@@ -2,7 +2,7 @@
 
 Current-state record of which scenes emit which layout diagnostics when `runPipeline` runs over every generated scene at a canonical 16:9 viewport (1920x1080). This is a read-only evidence snapshot taken before any layout-engine changes, so later improvements are measurable.
 
-- Generated: 2026-07-04 23:29 UTC
+- Generated: 2026-07-05 00:07 UTC
 - Scenes scanned: 38
 - Viewport: 1920x1080 (16:9)
 - Source: `tests/e2e/e2e_layout_diagnostics_baseline.mjs` over `generated/scenes.ts`
@@ -15,14 +15,16 @@ Current-state record of which scenes emit which layout diagnostics when `runPipe
 | 2 | `missing_svg_check` | 8 | unknown_object=1 |
 | 3 | `centrifuge_workspace` | 2 | label_row_staggered=2 |
 | 4 | `extraction_workspace` | 2 | label_row_staggered=2 |
-| 5 | `electrophoresis_bench` | 1 | label_row_staggered=1 |
-| 6 | `microscope_basic` | 1 | label_row_staggered=1 |
-| 7 | `sdspage_attach_lid_and_leads_workspace` | 1 | label_row_staggered=1 |
-| 8 | `sdspage_fill_tank_buffer_workspace` | 1 | label_row_staggered=1 |
-| 9 | `sdspage_load_sample_single_lane_workspace` | 1 | label_row_staggered=1 |
-| 10 | `sdspage_prepare_running_buffer_workspace` | 1 | label_row_staggered=1 |
-| 11 | `sdspage_recycle_buffer_workspace` | 1 | label_row_staggered=1 |
-| 12 | `sdspage_run_electrophoresis_workspace` | 1 | label_row_staggered=1 |
+| 5 | `microscope_basic` | 2 | label_row_staggered=2 |
+| 6 | `electrophoresis_bench` | 1 | label_row_staggered=1 |
+| 7 | `hemocytometer_view` | 1 | label_row_staggered=1 |
+| 8 | `passage_hood_detachment_microscope_view` | 1 | label_row_staggered=1 |
+| 9 | `sdspage_attach_lid_and_leads_workspace` | 1 | label_row_staggered=1 |
+| 10 | `sdspage_fill_tank_buffer_workspace` | 1 | label_row_staggered=1 |
+| 11 | `sdspage_load_sample_single_lane_workspace` | 1 | label_row_staggered=1 |
+| 12 | `sdspage_prepare_running_buffer_workspace` | 1 | label_row_staggered=1 |
+| 13 | `sdspage_recycle_buffer_workspace` | 1 | label_row_staggered=1 |
+| 14 | `sdspage_run_electrophoresis_workspace` | 1 | label_row_staggered=1 |
 
 Score weights hard structural failures (`max_iterations_reached`=100, overflow/tab-stop/vertical-escape=10, clamp=5, identity=8) above label residuals (`label_collision_residual`=3, `label_row_staggered`=1); any other kind weighs 2.
 
@@ -40,18 +42,18 @@ Score weights hard structural failures (`max_iterations_reached`=100, overflow/t
 | `electrophoresis_bench` | 1 | YES | 1 | 1 | . | . | . | . |
 | `extraction_workspace` | 3 | YES | 2 | 2 | . | . | . | . |
 | `heat_block_bench` | 1 | YES | 0 | . | . | . | . | . |
-| `hemocytometer_view` | 1 | YES | 0 | . | . | . | . | . |
+| `hemocytometer_view` | 1 | YES | 1 | 1 | . | . | . | . |
 | `hood_basic` | 1 | YES | 0 | . | . | . | . | . |
 | `hood_workspace` | 1 | YES | 0 | . | . | . | . | . |
 | `imaging_bench` | 1 | YES | 0 | . | . | . | . | . |
 | `incubator_workspace` | 1 | YES | 0 | . | . | . | . | . |
-| `microscope_basic` | 1 | YES | 1 | 1 | . | . | . | . |
+| `microscope_basic` | 1 | YES | 2 | 2 | . | . | . | . |
 | `missing_svg_check` | 1 | YES | 1 | . | . | 1 | . | . |
 | `mtt_reagent_prep_bench_workspace` | 1 | YES | 0 | . | . | . | . | . |
 | `mtt_solubilization_readout_bench_workspace` | 1 | YES | 0 | . | . | . | . | . |
 | `mtt_solubilization_readout_plate_reader_workspace` | 1 | YES | 0 | . | . | . | . | . |
 | `passage_hood_detachment_hood_workspace` | 1 | YES | 0 | . | . | . | . | . |
-| `passage_hood_detachment_microscope_view` | 2 | YES | 0 | . | . | . | . | . |
+| `passage_hood_detachment_microscope_view` | 2 | YES | 1 | 1 | . | . | . | . |
 | `plate_drug_treatment_media_adjustment_plate_workspace` | 1 | YES | 0 | . | . | . | . | . |
 | `plate_workspace` | 1 | YES | 0 | . | . | . | . | . |
 | `sample_prep_bench` | 1 | YES | 0 | . | . | . | . | . |
@@ -85,18 +87,18 @@ Counts from `result.severityDiagnostics` (keyed by `code`), the de-overlap Error
 | `electrophoresis_bench` | . | . | . | . |
 | `extraction_workspace` | 1 | 1 | . | . |
 | `heat_block_bench` | . | . | . | . |
-| `hemocytometer_view` | . | . | 4 | . |
+| `hemocytometer_view` | 1 | . | 4 | . |
 | `hood_basic` | . | . | . | . |
 | `hood_workspace` | . | 3 | . | . |
 | `imaging_bench` | . | . | . | . |
 | `incubator_workspace` | . | . | . | . |
-| `microscope_basic` | 1 | . | . | . |
+| `microscope_basic` | 2 | . | . | . |
 | `missing_svg_check` | . | . | . | . |
 | `mtt_reagent_prep_bench_workspace` | . | . | . | . |
 | `mtt_solubilization_readout_bench_workspace` | . | . | . | . |
 | `mtt_solubilization_readout_plate_reader_workspace` | . | . | . | . |
 | `passage_hood_detachment_hood_workspace` | . | 9 | . | . |
-| `passage_hood_detachment_microscope_view` | . | . | 2 | . |
+| `passage_hood_detachment_microscope_view` | 1 | . | . | . |
 | `plate_drug_treatment_media_adjustment_plate_workspace` | . | 9 | . | . |
 | `plate_workspace` | . | 2 | . | . |
 | `sample_prep_bench` | . | . | . | . |
@@ -127,8 +129,6 @@ Each row is one overlap Error from `result.severityDiagnostics`, naming the two 
 | `hemocytometer_view` | unresolved_label_overlap | `right_bench` | `right_hemocytometer_slide_clear` | `rear_ethanol_bottle` | 2.2 |
 | `hemocytometer_view` | unresolved_label_overlap | `rear_right` | `staining_tubes` | `right_hemocytometer_slide_clear` | 1 |
 | `hemocytometer_view` | unresolved_label_overlap | `right_bench` | `right_microtube_left` | `staining_tubes` | 2.2 |
-| `passage_hood_detachment_microscope_view` | unresolved_label_overlap | `left_bench` | `left_cell_suspension` | `instrument_t75_flask` | 0.95 |
-| `passage_hood_detachment_microscope_view` | unresolved_label_overlap | `instrument_area` | `instrument_t75_flask` | `left_cell_suspension` | 0.95 |
 
 ## Scenes that failed to run
 

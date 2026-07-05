@@ -60,7 +60,9 @@ def collect_svgs(asset_dir: str) -> list:
 #============================================
 def compute_md5(path: str) -> str:
 	"""Return the hex MD5 digest of file contents at path."""
-	hasher = hashlib.md5()
+	# usedforsecurity=False: MD5 here is a content fingerprint for identity
+	# dedup, not a security digest.
+	hasher = hashlib.md5(usedforsecurity=False)
 	with open(path, 'rb') as fh:
 		for chunk in iter(lambda: fh.read(65536), b''):
 			hasher.update(chunk)

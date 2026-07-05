@@ -117,7 +117,9 @@ def build_id(source_repo_short, rel_path):
 	Build stable ID from source_repo and rel_path.
 	Format: <source_repo_short>:<sha1(rel_path)[:12]>
 	"""
-	sha1 = hashlib.sha1(rel_path.encode()).hexdigest()[:12]
+	# usedforsecurity=False: SHA1 here builds a stable path-derived ID, not a
+	# security digest.
+	sha1 = hashlib.sha1(rel_path.encode(), usedforsecurity=False).hexdigest()[:12]
 	return f"{source_repo_short}:{sha1}"
 
 

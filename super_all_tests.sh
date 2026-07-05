@@ -36,6 +36,28 @@ STEP_NAMES=()
 STEP_STATUS=()
 STEP_SECONDS=()
 
+# Color codes for the screen only. Empty when stdout is not a terminal, so the
+# log file (and piped output) never gets ANSI escapes. Only PASS/FAIL colored.
+if [ -t 1 ]; then
+	C_PASS=$'\033[32m'   # green
+	C_FAIL=$'\033[31m'   # red
+	C_OFF=$'\033[0m'     # reset
+else
+	C_PASS=''
+	C_FAIL=''
+	C_OFF=''
+fi
+
+
+# status_token - print the colored [PASS] or [FAIL] label for screen output.
+status_token() {
+	if [ "$1" = "PASS" ]; then
+		printf '%s[PASS]%s' "$C_PASS" "$C_OFF"
+	else
+		printf '%s[FAIL]%s' "$C_FAIL" "$C_OFF"
+	fi
+}
+
 
 # run - run one test or gate, save its output, and record pass or fail.
 #
@@ -77,8 +99,8 @@ run() {
 	STEP_STATUS+=("$result")
 	STEP_SECONDS+=("$seconds")
 
-	# Print a short live line to the screen.
-	printf '[%s] %-40s %5ds\n' "$result" "$name" "$seconds"
+	# Print a short live line to the screen (colored status token).
+	printf '%s %-40s %5ds\n' "$(status_token "$result")" "$name" "$seconds"
 }
 
 
@@ -90,8 +112,8 @@ print_summary() {
 	total=${#STEP_NAMES[@]}
 	i=0
 	while [ "$i" -lt "$total" ]; do
-		printf '  [%s] %-40s %5ds\n' \
-			"${STEP_STATUS[$i]}" "${STEP_NAMES[$i]}" "${STEP_SECONDS[$i]}"
+		printf '  %s %-40s %5ds\n' \
+			"$(status_token "${STEP_STATUS[$i]}")" "${STEP_NAMES[$i]}" "${STEP_SECONDS[$i]}"
 		if [ "${STEP_STATUS[$i]}" = "FAIL" ]; then
 			failed=$(( failed + 1 ))
 		fi

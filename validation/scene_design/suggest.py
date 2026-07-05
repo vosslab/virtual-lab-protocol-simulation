@@ -150,7 +150,7 @@ def _score_mutation(mutated_scene: dict, scene_class: str) -> float | None:
 	known-limitation note on dump_scene_geometry_from_scene_dict below).
 	"""
 	try:
-		dump_data = dump_scene_geometry_from_scene_dict(mutated_scene, temp_dir=Path('/tmp'))
+		dump_data = dump_scene_geometry_from_scene_dict(mutated_scene, temp_dir=Path(tempfile.gettempdir()))
 	except (OSError, RuntimeError):
 		return None
 
@@ -193,7 +193,7 @@ def _check_render_risk(mutated_scene: dict, baseline_escape_keys: set) -> bool:
 	with tempfile.NamedTemporaryFile(
 		mode='w',
 		suffix='.yaml',
-		dir=Path('/tmp'),
+		dir=Path(tempfile.gettempdir()),
 		delete=False,
 	) as f:
 		yaml.dump(mutated_scene, f)
@@ -361,7 +361,7 @@ def dump_scene_geometry_from_scene_dict(scene: dict, temp_dir: Path | None = Non
 		Dump dict from dump_scene_geometry (may have empty object_registry).
 	"""
 	if temp_dir is None:
-		temp_dir = Path('/tmp')
+		temp_dir = Path(tempfile.gettempdir())
 
 	with tempfile.NamedTemporaryFile(
 		mode='w',

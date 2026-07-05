@@ -73,6 +73,15 @@
   `tests/e2e/e2e_svg_gradient_recheck.py` and
   `tests/e2e/e2e_svg_visual_regression.py` (non-security use; digest
   unchanged).
+- Cleared the last three bandit findings at source (non-security use, digest
+  and path unchanged): `usedforsecurity=False` on the MD5 content-identity
+  hash in `tools/svg_identity_sweep.py` and the SHA1 path-derived ID in
+  `tools/svg_picker/build_candidate_manifest.py`; replaced three hardcoded
+  `Path('/tmp')` temp targets with `Path(tempfile.gettempdir())` in
+  `validation/scene_design/suggest.py` (B108). Relocated the bandit gate from
+  the custom `tests/e2e/e2e_bandit_security.py` to the vendored
+  `tests/test_bandit_security.py`, so it now runs in the fast `pytest tests/`
+  lane (147 -> 148 files scanned, all pass).
 - `super_all_tests.sh` runs TypeScript-importing `tests/e2e/*.mjs` under
   `node --import tsx` (per-file selection); fixed the `../src` ->
   `../../src` import path in `tests/e2e/e2e_generalization_preflight.mjs`.
