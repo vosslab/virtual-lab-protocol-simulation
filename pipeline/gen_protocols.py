@@ -48,6 +48,7 @@ import yaml
 # (pipeline/build_generated.sh invokes this script directly, without
 # sourcing source_me.sh).
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import pipeline.entity_decode
 import validation.yaml_schema.protocol_validator
 
 #============================================
@@ -581,8 +582,15 @@ def to_ts_literal(value: object) -> str:
 	if isinstance(value, bool):
 		return "true" if value else "false"
 	if isinstance(value, str):
+		# Decode authored HTML entities (e.g. &micro;) to their Unicode
+		# glyph before emission, so generated/protocols.ts carries the real
+		# character and the runtime renders it as a normal DOM text node.
+		# This is the single point every string field (prompt, learning
+		# text, display_title, learning hooks) routes through on its way
+		# into protocols.ts, so decoding here covers all of them at once.
+		decoded = pipeline.entity_decode.decode_entities(value)
 		# Escape backslashes, newlines, and quotes
-		escaped = (value
+		escaped = (decoded
 			.replace("\\", "\\\\")
 			.replace("\n", "\\n")
 			.replace("\r", "\\r")

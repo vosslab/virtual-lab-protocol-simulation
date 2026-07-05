@@ -5,27 +5,28 @@
 // wrapped label box) and reflowed the scene's vertical range into a computed band
 // per zone, each band carrying its depth-tier rows (one row per depth_tier, the
 // row as tall as its tallest member, spaced top-to-bottom with the tier gap). This
-// stage places each item's OBJECT strip inside its tier row and back-solves the
-// item baseline from the row geometry per the item's anchor mode.
+// stage derives ONE shared baseline (shelf line) per tier row and anchors every
+// item in the row to it, so a row of unequal-height objects sits on one common line.
 //
 // heightPct = visualWidth * (viewport.w / viewport.h) / aspect. Keeps pixel
 // aspect invariant regardless of viewport shape (percent units are per-axis).
 //
-// Objects keep their NATURAL height (no per-object shrink). The old vertical
-// auto-fit (fitFactor + maxHeightInZone) is removed: the reflow already reserved a
-// row tall enough for object + gap + label, so the object never needs to be
-// squeezed to make room for its label. A scene whose measured content exceeds the
+// Objects keep their NATURAL height (no per-object shrink). The reflow already
+// reserved a row tall enough for object + gap + label, so the object never needs to
+// be squeezed to make room for its label. A scene whose measured content exceeds the
 // scene range is handled by the scene-wide uniform object rescale, not by a
 // per-object shrink here. Keeping natural height makes "an object covers its own
 // label" structurally impossible and is never-crop safe by construction (aspect is
 // never distorted, the artwork is never clipped to a too-short card).
 //
-// Combined-box geometry per label side, anchored at the tier row top:
-//   top label:    labelTop = rowTop; objectTop = rowTop + labelBoxHeight + gap.
-//   bottom label: objectTop = rowTop; labelTop = objectTop + objectHeight + gap.
-// The baseline is then back-solved from objectTop per the item's anchor mode so a
-// downstream consumer that reads _baselineY (the bottom-label seed in
-// layout_labels) stays consistent with the placed object top.
+// Bottom-anchor placement: the row shelf baseline sits at the row bottom, pulled UP
+// by any bottom-side label reserve and floored so the tallest object stays framed
+// (see rowBaselineFor). An item's anchor_y maps the shared baseline to its _top:
+// "bottom" (the default) puts the object bottom on the shelf; "tip" hangs the object
+// by its tip; "top" is a centered engine fallback. Because the whole row shares one
+// baseline, every bottom/tip object's bottom edge lands on the same line. _baselineY
+// stores that shared shelf line; the label stage seeds labels from the object box
+// (_top, _height), not from _baselineY.
 
 import { DEFAULT_VIEWPORT, LABEL_DOMINANT_RATIO, UNIFORM_RESCALE_MIN_SCALE } from "./constants.js";
 import { buildGlobalDefaults } from "./config/index.js";
@@ -41,8 +42,11 @@ import type {
 } from "./types.js";
 
 // Compute the _top edge for an item of the given height under its anchor mode,
-// given the baseline. The inverse (baselineFromObjectTop) recovers the baseline
-// from a desired top. Kept so the placed _top and _baselineY agree.
+// given the shared row baseline (the shelf line). For the default "bottom" anchor
+// the object bottom sits on the baseline, so a row of unequal-height objects that
+// share one baseline sits on one common shelf line. "tip" hangs the object by its
+// tip (adjusted by anchor_y_offset, 0 for every current pipette); "top" is a
+// centered engine fallback (no current scene authors it).
 function anchorTop(it: ComputedItem, baseline: number, heightPct: number): number {
   if (it.layout.anchor_y === "bottom") {
     return baseline - heightPct;
@@ -50,62 +54,94 @@ function anchorTop(it: ComputedItem, baseline: number, heightPct: number): numbe
   if (it.layout.anchor_y === "tip") {
     return baseline + it.layout.anchor_y_offset - heightPct;
   }
-  // anchor_y === "top" falls through here and is treated as "center" (top = baseline
-  // - height/2). This is intentional and matches the back-solve pairing:
-  // pairs anchorTop with baselineFromObjectTop, so as long as both map "top" to the
-  // center case the placed _top and _baselineY stay consistent. Do not special-case
-  // "top" here without changing baselineFromObjectTop in lockstep.
+  // anchor_y === "top" falls through here and is treated as "center"
+  // (top = baseline - height/2). It is the engine fallback only.
   return baseline - heightPct / 2;
 }
 
-// Back-solve the baseline that maps a desired object TOP to the item's anchor.
-// This is the algebraic inverse of anchorTop: given objectTop and height, return
-// the baseline `b` such that anchorTop(it, b, height) === objectTop.
-//   bottom: top = b - h            -> b = objectTop + h
-//   tip:    top = b + offset - h    -> b = objectTop + h - offset
-//   center: top = b - h/2          -> b = objectTop + h/2
-function baselineFromObjectTop(it: ComputedItem, objectTop: number, heightPct: number): number {
-  if (it.layout.anchor_y === "bottom") {
-    return objectTop + heightPct;
-  }
-  if (it.layout.anchor_y === "tip") {
-    return objectTop + heightPct - it.layout.anchor_y_offset;
-  }
-  // anchor_y === "top" falls through to the center inverse (b = objectTop + h/2),
-  // the algebraic inverse of the center branch in anchorTop. "top" intentionally
-  // maps to center; the two functions must stay paired (see anchorTop).
-  return objectTop + heightPct / 2;
+// The vertical measures the row-baseline pre-pass and the placement step both read
+// for one item: its natural (aspect-preserving) height, its resolved label side, and
+// its wrapped label-strip height. _labelPlacement carries the scene-wide default
+// folded in by measure-vertical; it.layout.label_placement is the per-placement
+// override; "top" is the final fallback for a direct-call test that skipped measure.
+interface VerticalMeasure {
+  naturalHeight: number;
+  placement: LabelPlacement;
+  labelBoxHeight: number;
 }
 
-// Resolve the object TOP edge inside a tier row for one item, given its label
-// side. The combined box is anchored at the row top (combinedTop = rowTop):
-//   top label:    the label strip sits at the row top, the object below it.
-//   bottom label: the object sits at the row top, the label strip below it.
-// The gap (labelGap) is the SAME label_offset_y the measure stage folded into the
-// combined extent, so the object strip lands inside the reserved row height.
-function objectTopInRow(
-  rowTop: number,
-  placement: LabelPlacement,
-  labelBoxHeight: number,
-  labelGap: number,
-): number {
-  if (placement === "bottom") {
-    // Object at the row top; the label strip sits below the object.
-    return rowTop;
-  }
-  // Top label: the label strip sits at the row top; the object sits below it.
-  return rowTop + labelBoxHeight + labelGap;
+function measureItem(
+  it: ComputedItem,
+  viewportAspect: number,
+  aspectFloor: number,
+): VerticalMeasure {
+  const aspect = Math.max(aspectFloor, it.aspect);
+  // Natural height at the current horizontal scale; width and height share one
+  // factor, so aspect is preserved exactly (never-crop safe by construction).
+  const naturalHeight = (it._visualWidth * viewportAspect) / aspect;
+  const placement: LabelPlacement = it._labelPlacement ?? it.layout.label_placement ?? "top";
+  const labelBoxHeight = it._labelBoxHeight ?? 0;
+  return { naturalHeight, placement, labelBoxHeight };
 }
 
-// Find the tier row (rowTop) for a placement name inside a computed band. Each
-// band lists its rows in depth order; a placement appears in exactly one row's
-// placementNames. Returns the row top, or undefined when the placement is not in
-// any row (a pipeline-ordering bug the caller handles loudly).
-function rowTopFor(band: ComputedZoneBand, placementName: string): number | undefined {
-  for (const row of band.tiers) {
-    if (row.placementNames.includes(placementName)) return row.rowTop;
+// One tier row's placement inputs: its top and reserved height from the reflow band
+// plus the vertical measures of its member items. A shelf spans one or more of these
+// (the same depth tier across the side-by-side zones of a band).
+interface TierRowMeasures {
+  rowTop: number;
+  rowHeight: number;
+  measures: VerticalMeasure[];
+}
+
+// The shared baseline (shelf line) every item on one visible shelf anchors to. A
+// shelf is one depth tier across the side-by-side zones that share a reflow band, so
+// bottles standing in a row of adjacent zones land their bottom edges on ONE line
+// instead of each floating at its own height. All bottom- and tip-anchored objects
+// on the shelf place their bottom edge on this line.
+//
+// The shelf sits at the LOWEST row bottom in the set (max(rowTop + rowHeight)), so
+// the tallest column defines the line; it is pulled UP by the largest bottom-side
+// label reserve so those labels stay inside their row (a top-side label sits above
+// the object and needs no reserve). The `floor` term keeps every object's TOP edge at
+// or below its own row top (containment): when an object is taller than its measured
+// row, the floor wins and the shelf drops to keep the object framed rather than
+// pushing its top above the row.
+function shelfBaselineFor(rows: TierRowMeasures[], labelGap: number): number {
+  let maxRowBottom = -Infinity;
+  let reserve = 0;
+  let floor = -Infinity;
+  for (const row of rows) {
+    if (row.rowTop + row.rowHeight > maxRowBottom) maxRowBottom = row.rowTop + row.rowHeight;
+    for (const m of row.measures) {
+      if (m.placement === "bottom") reserve = Math.max(reserve, labelGap + m.labelBoxHeight);
+      if (row.rowTop + m.naturalHeight > floor) floor = row.rowTop + m.naturalHeight;
+    }
   }
-  return undefined;
+  const shelf = maxRowBottom - reserve;
+  return Math.max(shelf, floor);
+}
+
+// Group the zones' computed bands into shelves by AUTHORED vertical bounds: only
+// truly side-by-side zones (a horizontal row authored at the same top..bottom, like
+// rear_left / rear_center / rear_right) form one shelf, so their same-depth-tier
+// objects align on one line. Zones the reflow merely fused for a partial vertical
+// overlap (a center band and a front band that touch) keep their OWN shelves, because
+// they are stacked working surfaces, not one horizontal row. Zones with no computed
+// band are omitted (the caller places those via the fallback).
+function groupBandsByAuthoredRow(
+  zones: Zone[],
+  zoneBands: Map<string, ComputedZoneBand>,
+): ComputedZoneBand[][] {
+  const byKey = new Map<string, ComputedZoneBand[]>();
+  for (const zone of zones) {
+    const band = zoneBands.get(zone.id);
+    if (band === undefined) continue;
+    const key = `${zone.bounds.top}:${zone.bounds.bottom}`;
+    const list = byKey.get(key) ?? [];
+    list.push(band);
+    byKey.set(key, list);
+  }
+  return [...byKey.values()];
 }
 
 export function verticalLayout(
@@ -118,51 +154,84 @@ export function verticalLayout(
 ): Map<string, ComputedItem[]> {
   const viewportAspect = viewport.w / viewport.h;
   const aspectFloor = config.aspectFloor;
-  // The gap between the object strip and the label strip. It is the SAME
+  // The gap between the object strip and a bottom-side label strip. It is the SAME
   // label_offset_y the measure-vertical stage folded into _combinedHeight, so the
-  // object strip placed here lands inside the reserved row height.
+  // shelf reserve computed here matches the reserved row height.
   const labelGap = config.labelOffsetY;
-  const result = new Map<string, ComputedItem[]>();
 
+  // Measure every item once. placement_name is unique scene-wide, so one global map
+  // serves both the shelf pre-pass (which crosses zones) and the placement step.
+  const measureByName = new Map<string, VerticalMeasure>();
+  for (const zone of zones) {
+    for (const it of zoneLayouts.get(zone.id) ?? []) {
+      measureByName.set(it.placement_name, measureItem(it, viewportAspect, aspectFloor));
+    }
+  }
+
+  // Derive ONE shared baseline per shelf: one depth tier across the side-by-side
+  // zones that share a reflow band. Every object on that shelf maps to the same
+  // baseline, so a row of adjacent bottles of unequal height lands its bottom edges
+  // on one line instead of each floating at its own height.
+  const baselineByName = new Map<string, number>();
+  for (const bandGroup of groupBandsByAuthoredRow(zones, zoneBands)) {
+    // Collect the group's tier rows (across its side-by-side zones) keyed by
+    // depth_tier; each depth tier becomes one shelf carrying its member rows and the
+    // placement names that anchor to it.
+    const shelvesByTier = new Map<number, { rows: TierRowMeasures[]; names: string[] }>();
+    for (const band of bandGroup) {
+      for (const row of band.tiers) {
+        const measures: VerticalMeasure[] = [];
+        for (const name of row.placementNames) {
+          const m = measureByName.get(name);
+          if (m !== undefined) measures.push(m);
+        }
+        const shelf = shelvesByTier.get(row.depthTier) ?? { rows: [], names: [] };
+        shelf.rows.push({ rowTop: row.rowTop, rowHeight: row.rowHeight, measures });
+        shelf.names.push(...row.placementNames);
+        shelvesByTier.set(row.depthTier, shelf);
+      }
+    }
+    for (const shelf of shelvesByTier.values()) {
+      if (!shelf.rows.some((r) => r.measures.length > 0)) continue;
+      const baseline = shelfBaselineFor(shelf.rows, labelGap);
+      for (const name of shelf.names) baselineByName.set(name, baseline);
+    }
+  }
+
+  const result = new Map<string, ComputedItem[]>();
   for (const zone of zones) {
     const items = zoneLayouts.get(zone.id) ?? [];
-    const band = zoneBands.get(zone.id);
-
     const updated = items.map((it): ComputedItem => {
-      const aspect = Math.max(aspectFloor, it.aspect);
-      // Natural height at the current horizontal scale; objects keep this height
-      // (no per-object shrink). Width and the natural height share one factor, so
-      // the aspect ratio is preserved exactly (never-crop safe by construction).
-      const naturalHeight = (it._visualWidth * viewportAspect) / aspect;
-
-      // The label side and label-strip height the measure-vertical stage recorded.
-      // They are present after measure-vertical; fall back defensively so a
-      // direct-call unit test that skipped the measure stage still places objects.
-      const placement: LabelPlacement = it._labelPlacement ?? it.layout.label_placement ?? "top";
-      const labelBoxHeight = it._labelBoxHeight ?? 0;
+      const measure = measureByName.get(it.placement_name);
+      if (measure === undefined) {
+        // Every item was measured just above, so a missing measure means the map was
+        // corrupted. Fail loud rather than place an unmeasured object.
+        throw new Error(
+          `verticalLayout: item "${it.placement_name}" in zone "${zone.id}" was not measured`,
+        );
+      }
+      const naturalHeight = measure.naturalHeight;
 
       // An authored baseline_override pins the object baseline directly (rare; no
-      // current content uses it). It bypasses the row back-solve so an explicit
-      // author intent still wins. Object geometry then derives from that baseline.
+      // current content uses it). It bypasses the shelf so an explicit author intent
+      // still wins. Object geometry then derives from that baseline.
       if (it.baseline_override !== undefined) {
         const baseline = it.baseline_override;
-        const top = anchorTop(it, baseline, naturalHeight);
         const placed: ComputedItem = {
           ...it,
           _baselineY: baseline,
-          _top: top,
+          _top: anchorTop(it, baseline, naturalHeight),
           _height: naturalHeight,
         };
         return placed;
       }
 
-      // The tier row this item belongs to. Without a band (a direct-call test that
-      // did not run reflow-zones) or a missing row (a pipeline-ordering bug), fall
-      // back to the zone's authored band top so the object still places
-      // deterministically and a diagnostic surfaces.
-      let rowTop: number | undefined;
-      if (band !== undefined) rowTop = rowTopFor(band, it.placement_name);
-      if (rowTop === undefined) {
+      // The shared shelf baseline for this item. Without a band (a direct-call test
+      // that skipped reflow-zones) or when the item is in no row (a pipeline-ordering
+      // bug), fall back to a one-item shelf at the zone's authored band top so the
+      // object still places deterministically and a diagnostic fires.
+      let baseline = baselineByName.get(it.placement_name);
+      if (baseline === undefined) {
         diagnostics.push({
           stage: "vertical",
           severity: "warn",
@@ -170,18 +239,17 @@ export function verticalLayout(
           zone: zone.id,
           placement_name: it.placement_name,
         });
-        rowTop = zone.bounds.top;
+        const rowHeight = naturalHeight + labelGap + measure.labelBoxHeight;
+        baseline = shelfBaselineFor(
+          [{ rowTop: zone.bounds.top, rowHeight, measures: [measure] }],
+          labelGap,
+        );
       }
-
-      // Place the object strip inside the tier row per the label side, then
-      // back-solve the baseline so _top and _baselineY agree under the anchor mode.
-      const objectTop = objectTopInRow(rowTop, placement, labelBoxHeight, labelGap);
-      const baseline = baselineFromObjectTop(it, objectTop, naturalHeight);
 
       const placed: ComputedItem = {
         ...it,
         _baselineY: baseline,
-        _top: objectTop,
+        _top: anchorTop(it, baseline, naturalHeight),
         _height: naturalHeight,
       };
       return placed;

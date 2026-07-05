@@ -62,7 +62,7 @@ per card.
 Example JSONL row:
 
 ```json
-{"scene":"bench_basic","class":"composition","score":56.67,"confidence":"computed","gated_by_render_predictor":false,"metrics":{"primary_area_ratio":61.76,"zone_footprint_balance":87.70, ...},"suggestions":[]}
+{"scene":"bench_basic","class":"composition","score":56.67,"confidence":"computed","gated_by_render_predictor":false,"metrics":{"primary_area_ratio":61.76,"support_distance":74.30, ...},"suggestions":[]}
 ```
 
 ## Scene-class detection
@@ -108,13 +108,12 @@ contribute to that class's score.
 
 | Metric | Weight |
 | --- | --- |
-| `primary_area_ratio` | 0.25 |
-| `support_distance` | 0.20 |
-| `zone_footprint_balance` | 0.15 |
-| `scene_density` | 0.15 |
-| `predicted_label_overlap` | 0.15 |
-| `aspect_fidelity` | 0.05 |
-| `label_wrap_rate` | 0.05 |
+| `primary_area_ratio` | 0.28 |
+| `support_distance` | 0.24 |
+| `scene_density` | 0.18 |
+| `predicted_label_overlap` | 0.18 |
+| `aspect_fidelity` | 0.06 |
+| `label_wrap_rate` | 0.06 |
 
 ### instrument_heavy (primary is instrument or equipment)
 
@@ -131,11 +130,10 @@ contribute to that class's score.
 
 | Metric | Weight |
 | --- | --- |
-| `primary_area_ratio` | 0.50 |
-| `scene_density` | 0.20 |
-| `zone_footprint_balance` | 0.10 |
-| `predicted_label_overlap` | 0.10 |
-| `label_wrap_rate` | 0.10 |
+| `primary_area_ratio` | 0.56 |
+| `scene_density` | 0.22 |
+| `predicted_label_overlap` | 0.11 |
+| `label_wrap_rate` | 0.11 |
 
 ### dense_clutter (`>=10` placements)
 
@@ -186,9 +184,20 @@ NotReady (missing inputs, degenerate geometry, or class-specific opt-out).
 
 | Metric | Returns | Notes |
 | --- | --- | --- |
-| `zone_footprint_balance(scene, dump)` | 100 minus 20-pts-per-unit penalty on max/min footprint ratio across populated zones; floors at 0 | Requires `>= 2` populated zones (placement_count `>= 1` each) |
 | `largest_empty_band(scene, dump)` | 100 minus 200-pts-per-unit penalty on largest contiguous empty band as fraction of scene; floors at 0 | Grid-scan over horizontal and vertical bands |
 | `scene_occupied(scene, dump)` | 100 inside target band `[0.15, 0.70]`, linear penalty outside | total footprint area / scene area |
+
+`largest_empty_band` intentionally does not punish a deliberately empty
+zone unless it leaves a large contiguous dead band; an empty zone beside a
+well-grouped one is acceptable.
+
+`zone_footprint_balance` (footprint evenness across zones) and
+`row_overcrowding` (per-zone row-load) were removed: both rewarded spreading
+objects across more zones, which fights the grouping intent in
+[LAYOUT_ENGINE.md](LAYOUT_ENGINE.md#zone-population-and-alignment-aesthetics).
+See
+[docs/active_plans/decisions/scorecard_metric_spec_discrepancy.md](../active_plans/decisions/scorecard_metric_spec_discrepancy.md)
+for the removal record.
 
 ### Proximity (`metrics/proximity.py`)
 
@@ -210,7 +219,12 @@ NotReady (missing inputs, degenerate geometry, or class-specific opt-out).
 | Metric | Returns | Notes |
 | --- | --- | --- |
 | `scene_density(scene, dump)` | Same target band and scoring formula as `scene_occupied` | Total footprint area / scene area |
-| `row_overcrowding(scene, dump)` | 100 when zone load `<= 1.0`, 0 at zone load `>= 2.0`, capped 0-100 | Highest per-zone load = footprint widths sum / zone inner width |
+
+`row_overcrowding` was removed; see the Balance section above for the removal
+note. Its legitimate overflow-detection intent (an object not fitting its
+zone) is covered by scene-lint rule `B2` `item_taller_than_zone`, which fires
+when a placement's required scale to fit its zone falls below `MIN_SCALE`
+(see [SCENE_LINT.md](SCENE_LINT.md)).
 
 ### Composition (`metrics/composition.py`)
 
@@ -236,7 +250,7 @@ Each CLI invocation appends one JSONL row per scored scene unless
 | `scene` | str | Scene name. |
 | `class` | str | Detected scene class. |
 | `score` | float or null | Aggregate score, or null if NotReady. |
-| `metric_values` | object | All 16 metrics with their per-scene values. |
+| `metric_values` | object | Every current metric with its per-scene value. |
 
 Read API:
 

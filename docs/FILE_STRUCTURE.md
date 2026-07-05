@@ -133,6 +133,7 @@ Every script that emits to `generated/`, assembles bundles, or produces
 | [gen_svg_manifest.py](../pipeline/gen_svg_manifest.py) | `assets/**/*.svg` -> `generated/svg_manifest.ts` (asset_name -> relative file path) |
 | [gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts` + `generated/scene_manifest.json`; `--missing-svg=strict|placeholder` (default `placeholder`) |
 | [gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` + `generated/protocol_materials.ts` (per-protocol material registry from each package `materials.yaml`) |
+| [entity_decode.py](../pipeline/entity_decode.py) | Codegen helper: `decode_entities()` maps authored HTML entities (`&micro;` etc.) to Unicode glyphs at emit time; imported by `gen_protocols.py` and `gen_object_library.py` so `generated/**` carries the glyph while source stays ASCII |
 | [gen_flow_view.py](../pipeline/gen_flow_view.py) | Protocol YAML -> `generated/flow_views/<protocol_name>.txt`, a per-protocol audit view (click path, gestures, state changes, transitions); not the design source, see [PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md) |
 | [build_protocol_index.py](../pipeline/build_protocol_index.py) | Protocol index build helpers |
 | [list_protocols.py](../pipeline/list_protocols.py) | Reads `PROTOCOLS_INDEX`; `emit` writes one `dist/<name>.html` per protocol |

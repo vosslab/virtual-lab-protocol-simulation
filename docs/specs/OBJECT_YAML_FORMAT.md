@@ -232,11 +232,12 @@ a build-time error. There is no open-ended `constraints:` object.
 | `float` | `unit` (string), `min` (float), `max` (float), `step` (float); `default` is a float satisfying `min`/`max`/`step` when present |
 | `bool`  | none beyond `default` (one of `true`, `false`)                                                                                 |
 
-Unit strings for numeric fields are ASCII-only per
-[../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md). Standard runtime units include
-`ml`, `ul`, `rpm`, `C`, `s`, `min`. Greek-letter units (for example
-micro) are written ASCII-only; a future plan may introduce a unit
-table doc.
+Unit strings for numeric fields are authored ASCII-only, per the repo-wide
+rule in [../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md); non-ASCII characters are
+written as HTML entities. Standard runtime units include `ml`, `ul`, `rpm`,
+`C`, `s`, `min`. A Greek-letter unit (for example `&micro;l`) renders as its
+Unicode glyph in the browser: see the "Glyph rendering" convention in
+[MATERIAL_YAML_FORMAT.md](MATERIAL_YAML_FORMAT.md#glyph-rendering).
 
 ### Modeling material and set-point state with flat fields
 
@@ -471,11 +472,14 @@ object. A scene placement may override every field in the `layout` block.
 | `layout.label_width`     | float       | no       | positive number, in layout units  | unset; layout engine falls back to `default_width` |
 | `layout.anchor_y_offset` | float       | no       | any number (positive or negative) | `0`                                                |
 | `layout.width_scale`     | float       | no       | positive number                   | `1.0`                                              |
-| `layout.anchor_y`        | enum string | no       | one of `bottom`, `tip`            | `bottom`                                           |
+| `layout.anchor_y`        | enum string | no       | one of `bottom`, `tip`, `top`     | `bottom`                                           |
 
 `layout` itself is required; `layout.default_width` is the only required
 sub-field. The other sub-fields are optional and fall through to the
-defaults listed above.
+defaults listed above. `layout.anchor_y: top` is an engine fallback that
+centers the object vertically on the shared row baseline; no current object
+authors it. See [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) "Anchor-coordinate
+convention" for the three modes and their `_top` formulas.
 
 ## Worked example: 96-well plate
 
@@ -950,7 +954,10 @@ list.
 ### Hygiene
 
 - ASCII-only across the file; UTF-8 glyphs are escaped per
-  [../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md) (for example `&micro;`).
+  [../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md) (for example `&micro;`); codegen
+  decodes each entity to its Unicode glyph for display, per the "Glyph
+  rendering" convention in
+  [MATERIAL_YAML_FORMAT.md](MATERIAL_YAML_FORMAT.md#glyph-rendering).
 - Snake_case is used for every id (`id`, `state_field.name`, reagent
   ids).
 

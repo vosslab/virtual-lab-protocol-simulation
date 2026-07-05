@@ -1,9 +1,8 @@
 """Balance metrics: canvas filled evenly.
 
-Implements three balance metrics defined in SCENE_DESIGN_LINT_PLAN.md
+Implements two balance metrics defined in SCENE_DESIGN_LINT_PLAN.md
 section "Balance - canvas filled evenly":
 
-  zone_footprint_balance  - footprint distribution evenness across zones
   largest_empty_band      - largest contiguous empty band as fraction of scene
   scene_occupied          - total occupied area fraction as a 0-100 score
 
@@ -11,18 +10,13 @@ Each function accepts the scene YAML dict and dump_data dict produced by
 validation.scene_calc.dump.dump_scene_geometry, and returns a float in [0, 100]
 or None when required data is absent (NotReady semantics).
 
-Resolved decision (plan "Resolved decisions"):
-  zone_footprint_balance is populated only when placement_count >= 1 per zone.
-
-Dump schema reference (WP-SIM-2 pinned):
+Dump schema reference:
   dump_data['placements'] list of dicts with keys:
     placement_name, kind, footprint_bbox ({x, y, w, h}), zone (via scene YAML), etc.
   dump_data['zones'] list of dicts with keys: name, bounds ({left, right, top, bottom}),
     inner_rect.
   dump_data['scene_bounds'] {left, right, top, bottom} in scene-%.
 """
-
-from typing import Any
 
 
 #============================================
@@ -55,121 +49,11 @@ def _scene_area(scene_bounds: dict[str, float]) -> float:
 	return width * height
 
 
-def _zone_area(zone_bounds: dict[str, float]) -> float:
-	"""Return zone area from zone bounds {left, right, top, bottom}.
-
-	Args:
-		zone_bounds: Dict with left, right, top, bottom in scene-%.
-
-	Returns:
-		(right - left) * (bottom - top).
-	"""
-	width = zone_bounds['right'] - zone_bounds['left']
-	height = zone_bounds['bottom'] - zone_bounds['top']
-	return width * height
-
-
-def _build_zone_placement_map(
-	scene: dict[str, Any],
-	dump_data: dict[str, Any],
-) -> dict[str, list[dict[str, Any]]]:
-	"""Build a map from zone id to list of placement dump entries in that zone.
-
-	Uses the scene YAML placements to learn each placement's zone, then
-	joins with the dump placements for geometry.
-
-	Args:
-		scene: Parsed scene YAML dict.
-		dump_data: Dump dict from dump_scene_geometry.
-
-	Returns:
-		Dict mapping zone_id -> list of dump placement dicts in that zone.
-	"""
-	# Build index from placement_name -> zone in scene YAML.
-	name_to_zone: dict[str, str] = {}
-	for sp in scene.get('placements', []):
-		pname = sp.get('placement_name', '')
-		zone_id = sp.get('zone', '')
-		if pname and zone_id:
-			name_to_zone[pname] = zone_id
-
-	# Build zone -> [dump placements] map.
-	zone_map: dict[str, list[dict[str, Any]]] = {}
-	for dp in dump_data.get('placements', []):
-		zone_id = name_to_zone.get(dp['placement_name'], '')
-		if zone_id:
-			if zone_id not in zone_map:
-				zone_map[zone_id] = []
-			zone_map[zone_id].append(dp)
-
-	return zone_map
-
-
-#============================================
-# Metric: zone_footprint_balance
-#============================================
-
-def zone_footprint_balance(scene: dict[str, Any], dump_data: dict[str, Any]) -> float | None:
-	"""Footprint distribution evenness across zones, as a 0-100 score.
-
-	Definition (SCENE_DESIGN_LINT_PLAN.md "Balance"):
-	  max(sum footprint per zone) / min(sum footprint per zone) over populated zones.
-	  Target: composition <=3x, dense_clutter <=8x.
-
-	Only zones with placement_count >= 1 are included (resolved decision).
-	A ratio of 1.0 (perfect balance) earns 100. Higher ratios earn less.
-	Score = max(0, 100 - (ratio - 1.0) * 20.0), capped at [0, 100].
-	  ratio 1.0 -> score 100
-	  ratio 2.0 -> score 80
-	  ratio 3.0 -> score 60 (at composition target)
-	  ratio 6.0 -> score 0
-
-	Returns None if dump_data is missing or fewer than 2 populated zones exist.
-
-	Args:
-		scene: Parsed scene YAML dict.
-		dump_data: Dump dict from dump_scene_geometry.
-
-	Returns:
-		Float in [0, 100], or None if required data is absent.
-	"""
-	dump_placements = dump_data.get('placements')
-	if not dump_placements:
-		return None
-
-	zone_map = _build_zone_placement_map(scene, dump_data)
-
-	# Compute footprint sum per populated zone (>= 1 placement).
-	zone_footprint_sums: list[float] = []
-	for zone_id, zone_placements in zone_map.items():
-		if len(zone_placements) < 1:
-			continue
-		zone_sum = sum(_footprint_area(dp['footprint_bbox']) for dp in zone_placements)
-		zone_footprint_sums.append(zone_sum)
-
-	if len(zone_footprint_sums) < 2:
-		# Need at least 2 populated zones to compute balance.
-		return None
-
-	max_sum = max(zone_footprint_sums)
-	min_sum = min(zone_footprint_sums)
-
-	if min_sum <= 0.0:
-		# Degenerate: one zone has zero footprint.
-		return 0.0
-
-	# Ratio of most-loaded to least-loaded zone.
-	ratio = max_sum / min_sum
-	# Score: 100 at ratio=1, decreasing 20 points per additional ratio unit.
-	score = max(0.0, 100.0 - (ratio - 1.0) * 20.0)
-	return score
-
-
 #============================================
 # Metric: largest_empty_band
 #============================================
 
-def largest_empty_band(scene: dict[str, Any], dump_data: dict[str, Any]) -> float | None:
+def largest_empty_band(scene: dict[str, object], dump_data: dict[str, object]) -> float | None:
 	"""Largest contiguous empty horizontal or vertical band as fraction of scene, 0-100.
 
 	Definition (SCENE_DESIGN_LINT_PLAN.md "Balance"):
@@ -290,7 +174,7 @@ def largest_empty_band(scene: dict[str, Any], dump_data: dict[str, Any]) -> floa
 # Metric: scene_occupied
 #============================================
 
-def scene_occupied(scene: dict[str, Any], dump_data: dict[str, Any]) -> float | None:
+def scene_occupied(scene: dict[str, object], dump_data: dict[str, object]) -> float | None:
 	"""Total occupied scene area fraction, as a 0-100 score.
 
 	Definition (SCENE_DESIGN_LINT_PLAN.md "Balance"):

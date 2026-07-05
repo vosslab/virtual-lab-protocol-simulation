@@ -2,6 +2,7 @@
 
 import sys
 import json
+import argparse
 from pathlib import Path
 
 from validation.shared_toolkit.yaml_io import load_yaml
@@ -21,7 +22,6 @@ from validation.scene_design.metrics.labels import (
 )
 from validation.scene_design.metrics.density import (
 	scene_density,
-	row_overcrowding,
 )
 from validation.scene_design.metrics.composition import (
 	tab_stops_symmetry,
@@ -34,7 +34,6 @@ from validation.scene_design.metrics.hierarchy import (
 	primary_detection_confidence,
 )
 from validation.scene_design.metrics.balance import (
-	zone_footprint_balance,
 	largest_empty_band,
 	scene_occupied,
 )
@@ -49,7 +48,7 @@ from validation.scene_design.metrics.proximity import (
 #============================================
 
 
-def _add_scene_design_extras(parser):
+def _add_scene_design_extras(parser: argparse.ArgumentParser) -> None:
 	"""Register scene_design-specific flags beyond the shared flag set."""
 	parser.add_argument(
 		'-m', '--markdown',
@@ -65,7 +64,7 @@ def _add_scene_design_extras(parser):
 	)
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
 	"""Parse command-line arguments for scene_design."""
 	parser = toolkit_cli.build_parser(
 		prog='scene_design',
@@ -125,7 +124,6 @@ def compute_metrics(scene: dict, dump_data: dict | None) -> dict:
 
 	# Density metrics
 	metrics['scene_density'] = scene_density(scene, dump_data) if dump_data else None
-	metrics['row_overcrowding'] = row_overcrowding(scene, dump_data) if dump_data else None
 
 	# Composition metrics
 	metrics['tab_stops_symmetry'] = tab_stops_symmetry(scene, dump_data) if dump_data else None
@@ -138,7 +136,6 @@ def compute_metrics(scene: dict, dump_data: dict | None) -> dict:
 	metrics['primary_detection_confidence'] = primary_detection_confidence(scene)
 
 	# Balance metrics
-	metrics['zone_footprint_balance'] = zone_footprint_balance(scene, dump_data) if dump_data else None
 	metrics['largest_empty_band'] = largest_empty_band(scene, dump_data) if dump_data else None
 	metrics['scene_occupied'] = scene_occupied(scene, dump_data) if dump_data else None
 

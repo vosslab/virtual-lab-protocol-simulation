@@ -515,7 +515,9 @@ The build process (`pipeline/build_protocol_data.py`) enforces these rules:
 ### Hygiene rules
 
 - ASCII-only across all YAML. UTF-8 glyphs escaped per [../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md)
-  (e.g. `&alpha;`, `&micro;`).
+  (e.g. `&alpha;`, `&micro;`); codegen decodes each entity to its Unicode glyph
+  for display, per the "Glyph rendering" convention in
+  [MATERIAL_YAML_FORMAT.md](MATERIAL_YAML_FORMAT.md#glyph-rendering).
 - Every material entry in materials.yaml must be referenced by at least one
   `scene_operation` (an `ObjectStateChange` writing the material name into
   an object's flat `material_name` or `held_material_name` `state_field`; the

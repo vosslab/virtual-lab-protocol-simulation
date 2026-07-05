@@ -467,8 +467,10 @@ for the field table.
 
 A layout region declared by an entry in the scene YAML's `zones[]`
 array. Placements reference zones by id via `placement.zone`.
-Layout-engine zones carry `x0`, `x1`, `baseline`, `gap`, and
-`align` for the layout engine. Schema: see
+Layout-engine zones carry `bounds` (`left`, `right`, `top`, `bottom`), an
+optional authored `baseline`, and `align` for the layout engine; the
+per-zone `gap` field is retired in favor of scene-wide
+`layout_rules.zone_gap`. Schema: see
 [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) "Zones".
 
 ### scene_bounds

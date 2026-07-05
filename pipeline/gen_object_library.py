@@ -28,6 +28,9 @@ import subprocess
 import yaml
 import lxml.etree
 
+# local repo modules
+import pipeline.entity_decode
+
 
 #============================================
 
@@ -626,7 +629,12 @@ def process_object_yaml(
 	# Validate required identity fields
 	object_name = data["object_name"]
 	kind = data["kind"]
-	label = data["label"]
+	# Decode authored HTML entities (e.g. &micro;) to their Unicode glyph before
+	# emission, so generated/object_library.ts carries the real character and
+	# the runtime renders it as a normal DOM text node. This label emit point
+	# does not route through to_ts_literal (gen_object_library.py uses repr()
+	# directly), so decoding happens here instead.
+	label = pipeline.entity_decode.decode_entities(data["label"])
 
 	if kind not in kinds_enum:
 		raise ValueError(

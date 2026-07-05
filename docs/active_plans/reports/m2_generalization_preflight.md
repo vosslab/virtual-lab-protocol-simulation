@@ -1,6 +1,6 @@
 # M2c generalization preflight report
 
-Run at: 2026-07-05 16:20:07 UTC
+Run at: 2026-07-05 18:48:51 UTC
 
 ## Scope
 
@@ -28,11 +28,11 @@ layout geometry before D4 attempts rendering.
 | bench_basic | 0 | 1 | 11 | PASS | 0 | 0 |
 | cell_counter_basic | 0 | 1 | 7 | PASS | 0 | 0 |
 | cell_counter_workspace | 0 | 1 | 9 | PASS | 0 | 0 |
-| centrifuge_workspace | 2 | 1 | 12 | PASS | 0 | 0 |
+| centrifuge_workspace | 3 | 1 | 12 | PASS | 0 | 0 |
 | dilution_workspace | 0 | 1 | 11 | PASS | 0 | 0 |
 | drug_dilution_setup_bench_setup | 0 | 1 | 9 | PASS | 0 | 0 |
-| electrophoresis_bench | 1 | 1 | 16 | PASS | 0 | 0 |
-| extraction_workspace | 2 | 3 | 17 | PASS | 0 | 0 |
+| electrophoresis_bench | 0 | 1 | 16 | PASS | 0 | 0 |
+| extraction_workspace | 1 | 3 | 17 | PASS | 0 | 0 |
 | heat_block_bench | 0 | 1 | 13 | PASS | 0 | 0 |
 | hemocytometer_view | 0 | 1 | 9 | PASS | 0 | 0 |
 | hood_basic | 0 | 1 | 10 | PASS | 0 | 0 |
@@ -48,15 +48,15 @@ layout geometry before D4 attempts rendering.
 | plate_drug_treatment_media_adjustment_plate_workspace | 0 | 1 | 9 | PASS | 0 | 0 |
 | plate_workspace | 0 | 1 | 11 | PASS | 0 | 0 |
 | sample_prep_bench | 0 | 1 | 12 | PASS | 0 | 0 |
-| sdspage_attach_lid_and_leads_workspace | 1 | 1 | 16 | PASS | 0 | 0 |
+| sdspage_attach_lid_and_leads_workspace | 0 | 1 | 16 | PASS | 0 | 0 |
 | sdspage_destain_gel_rock_workspace | 0 | 1 | 10 | PASS | 0 | 0 |
-| sdspage_fill_tank_buffer_workspace | 1 | 1 | 16 | PASS | 0 | 0 |
+| sdspage_fill_tank_buffer_workspace | 0 | 1 | 16 | PASS | 0 | 0 |
 | sdspage_heat_denature_samples_workspace | 0 | 1 | 13 | PASS | 0 | 0 |
-| sdspage_load_sample_single_lane_workspace | 1 | 1 | 17 | PASS | 0 | 0 |
-| sdspage_prepare_running_buffer_workspace | 1 | 1 | 16 | PASS | 0 | 0 |
+| sdspage_load_sample_single_lane_workspace | 0 | 1 | 17 | PASS | 0 | 0 |
+| sdspage_prepare_running_buffer_workspace | 0 | 1 | 16 | PASS | 0 | 0 |
 | sdspage_prepare_sample_mix_single_lane_workspace | 0 | 1 | 12 | PASS | 0 | 0 |
-| sdspage_recycle_buffer_workspace | 1 | 1 | 16 | PASS | 0 | 0 |
-| sdspage_run_electrophoresis_workspace | 1 | 1 | 16 | PASS | 0 | 0 |
+| sdspage_recycle_buffer_workspace | 0 | 1 | 16 | PASS | 0 | 0 |
+| sdspage_run_electrophoresis_workspace | 0 | 1 | 16 | PASS | 0 | 0 |
 | seeding_workspace | 0 | 1 | 10 | PASS | 0 | 0 |
 | staining_bench | 0 | 1 | 10 | PASS | 0 | 0 |
 
@@ -102,9 +102,10 @@ layout geometry before D4 attempts rendering.
 
 **Guard verdict:** PASS
 
-**Diagnostics:** 2 (passes: 1, final items: 12)
+**Diagnostics:** 3 (passes: 1, final items: 12)
 - labels/info/label_row_staggered [right_aspirating_pipette]
 - labels/info/label_row_staggered [right_label_pen]
+- labels/info/label_row_staggered [base_right_tip_box]
 
 **Zones shrunk per pass:** 0
 
@@ -139,8 +140,8 @@ layout geometry before D4 attempts rendering.
 
 **Guard verdict:** PASS
 
-**Diagnostics:** 1 (passes: 1, final items: 16)
-- labels/info/label_row_staggered [center_serological_pipette]
+**Diagnostics:** 0 (passes: 1, final items: 16)
+(none)
 
 **Zones shrunk per pass:** 0
 
@@ -151,9 +152,8 @@ layout geometry before D4 attempts rendering.
 
 **Guard verdict:** PASS
 
-**Diagnostics:** 2 (passes: 3, final items: 17)
+**Diagnostics:** 1 (passes: 3, final items: 17)
 - labels/info/label_row_staggered [front_center_waste_container]
-- labels/info/label_row_staggered [center_serological_pipette]
 
 **Zones shrunk per pass:** 0, 0, 0
 
@@ -344,8 +344,8 @@ layout geometry before D4 attempts rendering.
 
 **Guard verdict:** PASS
 
-**Diagnostics:** 1 (passes: 1, final items: 16)
-- labels/info/label_row_staggered [center_serological_pipette]
+**Diagnostics:** 0 (passes: 1, final items: 16)
+(none)
 
 **Zones shrunk per pass:** 0
 
@@ -368,8 +368,8 @@ layout geometry before D4 attempts rendering.
 
 **Guard verdict:** PASS
 
-**Diagnostics:** 1 (passes: 1, final items: 16)
-- labels/info/label_row_staggered [center_serological_pipette]
+**Diagnostics:** 0 (passes: 1, final items: 16)
+(none)
 
 **Zones shrunk per pass:** 0
 
@@ -392,8 +392,8 @@ layout geometry before D4 attempts rendering.
 
 **Guard verdict:** PASS
 
-**Diagnostics:** 1 (passes: 1, final items: 17)
-- labels/info/label_row_staggered [center_serological_pipette]
+**Diagnostics:** 0 (passes: 1, final items: 17)
+(none)
 
 **Zones shrunk per pass:** 0
 
@@ -404,8 +404,8 @@ layout geometry before D4 attempts rendering.
 
 **Guard verdict:** PASS
 
-**Diagnostics:** 1 (passes: 1, final items: 16)
-- labels/info/label_row_staggered [center_serological_pipette]
+**Diagnostics:** 0 (passes: 1, final items: 16)
+(none)
 
 **Zones shrunk per pass:** 0
 
@@ -428,8 +428,8 @@ layout geometry before D4 attempts rendering.
 
 **Guard verdict:** PASS
 
-**Diagnostics:** 1 (passes: 1, final items: 16)
-- labels/info/label_row_staggered [center_serological_pipette]
+**Diagnostics:** 0 (passes: 1, final items: 16)
+(none)
 
 **Zones shrunk per pass:** 0
 
@@ -440,8 +440,8 @@ layout geometry before D4 attempts rendering.
 
 **Guard verdict:** PASS
 
-**Diagnostics:** 1 (passes: 1, final items: 16)
-- labels/info/label_row_staggered [center_serological_pipette]
+**Diagnostics:** 0 (passes: 1, final items: 16)
+(none)
 
 **Zones shrunk per pass:** 0
 
@@ -481,11 +481,11 @@ layout geometry before D4 attempts rendering.
 - **bench_basic**: 0 diagnostics
 - **cell_counter_basic**: 0 diagnostics
 - **cell_counter_workspace**: 0 diagnostics
-- **centrifuge_workspace**: 2 diagnostics
+- **centrifuge_workspace**: 3 diagnostics
 - **dilution_workspace**: 0 diagnostics
 - **drug_dilution_setup_bench_setup**: 0 diagnostics
-- **electrophoresis_bench**: 1 diagnostics
-- **extraction_workspace**: 2 diagnostics
+- **electrophoresis_bench**: 0 diagnostics
+- **extraction_workspace**: 1 diagnostics
 - **heat_block_bench**: 0 diagnostics
 - **hemocytometer_view**: 0 diagnostics
 - **hood_basic**: 0 diagnostics
@@ -501,15 +501,15 @@ layout geometry before D4 attempts rendering.
 - **plate_drug_treatment_media_adjustment_plate_workspace**: 0 diagnostics
 - **plate_workspace**: 0 diagnostics
 - **sample_prep_bench**: 0 diagnostics
-- **sdspage_attach_lid_and_leads_workspace**: 1 diagnostics
+- **sdspage_attach_lid_and_leads_workspace**: 0 diagnostics
 - **sdspage_destain_gel_rock_workspace**: 0 diagnostics
-- **sdspage_fill_tank_buffer_workspace**: 1 diagnostics
+- **sdspage_fill_tank_buffer_workspace**: 0 diagnostics
 - **sdspage_heat_denature_samples_workspace**: 0 diagnostics
-- **sdspage_load_sample_single_lane_workspace**: 1 diagnostics
-- **sdspage_prepare_running_buffer_workspace**: 1 diagnostics
+- **sdspage_load_sample_single_lane_workspace**: 0 diagnostics
+- **sdspage_prepare_running_buffer_workspace**: 0 diagnostics
 - **sdspage_prepare_sample_mix_single_lane_workspace**: 0 diagnostics
-- **sdspage_recycle_buffer_workspace**: 1 diagnostics
-- **sdspage_run_electrophoresis_workspace**: 1 diagnostics
+- **sdspage_recycle_buffer_workspace**: 0 diagnostics
+- **sdspage_run_electrophoresis_workspace**: 0 diagnostics
 - **seeding_workspace**: 0 diagnostics
 - **staining_bench**: 0 diagnostics
 

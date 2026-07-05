@@ -381,17 +381,6 @@
 [data-placement-name] {
   position: absolute;
   /* placement bounds set by inline style via _x, _top, _visualWidth, _height */
-  /* Grounding cue (round 1.5): soft contact drop-shadow anchored at the object
-     base. The shadow sits BELOW the item div, behind its artwork, and is never
-     clipped by overflow:hidden because overflow:visible is set on all ancestor
-     containers up to #scene-root. This gives each object a believable resting-
-     surface shadow without touching any layout geometry.
-     Round 1.5: nudged from (0px 5px 6px 0.20) to (0px 6px 8px 0.26) -- a step
-     stronger so the shadow is clearly perceptible while remaining soft and subtle.
-     Round 1.6: tint neutralized from warm-brown rgba(80,60,30) to neutral dark
-     grey rgba(40,44,48); blur/offset/opacity kept identical to round 1.5.
-     Never occludes, tints, or darkens any asset artwork. */
-  filter: drop-shadow(0px 6px 8px rgba(40, 44, 48, 0.26));
 }
 
 /* depth ordering: back -> mid -> front */

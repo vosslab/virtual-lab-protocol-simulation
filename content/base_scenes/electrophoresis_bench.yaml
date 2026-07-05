@@ -124,12 +124,6 @@ placements:
     zone: center
     depth_tier: 1
     align_stop: left
-    # Top label collides with the adjacent center_ddh2o_bottle artwork in the
-    # 39-44 band (both seed at label_top 39.5; this 2-line label overflows onto
-    # the bottle). Above is structurally blocked by the neighbor; below the
-    # pipette (obj_bottom 64) has clear room, so place this label below.
-    layout:
-      label_placement: bottom
   - placement_name: center_p200_micropipette
     object_name: p200_micropipette
     zone: center

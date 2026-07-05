@@ -8,6 +8,141 @@
   ("content is the fixture": curriculum content under `content/protocols/**`
   is exercised directly by the walker sweep; there is no separate diagnostic
   fixture surface). Linked from `AGENTS.md`.
+- Documented the author-entity -> codegen-decode -> DOM-glyph convention once,
+  canonically, in a new "Glyph rendering" subsection of
+  `docs/specs/MATERIAL_YAML_FORMAT.md`, and cross-linked it (not restated)
+  from the entity/ASCII hygiene rules in `docs/specs/OBJECT_YAML_FORMAT.md`
+  (unit-strings note and file-hygiene note) and
+  `docs/specs/PROTOCOL_YAML_FORMAT.md`.
+- Added `tests/playwright/test_glyph_dom_render.spec.ts` (WP-A4): a browser
+  DOM-text proof, on the real `drug_dilution_setup` content, that the
+  guidance bar (`#guidance-text`), the outline step card text, and the
+  card's `title` attribute (`StepOutline.tsx:94`) all render the real
+  U+00B5 micro sign glyph rather than the literal `&micro;` entity string.
+  Verified non-vacuous by temporarily disabling the WP-A2 decode call and
+  confirming all three assertions fail against the raw entity text, then
+  restoring the decode call and confirming green.
+- Added `tests/e2e/e2e_material_render.py` (WP-C1), a material-render
+  regression guard: `tests/playwright/material_render_capture.mjs` renders
+  every emitted scene through the real `dist/scene_viewer.html`, isolating
+  each object-level `fill_height()` overlay's own painted pixels by diffing
+  the same item bbox with the overlay visible vs hidden (per driving field,
+  so a two-overlay object like the electrophoresis tank's inner/outer
+  chamber never gets diffed against itself). The measured percent per
+  `scene::placement_name::field_name` is baselined into
+  `docs/active_plans/reports/material_render.json` (`--write-baseline`, or
+  automatically on first run); every later run verifies against that
+  baseline and flags a regression only when an entry grows more than 5
+  percentage points above its recorded value, never rewriting the baseline
+  itself. Per review feedback, replaced an earlier per-entry
+  percent-threshold "known-bad" tag (an arbitrary per-object cutoff) with a
+  single top-level `baseline_status: "known-bad-current-state"` field plus a
+  `baseline_status_note`: EVERY current fill_height overlay paints the
+  object's full item bbox rather than being constrained to the SVG liquid
+  interior (`docs/ROADMAP.md:183`, deferred, out of scope for this guard) --
+  the bug is structural to the shared overlay mechanism, not something a
+  magic-number cutoff could isolate to "some" objects. The per-entry `tag`
+  field stays empty, reserved for future targeted annotation once the render
+  fix lands. The report header states plainly that this proves "no worse
+  than baseline", not "material rendering is correct".
+- Added `pipeline/entity_decode.py` (WP-A2), the codegen decode helper that
+  turns authored HTML entities (named, decimal, and hex numeric forms) into
+  their Unicode characters before emission into `generated/**`, so the
+  runtime renders a real glyph as a normal DOM text node instead of the
+  literal entity string. A closed-set dictionary lookup
+  (`NAMED_ENTITY_CODEPOINTS`), not XML entity expansion, so it carries no
+  XXE risk; an entity not in the map and not a valid numeric form passes
+  through verbatim. Added `tests/test_entity_decode.py` covering named
+  entities (`&micro;`, `&amp;`, `&alpha;`/`&beta;`), decimal and hex numeric
+  forms, multi-entity strings, and the unknown-entity pass-through case.
+
+### Behavior or Interface Changes
+
+- WP-F1: intra-row vertical placement now BOTTOM-anchors objects to a shared
+  shelf baseline instead of top-anchoring them.
+  `src/scene_runtime/layout/vertical_layout.ts` routes every object through
+  `anchorTop()` so `_top = _baselineY - _height`, replacing the old
+  `_top = rowTop` pin plus per-object baseline back-solve (removed
+  `objectTopInRow`, `baselineFromObjectTop`, `rowTopFor`). A shelf is one
+  `depth_tier` across the side-by-side zones authored at the same `top..bottom`
+  (a horizontal row); its shared baseline is
+  `max(rowBottom - bottomLabelReserve, rowTop + maxObjHeight)` -- the lowest row
+  bottom (tallest column defines the line), pulled up by any bottom-label
+  reserve, and floored so the tallest object's top stays inside its row
+  (containment). Result: unequal-height bottles in a row now sit their bottom
+  edges on one common line (staining_bench rear reagent shelf; electrophoresis
+  center working surface) instead of hanging from the row top. Aspect is
+  preserved and no artwork is cropped (never-crop safe by construction). The
+  reflow band/zone-merge logic and horizontal placement are untouched. Every
+  pipette's `anchor_y: tip` uses `anchor_y_offset: 0`, so tips land on the shelf
+  exactly like a bottom anchor; `anchor_y: top` is unused in content (engine
+  fallback only). Scene-churn report:
+  `docs/active_plans/reports/wp_f1_bottom_align_scene_churn.md`.
+- Playwright `webServer.reuseExistingServer` is now always `false` (was `!CI`,
+  i.e. reuse-allowed locally). Justification: the walker sweep
+  (`tests/playwright/e2e/protocol_walkthrough.spec.ts`) intermittently failed 8
+  `sdspage_*` protocols, and all 8 were a single root cause -- a stale served
+  bundle, not any content, scene, asset, or runtime defect. With reuse enabled,
+  a leftover `python3 -m http.server --directory dist` from an earlier run was
+  reused and the `webServer` command's `build_github_pages.sh` rebuild was
+  SKIPPED, so the walker booted an old `dist/protocol_host.js` whose embedded
+  `PROTOCOLS` snapshot predated the sdspage protocols (observed: bundle built
+  11:25, `generated/protocols.ts` regenerated 11:35). Five protocols crashed at
+  boot ("protocol not found" -> `window.gameState`/`PROTOCOL_STEPS` never set ->
+  `waitForFunction` 8000ms timeout, 0/0 steps); three others logged transient
+  DOM-SVG fetch errors captured against that same stale build (57/2/2), which do
+  not reproduce on a clean tree. Reusing a prebuilt static server decouples the
+  bytes served from the current build; forcing a fresh build+serve on every run
+  ties them back together. A clean rebuild turned all 8 green (`86 passed`). CI
+  already ran with reuse off, which is why CI never saw this; local now matches.
+- Authored HTML entities in protocol prompts/descriptions/`learning` fields,
+  material names, and object labels now decode to their real Unicode glyph in
+  `generated/**` via the WP-A2 codegen decode pass
+  (`pipeline/entity_decode.py`), instead of shipping the literal entity
+  string for the runtime to render as-is.
+- Removed the `.object-graphic` box-shadow/drop-shadow styling in
+  `src/style.css`; scene object artwork now renders without an added drop
+  shadow.
+
+### Fixes and Maintenance
+
+- WP-F1: removed a now-stale `label_placement: bottom` override on
+  `center_serological_pipette` in `content/base_scenes/electrophoresis_bench.yaml`
+  (inherited by the eight `sdspage_*` workspace scenes via
+  `extends: electrophoresis_bench`). The override existed to dodge a top-label
+  collision with `ddh2o_bottle` in the OLD top-anchored layout; bottom-alignment
+  moved `ddh2o_bottle` to the scene bottom, so that collision no longer exists
+  and the override instead forced the label down into
+  `front_left_mini_protean_gel`'s label, raising `unresolved_label_overlap` in
+  all eight inheriting scenes. Removing the obsolete override lets the resolver
+  place the label naturally and clears the overlap for real (no gate suppression,
+  no baselined overlap).
+- Fixed the dead build-freshness gate in `run_playwright_tests.sh`: it decided
+  whether to rebuild `dist/` by testing for `dist/main.js`, a legacy
+  single-bundle filename this multi-entry build never emits (the real runtime
+  artifact is `dist/protocol_host.js`). The check now tests
+  `dist/protocol_host.js` so a missing bundle actually triggers a rebuild;
+  header comment updated to match.
+- `pipeline/build_generated.sh` now exports `PYTHONPATH` to the repo root
+  (mirroring `source_me.sh`'s own export) so the generator scripts'
+  package-qualified imports resolve when the build script runs standalone,
+  without requiring the caller to `source source_me.sh` first; reverted the
+  in-code `sys.path` hack this previously papered over in
+  `pipeline/gen_object_library.py`.
+- Closeout reconciliation of `docs/CHANGELOG.md`: several agents working the
+  same session had each appended their own full set of day-block
+  subsection headings instead of writing under the existing one, leaving
+  the 2026-07-05 and 2026-07-04 day blocks with duplicate, out-of-order
+  `###` headings (per REPO_STYLE.md, one heading per category per day
+  block). Merged every duplicate heading into a single instance per
+  category, in canonical order, moving each existing bullet under its
+  correct heading with no entry deleted or reworded. Then rotated the file
+  per REPO_STYLE.md's "Changelog rotation" policy (1370 lines, over the
+  1000-line threshold): ran `devel/rotate_changelog.py`, which kept the two
+  most recent day blocks (2026-07-05, 2026-07-04) in `docs/CHANGELOG.md`
+  and moved the older 2026-07-03 block, byte-for-byte, into the new
+  `docs/CHANGELOG-2026-07b.md` archive (the existing `CHANGELOG-2026-07a.md`
+  already held 07-01/07-02, so `b` is the next unused letter for the month).
 
 ### Removals and Deprecations
 
@@ -35,6 +170,14 @@
   `tests/playwright/test_initial_scene_evidence_m1.{mjs,spec.ts}`,
   `tests/playwright/smoke_fixtures/one_object.json`,
   `content/base_scenes_quarantine/well_plate_96_zoom.yaml`.
+- Retired the "future plan may introduce a unit table doc" ASCII-unit stopgap
+  in `docs/specs/OBJECT_YAML_FORMAT.md`: Greek-letter units are authored as
+  HTML entities and render as their Unicode glyph via the codegen decode
+  convention. Updated the two `200 uM` / `20 uL` ASCII examples in
+  `docs/specs/PROTOCOL_AUTHORING_GUIDE.md` to the entity form (`&micro;M`,
+  `&micro;L`) so the guide teaches what now renders. Closed the
+  `docs/TODO.md` "Fix unit rendering for browser-displayed YAML labels" item
+  as resolved.
 
 ### Decisions and Failures
 
@@ -42,9 +185,37 @@
   protocol behavior; `dev_smoke` is removed as a concept rather than
   reformed. `docs/PRIMARY_CONTRACT.md` never named `dev_smoke`, so this is
   not a contract change.
+- Recorded `docs/active_plans/decisions/scorecard_metric_spec_discrepancy.md`
+  (RATIFIED): removed the `zone_footprint_balance` and `row_overcrowding`
+  scene-design scorecard metrics. Both rewarded spreading placements across
+  more zones, directly conflicting with the grouping design intent in
+  `docs/specs/LAYOUT_ENGINE.md` ("group related objects into one zone;
+  prefer fewer, fuller zones"); a correctly-grouped scene either could not
+  compute the metric or was scored worse than a scene that split itself up
+  to chase evenness. Overflow coverage for an overloaded zone remains via
+  scene-lint rule `B2` `item_taller_than_zone`.
+- Documented tier-alignment and zone-grouping as durable design principles
+  rather than one-off scene fixes: added the "Zone population and alignment
+  aesthetics" section to `docs/specs/LAYOUT_ENGINE.md` (group related
+  objects into one zone; prefer fewer, fuller zones; reserve separate zones
+  for genuinely separate physical regions) and grouping guidance to
+  `docs/specs/SCENE_DESIGN.md`.
+- Tightened `AGENTS.md` to a small set of bare-path pointers into `docs/*.md`
+  rather than restating rules inline, and restored the `source source_me.sh
+  && python3 ...` Python-execution convention pointer that had dropped out
+  of the file.
 
 ### Developer Tests and Notes
 
+- WP-F1 bottom-anchor verification, all green: `npx tsc --noEmit` exit 0;
+  `./check_codebase.sh` 5/5 (86 layout node tests pass, including rewritten
+  bottom-alignment invariant tests); `precompute_layout.mjs` emitted 34 scenes
+  with 0 non-exempt build failures; `e2e_layout_parity_16x9` GO 34/34 all-exact;
+  `e2e_generalization_preflight` 34/34; 0 object overlaps across all 34 scenes;
+  `./run_playwright_tests.sh` 86 passed / 0 failed. `passage_hood_detachment_
+  microscope_view` still raises 2 exempt diagnostics but is a PRE-EXISTING member
+  of `BUILD_GATE_EXEMPT_SCENES` (intentional dense-by-design scene), not a
+  regression from this change.
 - `./run_fast_checks.sh` (renamed from `run_all_checks.sh` per the
   2026-07-04 entry below) green: 4963 pytest passed, build/typescript/pytest/
   validate all PASS. `run_validate` reports 0 errors. `./build_github_pages.sh`
@@ -57,6 +228,31 @@
   obsolete `missing_svg_check` placeholder-contract case from the `.spec.ts`
   and its `.mjs` twin; `./run_playwright_tests.sh` now passes clean
   (83 passed, 5 skipped, 0 failed).
+- `tests/e2e/e2e_material_render.py` verified: `--write-baseline` (after a
+  full `bash build_github_pages.sh`) captured 231 fill-overlay entries across
+  the 34 emitted scenes; running verify mode twice in a row reported
+  `unchanged=231, regressed=0` both times (exit 0). Seeded a regression by
+  lowering `bench_basic::rear_center_ethanol::material_volume`'s baselined
+  `measured_percent` from 96.26 to 40.0 (a temporary edit to the baseline
+  JSON, reverted immediately after) and re-running correctly raised it as the
+  sole regression (`+56.26pp`, exit 1); reverting restored a clean exit-0 run
+  (`unchanged=231` again). A real content-edit seed (bumping
+  `micropipette.yaml`'s `held_material_volume` default, reverted) was
+  attempted first but `bash build_github_pages.sh` was failing at the time on
+  unrelated pre-existing `unresolved_label_overlap` gate failures in
+  `electrophoresis_bench`/`extraction_workspace`/`sdspage_*` (concurrent WP-F1
+  work in `vertical_layout.ts`), so the content edit was reverted without
+  rebuilding and the baseline-level seed was used instead; `dist/` was
+  unaffected since that gate runs before the bundle-write step. After
+  replacing the per-entry threshold tag with the top-level `baseline_status`
+  field (see above), re-wrote the baseline and re-ran verify mode twice more,
+  confirming the new field does not trip the diff: `unchanged=231,
+  regressed=0, new=0, missing=0` (exit 0) both times. `pyflakes`, ASCII
+  compliance, and `npx eslint` are clean on both new files.
+- `tests/test_entity_decode.py` inline-case coverage (no fixture files) for
+  `pipeline.entity_decode.decode_entities`: named entities, decimal
+  (`&#181;`) and hex (`&#xB5;`) numeric forms, mixed strings (`Tris &amp;
+  EDTA`), and an unrecognized entity left verbatim.
 
 ## 2026-07-04
 
@@ -96,205 +292,6 @@
   `helper_subpart_render_harness.tsx`, `helper_protocol_discovery.mjs`/`.d.mts`,
   `helper_walker.mjs`/`.d.mts`) per `PLAYWRIGHT_TEST_STYLE.md`'s reserved
   bare-underscore-for-scratch convention.
-
-### Behavior or Interface Changes
-
-- Standardized liquid-container sizes to a discrete 6-bucket capacity+width
-  ladder in `docs/specs/SCALING_MODEL.md`; set discrete `display_width_cm` on
-  the true bottles (M=10, L=12, XL=14; the `running_buffer_1x_carboy` carboy
-  kept at 18).
-- `run_all_checks.sh` renamed to `run_fast_checks.sh` to state its fast-gate
-  scope (it does not run the browser walker sweep); repointed the
-  `package.json` `check:all` alias and updated `docs/FILE_STRUCTURE.md` and
-  `docs/CODE_ARCHITECTURE.md` references. The `git mv` completing the on-disk
-  rename is a follow-up human action.
-- `run_playwright_tests.sh` is now the single front door for every browser
-  test (`npx playwright test` against `playwright.config.ts`); `super_all_tests.sh`'s
-  browser step collapsed from a hand-maintained list of individual `.mjs`
-  invocations to one call to `run_playwright_tests.sh`.
-- Playwright runner suite: known-routed browser reds are now documented
-  expected-fails via `test.fail()` with inline routing reasons
-  (`cell_culture_full` mp5; `plate_drug_treatment_drug_addition` and
-  `per_well_drug` `tube_A` subpart OP1; `microscope_basic` overlap O6) -- a
-  green suite now means "green minus documented routed items," and an
-  unexpected pass flips the annotation so it self-clears.
-
-### Fixes and Maintenance
-
-- Converted SVG XML parsing from stdlib `xml.etree` to a hardened lxml
-  parser (`resolve_entities=False`, `no_network=True`) in
-  `pipeline/gen_object_library.py`, `pipeline/gen_svg_manifest.py`,
-  `validation/svg/asset_audit.py`, and `tools/svg_validate.py` -- byte-identical
-  output, closes the XXE/entity-expansion threat class without `# nosec`
-  (owner preference: lxml over `xml.etree`).
-- Marked md5 filename-stem hashes `usedforsecurity=False` in
-  `tests/e2e/e2e_svg_gradient_recheck.py` and
-  `tests/e2e/e2e_svg_visual_regression.py` (non-security use; digest
-  unchanged).
-- Cleared the last three bandit findings at source (non-security use, digest
-  and path unchanged): `usedforsecurity=False` on the MD5 content-identity
-  hash in `tools/svg_identity_sweep.py` and the SHA1 path-derived ID in
-  `tools/svg_picker/build_candidate_manifest.py`; replaced three hardcoded
-  `Path('/tmp')` temp targets with `Path(tempfile.gettempdir())` in
-  `validation/scene_design/suggest.py` (B108). Relocated the bandit gate from
-  the custom `tests/e2e/e2e_bandit_security.py` to the vendored
-  `tests/test_bandit_security.py`, so it now runs in the fast `pytest tests/`
-  lane (147 -> 148 files scanned, all pass).
-- `super_all_tests.sh` runs TypeScript-importing `tests/e2e/*.mjs` under
-  `node --import tsx` (per-file selection); fixed the `../src` ->
-  `../../src` import path in `tests/e2e/e2e_generalization_preflight.mjs`.
-  The three TS-importing e2e (preflight, layout_parity_16x9,
-  layout_diagnostics_baseline) now run green.
-- Fixed `tools/svg_picker/apply_decisions.py` (and its README) to call the
-  current `tools/normalize_svg_v3.py` CLI (`-i <file> --in-place`) instead
-  of the deleted `normalize_svg_v2.py`.
-- Removed dead `normalize_svg_v2` doc references in
-  `docs/CODE_ARCHITECTURE.md` and `docs/FILE_STRUCTURE.md`.
-- Inlined the SVG input in
-  `tests/test_validation_clarity.py::test_check_normalization_accepts_real_normalized_svg`
-  (was reading a real asset file; now uses an inline minimal SVG per the
-  PYTEST_STYLE inline-inputs rule).
-- `tests/e2e/e2e_svg_visual_regression.py` render loop now uses
-  `page.setContent(...)` plus an image-decode wait instead of a temp-file
-  `goto(file://...)` with `networkidle` and a fixed 80ms sleep, and the
-  prescreen pass keeps and reuses each passing file's normalized output
-  instead of normalizing it a second time; measured well under 0.15s/render
-  (was ~0.6s/render), a large speedup on the ~300-file default run.
-- Re-typed 7 sub-100 mL reagents from bottle to tube and renamed
-  `*_bottle` -> `*_tube` (`bme`, `laemmli_4x`, `trypan_blue` -> 15 mL falcon;
-  `dmso`, `carboplatin_stock`, `metformin_stock` -> 50 mL;
-  `mtt_solution_bottle` -> `mtt_stock_tube`), atomically across object, scene,
-  and protocol surfaces; protocol target names moved with authored volumes
-  preserved.
-- Normalized and declared the previously-orphaned `falcon_50ml` SVG asset
-  (added the missing `anchor_liquid_clip` clipPath, mirroring `falcon_15ml`).
-- Swept old-name references in `tests/` and `tools/`; excluded `generated/**`
-  from ESLint in `eslint.config.local.js` (machine-emitted build output,
-  mirroring the `dist/**` ignore).
-- Base-scene test sets and their counts now derive from content discovery
-  instead of stale hand-maintained lists. Added
-  `tests/playwright/_scene_discovery.mjs` (`discoverBaseSceneNames`, reads
-  `content/base_scenes/*.yaml`, the definitional base-scene directory; the
-  generated `SCENES` map mixes base + protocol + smoke scenes so it is not a
-  clean base-only authority). `tests/playwright/test_viewport_sweep.mjs` and
-  `tests/playwright/test_generalization_render.mjs` now build `SCENES_TO_TEST` /
-  `SCENES_TO_RENDER` from the helper, and their pass gates and report counts are
-  derived (`SCENES_TO_TEST.length * VIEWPORTS.length` replaces the hardcoded
-  `18`; per-scene assertion totals replace the hardcoded `11`/`6`). The prior
-  hand lists already missed 4 of the 9 real base scenes
-  (`electrophoresis_bench`, `heat_block_bench`, `imaging_bench`,
-  `microscope_basic`).
-- `test_generalization_render.mjs` now exits non-zero honestly: the process
-  exit code reflects the per-scene assertion outcomes instead of always exiting
-  0. `main()` returns 0 only when every discovered base scene reaches a full
-  assertion pass; any assertion failure, render FAIL, or ERROR returns 1, read
-  by a single top-level `process.exit`. The final summary now names each
-  scene's failing assertions and prints a `RESULT: PASS/FAIL` line. Diagnosed
-  and fixed the previously fake-green assertions B and C, which were BROKEN
-  ASSERTIONS (false negatives), not real defects: both only inspected inline
-  `<svg>` and null-failed every img-mode asset. The renderer
-  (`src/scene_runtime/renderer/scene_item.tsx:273-308`) has two valid render
-  modes -- inline dom-svg and `<img data-svg-render-mode="img">` for static
-  assets. B now passes when a placement rendered a real asset in either mode
-  (inline `<svg>` with content OR a loaded `<img>`) and has no
-  `data-svg-load-error` fallback; C now checks the real distortion switch per
-  mode (inline svg `preserveAspectRatio !== "none"`, img
-  `object-fit` contain/scale-down) instead of comparing the `<svg>` element box
-  to its viewBox, a measure that wrongly flagged plain letterboxing (e.g.
-  `electrophoresis_bench` tank: landscape 114x99 asset in a portrait placement
-  box, art preserved via default `xMidYMid meet`). After the fix, 8 of 9 base
-  scenes reach 11/11.
-- The Phase 2-3 `.spec.ts` conversion surfaced and fixed real test rot the
-  library-model scripts had been carrying: `test_protocol_host` was
-  permanently SKIP (bare `npx esbuild` cannot transform Solid JSX; the
-  converted spec builds through the esbuild JS API with
-  `esbuild-plugin-solid`, the same plugin path `pipeline/build.mjs` already
-  uses); `test_scene_degrade` fake-passed (its throwaway fake server returned
-  200 HTML for every SVG fetch, so the degrade path it claimed to exercise
-  never actually ran); `test_generalization_render` exited 0 while its own
-  assertions failed (see the honest-exit-code fix above); several specs used
-  stale `placement_name`-vs-`object_name` selectors left over from earlier
-  scene refactors; and one spec navigated to a page `build_github_pages.sh`
-  no longer emits. Each is fixed in its `.spec.ts`, not papered over with a
-  skip.
-
-### Removals and Deprecations
-
-- Retired the stale `tests/e2e/e2e_facade_smoke.py` (it smoke-loaded four
-  pre-migration facade modules that no longer exist; module loading and
-  exports are already covered by `tsc`, the node unit tests, and the build --
-  redundant). Removed the dead `normalize_svg_v2` orphans:
-  `tests/test_normalize_svg_geometry.py` (broke pytest collection),
-  `tests/data/scenes_freeze_baseline.json` (unreferenced), and
-  `tests/e2e/e2e_normalize_svg_parity.py` (dead v2 parity harness). Human ran
-  the `git rm`.
-
-### Decisions and Failures
-
-- Recorded: `xml.etree` -> lxml hardened parser chosen over `# nosec` or
-  `defusedxml` (durable fix, no new dependency; lxml is already a declared
-  requirement). A fragile-test audit found the pytest suite otherwise near
-  the PYTEST_STYLE ideal (inline inputs, no snapshot counts) -- only the
-  normalize_svg_v2 orphans needed removal.
-- Playwright runner adoption is intentional: it reverses an earlier
-  library-model resolution per owner decision, aligning this repo with sibling
-  repos under `~/nsh/TYPESCRIPT/` (concept-map-maker is the house template).
-  Phase 1 ships config + smoke spec TOGETHER to avoid a vacuous green: a config
-  with zero specs makes `npx playwright test` exit 0 on an empty run. The spec
-  was proven non-vacuous by temporarily breaking its heading assertion
-  (confirmed RED, `1 failed`, exit 1) then restoring it (`1 passed`).
-- Two deviations from the concept-map-maker template, both driven by real
-  needs: (1) the `webServer` command builds then serves (the template serves a
-  prebuilt dist only), so a bare `npx playwright test` is self-sufficient and
-  matches the PLAYWRIGHT_TEST_STYLE build-first-then-serve load model; (2)
-  `baseURL` and the server bind to `127.0.0.1` rather than `localhost` (the
-  template uses `localhost`), because on this host `localhost` resolves to IPv6
-  `::1` while python's `http.server` listens on IPv4, so chromium refused the
-  connection. The repo's own library tests already standardized on `127.0.0.1`.
-- Random-port persistence was required, not optional: the config is evaluated
-  in both the main runner process and each worker process, so a bare
-  `Math.random()` picks a different port per process and the browser targets a
-  dead port (observed as `ERR_CONNECTION_REFUSED` after the readiness probe
-  passed). Persisting the port into `process.env.PORT` on first evaluation makes
-  workers inherit the main process's port.
-- The 23 remaining library-model `.mjs` tests and the walker sweep
-  (`walk_all_protocols.mjs`, `protocol_walkthrough_yaml.mjs`) are staged for a
-  later batch phase; `test_protocol_selector.mjs` (the smoke source) stays in
-  place this phase and must not be double-converted.
-- The completed runner-sweep spec matches the library sweep verdict-for-verdict
-  against the same `dist/` build (29 pass / 2 fail of 31), so the conversion
-  changed execution model, not acceptance outcome. The remaining reds are
-  routed honestly rather than hidden by the migration: the `microscope_basic`
-  base-scene overlap (register item O6, routed to scene-manager);
-  the `tube_A` dotted-subpart click in `per_well_drug` and
-  `plate_drug_treatment_drug_addition` (register item OP1, pedagogy-held,
-  needs an architect ruling); and the `cell_culture_full` mp5 material-quadrant
-  gap (a known scene-manager item already tracked in memory). Separately,
-  `test_decoration_noninteractive.spec.ts` is marked `test.fixme` because its
-  source dev-smoke fixture content was removed elsewhere in the repo; it is a
-  retire candidate, not a migration regression.
-
-### Developer Tests and Notes
-
-- Widening the base-scene test set surfaced findings the stale hand lists hid.
-  In `test_generalization_render.mjs`, assertions B (no fallback/placeholder
-  SVG) and C (aspect ratio preserved) fail on ALL 9 base scenes, including the
-  5 originally listed; this is pre-existing and systemic (the render/assertion
-  logic was untouched, the test exits 0 regardless). The newly-covered
-  `microscope_basic` additionally fails F (no item overlap) and I (no
-  label-label overlap) at 7/11 -- a real layout coverage gap the 5-scene list
-  was hiding; left failing for the owner to route. Separately,
-  `test_viewport_sweep.mjs` errors on every scene because its
-  `rewriteMainTsForScene` mechanism reads `src/main.ts`, which no longer exists
-  (the entry point moved to `src/*_entry.tsx` and the per-scene render path
-  migrated to `scene_viewer.html?scene=`); this ENOENT is pre-existing and
-  independent of the scene list (the old 5-scene version fails identically at
-  line 32 before any scene logic). The scene-list refactor is correct
-  (9 scenes discovered, gate derived as `9 * 3 = 27`); repairing the dead
-  rewrite-rebuild mechanism is a separate owner decision, out of scope here.
-
-### Additions and New Features
-
 - Generic structured material-area verification in the general walker. The
   schema-driven walker (`tests/playwright/e2e/protocol_walkthrough_yaml.mjs`)
   now asserts subpart material writes, not just progress signals. `walker_debug.ts`
@@ -317,6 +314,25 @@
 
 ### Behavior or Interface Changes
 
+- Standardized liquid-container sizes to a discrete 6-bucket capacity+width
+  ladder in `docs/specs/SCALING_MODEL.md`; set discrete `display_width_cm` on
+  the true bottles (M=10, L=12, XL=14; the `running_buffer_1x_carboy` carboy
+  kept at 18).
+- `run_all_checks.sh` renamed to `run_fast_checks.sh` to state its fast-gate
+  scope (it does not run the browser walker sweep); repointed the
+  `package.json` `check:all` alias and updated `docs/FILE_STRUCTURE.md` and
+  `docs/CODE_ARCHITECTURE.md` references. The `git mv` completing the on-disk
+  rename is a follow-up human action.
+- `run_playwright_tests.sh` is now the single front door for every browser
+  test (`npx playwright test` against `playwright.config.ts`); `super_all_tests.sh`'s
+  browser step collapsed from a hand-maintained list of individual `.mjs`
+  invocations to one call to `run_playwright_tests.sh`.
+- Playwright runner suite: known-routed browser reds are now documented
+  expected-fails via `test.fail()` with inline routing reasons
+  (`cell_culture_full` mp5; `plate_drug_treatment_drug_addition` and
+  `per_well_drug` `tube_A` subpart OP1; `microscope_basic` overlap O6) -- a
+  green suite now means "green minus documented routed items," and an
+  unexpected pass flips the annotation so it self-clears.
 - The all-protocols walker sweep (`tests/playwright/e2e/walk_all_protocols.mjs`)
   now runs protocols through a bounded concurrent worker pool served by ONE
   shared static server, replacing the earlier rejected design that spawned N
@@ -375,262 +391,6 @@
   path; `plate_drug_treatment_media_adjustment` (`block_*` group writes) exercises
   the NEGATIVE "and nothing else" path live, verifying 6 members with 90 other
   subparts unchanged and 42 members with 54 unchanged.
-
-### Fixes and Maintenance
-
-- Corrected the `unifiedDiagnostics` field doc-comment in
-  `src/scene_runtime/layout/types.ts`, which wrongly claimed the field is "not
-  serialized into the precompute". It IS serialized
-  (`pipeline/precompute_layout.mjs:118`) and rehydrated
-  (`src/scene_runtime/layout/precomputed_result.ts:71`), just unused at
-  runtime (report tooling only). Comment-only, no behavior change;
-  `./check_codebase.sh` green (504 tests pass).
-
-- Confirmed the per-subpart material overlay (the `data-subpart-overlay` /
-  `data-subpart-name` / `data-material-name` DOM stamping) is rendered only for
-  objects declaring the material-tint contract (`subpart_geometry` + a
-  `material_tint` subpart visual_state). In the current corpus that is
-  `well_plate_96` only. `gel_cassette` declares its per-lane `material_name` as a
-  `kind: svg` subpart swap whose three cases all emit the SAME asset
-  (`mini_protean_gel`), so a lane load produces no per-lane visual change and no
-  overlay stamping; `dilution_tube_rack_8` renders per-tube `material_volume` as a
-  `kind: composite` field with no `subpart_geometry`, so tubes get no overlay
-  either. These are flagged render-coverage gaps (per-subpart material STATE with
-  no proven visible per-area rendering), surfaced by the generic verifier as a gap
-  rather than fixed here; a per-area gel/tube render is a separate renderer change.
-
-- Seeded a standalone `conical_15ml` tube placement (`rear_center_conical_tube`,
-  rear_center) in
-  `content/protocols/cell_culture/passage_pellet_reseed/scenes/hood_workspace.yaml`.
-  The entry step `transfer_to_conical` writes `ObjectStateChange`/`CursorAttach`
-  state onto the `conical_15ml` object while in this scene, but the scene
-  previously seeded only `conical_15ml_rack`, causing
-  `UnseededSceneOpTargetError: conical_15ml` at protocol load. Mirrors the
-  existing standalone tube in the sibling `centrifuge_workspace.yaml`. Fixes the
-  load failure for `passage_pellet_reseed` and the two runners that flatten it
-  (`cell_culture_full`, `routine_passage`).
-
-- Investigated the reported `passage_hood_detachment` walker regression
-  (microscope click timeout in step `inspect_confluence`): traced it to STALE
-  gitignored build artifacts (`generated/`, `test-results/layout_metrics/`)
-  predating the committed `microscope_basic.yaml` fix, not a source defect. A
-  clean rebuild of current committed source produces `main_microscope` with
-  zero overlap edges and the walker clicks the microscope successfully; no
-  source change was made. A residual non-blocking `hood_return` <->
-  hemocytometer-slide cross-zone occlusion in
-  `passage_hood_detachment_microscope_view` is routed to the architect as a
-  shared `microscope_basic` base-zone decision.
-
-- Removed test magic-counts and a duplicated color literal that could silently
-  drift from content. `tests/playwright/test_bench_basic_render.mjs` now derives
-  its `Passed: N/M assertions` denominator from the length of the assertion
-  results array instead of a hardcoded `11`. `tests/playwright/
-  test_per_well_drug_walkthrough.mjs` and `tests/playwright/
-  test_subpart_well_plate_render.mjs` both read `CARBOPLATIN_COLOR` live from
-  `generated/protocol_materials.ts` (the `plate_drug_treatment_drug_addition`
-  registry's `carboplatin.display_color`) instead of hardcoding `#a719db`.
-  `tests/test_scene_op_deps.mjs` derives its expected well count from
-  `OBJECT_LIBRARY["well_plate_96"].subpart_geometry`'s key count instead of the
-  literal `96`, so the assertion no longer just re-reads the array under test.
-
-### Decisions and Failures
-
-- Making `test_generalization_render.mjs` honest surfaced one real layout defect
-  that the fake-green exit had hidden: `microscope_basic` fails F (no item
-  overlap) and I (no label-label overlap) with genuine, substantial overlaps
-  (`left_microtube_rack` over `rear_slide_cartridge` ~171x111px, over
-  `rear_tip_box` ~53x130px; `rear_ethanol_bottle` over `right_hemocytometer_slide`
-  ~67x181px; and the "Microtube rack (24-slot)" / "Cell counter slide cartridge"
-  labels overlap ~72x23px). These are keep-red-correctly failures, routed to the
-  scene-manager for microscope_basic layout/overlap; F/I logic was left intact
-  (not weakened). The test now exits 1 on the current tree for exactly this real
-  defect. Advisory for the same owner: the `electrophoresis_bench` tank is
-  letterboxed (landscape asset in a portrait placement box); art aspect is
-  preserved (not a contract violation), but the box shape could be sized to the
-  asset to reduce whitespace.
-- Added `docs/active_plans/decisions/subpart_and_layout_design_calls.md`, packaging
-  three held architect design calls into one brief: (a) discrimination-bearing
-  subpart click Direction-B RFC (pedagogy, needs human sign-off, clears register
-  row OP1); (b) D2 unfittable-asset WARNING -> failBuild promotion (engine/layout,
-  defaulted keep-WARNING); (c) centrifuge crowd=4 per-zone density (scene-manager
-  YAML plus architect ruling, defaulted accept-as-is). `pytest
-  tests/test_markdown_links.py`: 520 passed.
-
-- The single-subpart, single-lane, and single-tube writes remain unexercised
-  end-to-end by the generic verifier: single-well writes live only in
-  `plate_drug_treatment_drug_addition`, blocked upstream by a pre-existing
-  non-material scene-target bug (`rear_center_carb_stocks.tube_A` missing in DOM,
-  outside the walker task boundary); single-lane and single-tube writes render on
-  gel/tube objects that carry no material-tint overlay (see the stamping gap
-  above). The single-subpart positive + negative comparison logic is pinned
-  deterministically by `tests/test_material_area_verify.mjs`. The bespoke
-  `test_all_wells_group_write_walkthrough.mjs` is now subsumed by the generic path
-  and flagged for human `git rm` (agents do not run git).
-
-- M19b "Commit the durable layout baseline": added `docs/SCENE_LAYOUT_BASELINE.md`, a
-  committed, hand-refreshed snapshot of the settled corpus after the M19 failBuild gate
-  went live (38 scenes, `countBuildFailures` on non-exempt scenes = 0, health scorecard
-  top-10 plus the `severityDiagnostics` Error table). The only Error-level residuals are
-  `unresolved_overlap` x2 in the exempt `adversarial_overflow_smoke` fixture and
-  `unresolved_label_overlap` x3 in the exempt `hemocytometer_view`; both scenes are named
-  in `BUILD_GATE_EXEMPT_SCENES`. Added a pointer note at
-  `docs/active_plans/reports/scene_layout_baseline_pointer.md` and a refresh-command
-  section in `docs/USAGE.md`. This file is refreshed by hand at each release, not
-  auto-regenerated.
-
-- M19 "Honor the failBuild gate + carry diagnostics through production paths":
-  the layout never-crop/never-off-canvas gate is now enforced at build time and
-  the build-time diagnostics travel into the shipped artifact. `pipeline/
-  precompute_layout.mjs` main now calls `countBuildFailures` on each scene's
-  `severityDiagnostics`, skipping `isBuildGateExemptScene` scenes, and exits
-  nonzero naming the scene, object/placement, and code for every non-exempt scene
-  with a `failBuild` diagnostic; `build_github_pages.sh` (`set -euo pipefail`,
-  which invokes precompute directly) and the `run_all_checks.sh` umbrella both
-  fail when the gate fails. Separately, the `unifiedDiagnostics` report stream is
-  serialized alongside `final` into `generated/precomputed_layout.ts` (the
-  `PrecomputedSceneLayout` interface gains a `unifiedDiagnostics:
-  UnifiedDiagnostic[]` field), and `src/scene_runtime/layout/precomputed_result.ts`
-  rehydrates that field into the resolved `PipelineResult` instead of hard-coding
-  an empty list, so report tooling reading a resolved result sees the same
-  findings the engine produced.
-
-### Decisions and Failures
-
-- M19 gate flip followed a verify-first hold. The first corpus scan found 8
-  non-exempt scenes tripping `unresolved_label_overlap` (Error, failBuild:true) on
-  the shared placements `front_right_gel_comb` and
-  `right_tool_area_p10_gel_loading_tip_box` (electrophoresis_bench,
-  extraction_workspace, and six sdspage_* workspaces), so the gate was held rather
-  than break the build on known-bad scenes; the blocker was recorded as item 5 of
-  the scene-manager handshake in
-  `docs/active_plans/audits/walker_click_bug_register.md`. After the scene-manager
-  placement edits landed, a fresh reconciliation confirmed all 8 clean and
-  `countBuildFailures` on non-exempt scenes is 0 (the only remaining
-  `unresolved_label_overlap` is on the exempt `hemocytometer_view`), so the gate
-  was flipped. The 3 historical object-overlap scenes (`seeding_workspace`,
-  `hood_workspace`, `imaging_bench`) are clean; the only remaining corpus
-  `unresolved_overlap` is the exempt `adversarial_overflow_smoke` fixture. Gate
-  proven by a scratch broken non-exempt scene (real overflowing layout under a
-  non-exempt name): `precompute_layout.mjs` exited 1 naming it, and the clean tree
-  exits 0 after the scratch was removed.
-
-- M17 "Layout diagnostics result + preventive below-viewport code": consolidated the
-  layout engine's four parallel diagnostic streams and added two closed-vocabulary
-  codes. `PipelineResult` (`layout/types.ts`) gains `unifiedDiagnostics`, one flat
-  normalized array folding the legacy `diagnostics`, per-pass `passes[].diagnostics`,
-  `severityDiagnostics`, and `offCanvasDiagnostics` streams (built by the new
-  `diagnostics/unified.ts`); it is the long-term single source of truth report tooling
-  reads instead of recomputing. Added the PREVENTIVE never-crop code `art_below_viewport`
-  (Error, `failBuild:true`) to the closed `severity_model.ts` vocabulary: the
-  report-only `fully_off_canvas` off-canvas classification is now promoted into
-  `severityDiagnostics` (`diagnostics/promote.ts` `promoteBelowViewport`). It is a
-  regression guard, not a fix -- 0 of 38 real scenes trip it today (the historical
-  below-viewport clipping was fixed by the uniform rescale); it fails loud if one ever
-  regresses. Added the D2 advisory code `unfittable_asset` (Warning, `failBuild:false`):
-  a final item shrunk below the readable floor (`READABLE_FLOOR_SCALE`, tied to
-  `MIN_SCALE`) emits a named Warning (`collectUnfittableAssets`); 40 such Warnings fire
-  across ~10 dense shrink scenes, making the degradation legible for the scene-manager
-  pass WITHOUT failing the build. Added `BUILD_GATE_EXEMPT_SCENES` /
-  `isBuildGateExemptScene` naming the intentional-void scenes plus the
-  `adversarial_overflow_smoke` dev fixture, for the M19 gate to skip. M17 does NOT wire
-  the build gate (M19 owns `countBuildFailures` in `precompute_layout.mjs`);
-  `precomputed_result.ts` gets an empty `unifiedDiagnostics: []` default to satisfy the
-  type until M19 wires the serialize/rehydrate path. Eleven new unit tests in
-  `tests/test_layout_diagnostics.mjs` cover the two codes, the promotion (synthetic
-  below-viewport item fires the code), the exempt set, and the unified builder.
-
-- M13 "Gesture load-time invariant": added
-  `src/scene_runtime/protocol/gesture_affordance_check.ts`, the PERMANENT load-time
-  gesture-affordance invariant that replaces the M2 temporary runtime guard. It exports the
-  named author-facing error `UnaffordancedGestureError` and the pass
-  `validate_gesture_affordances(config)`, following the `authored_value_check.ts` pattern
-  (named error, shared location suffix, single pass entry point). The pass reads
-  `GESTURE_REGISTRY` (the single source of registered/wired gestures) and throws at protocol
-  load, with full locating fields (protocol, step, interaction index, target, gesture), when any
-  authored interaction names a gesture whose registry row is absent or `wired: false`. It fires
-  inside `create_step_machine` beside `validate_protocol_presets` and
-  `validate_authored_validator_values`, BEFORE the emitter/handlers build and before any browser
-  session, so an unaffordanced gesture fails loud once at load instead of trapping a student
-  mid-walk. The invariant is data-driven off the registry: it hardcodes no gesture list and
-  grows automatically as the registry adds gestures or flips a `wired` flag.
-
-- M12 "Adjust/drag primitives": wired the two M11 registry seams into real visible
-  affordances. Added `src/shell/hud/set_point_editor.tsx`, the ONE shared numeric
-  set-point editor serving every `adjust` field (`set_volume`, `set_rpm`,
-  `set_temperature`, `set_voltage`, timed duration, pH): a stepper (decrement /
-  increment) plus a direct numeric input, mounted to `document.body` so it works
-  under `?shell=off`, shown only while `active_interaction_gesture === "adjust"`,
-  mirroring `type_input.tsx` slot-for-slot (`data-adjust-panel` / `-input` /
-  `-target` / `-decrement` / `-increment` / `-commit` / `-reject-message`). Added
-  `step_machine.handle_adjust_commit(target, committed_number)` and
-  `handle_drag_commit(target, destination_placement)` as the sole advance paths
-  for those gestures, each returning an accept/reject boolean like
-  `handle_type_commit`. `handle_adjust_commit` coerces the committed number to the
-  field's DECLARED type through the same authored-value-directed path
-  `handle_type_commit` uses (`build_typed_value_map`), so a float set-point
-  (voltage 3.5) compares as a float and an int (`set_volume` 1000) as an int; a
-  hard-coded numeric type would truncate a float. `handle_drag_commit` derives the
-  accepted destination from EXISTING authored slots (the `zone` of the first
-  `LayoutMove` in the interaction response) with no new YAML field. Added the
-  read-only `activeAdjustValue` and `activeDragDestination` projections to
-  `walker_debug.ts` gameState (derived the same way as `activeTypeValue`), and the
-  `adjustCommitAndWaitProgress` / `dragToAndWaitProgress` visible-UI walker drivers
-  to `walker_helpers.mjs`. Ten new step-machine unit tests cover adjust
-  accept/reject, float preservation vs truncation, and drag source/destination
-  validation (453 Node tests, 451 pass, 2 skipped).
-
-- M11 "Affordance registry": added `src/scene_runtime/protocol/gesture_registry.ts`, one
-  registry keyed by the closed `Gesture` union (`GESTURE_REGISTRY`) that co-locates the five
-  frozen affordance-contract slots per gesture (render shape, stable `data-*` selectors, value
-  extraction, single step-machine dispatch entry, walker-driver reference), transcribed from
-  `docs/active_plans/decisions/affordance_contract.md`. The module also owns
-  `scene_click_to_command` (the single home of the click-vs-select promotion that used to be an
-  inline ternary in `protocol_host.tsx`) and `dispatch_gesture`, the ONE gesture-routing point,
-  whose `switch` mirrors `scene_operations.ts`'s exhaustive `never` default so a new gesture is a
-  compile error rather than a runtime fallthrough. `click`/`select`/`type` route to live
-  step-machine methods (`handle_click`, `handle_type_commit`); `adjust`/`drag` carry the frozen
-  contract shape with `wired: false` and their `dispatch_gesture` arm is the single obvious seam
-  M12 plugs `handle_adjust_commit` / `handle_drag_commit` into. No affordance emits an
-  adjust/drag command at this milestone, so an active adjust/drag interaction reached by a bare
-  click still falls to the step machine's M2 temporary guard, unchanged. The M2 guard
-  (`step_machine.ts`) is preserved (M13 removes it).
-- M8 "Target adapter": added `src/scene_runtime/protocol/target_adapter.ts`, the single
-  protocol-target-to-DOM identity adapter, and `tests/test_target_adapter.mjs` (15 unit tests).
-  `build_target_adapter(bindings)` builds a scene-scoped adapter from a scene's
-  `{object_name, placement_name}` placements and exposes `resolve_to_placement` (semantic/object
-  target -> the unique DOM `placement_name`) and `resolve_to_object` (semantic/placement target
-  -> the `object_name` state-store key), both preserving a `.subpart` suffix. It FAILS LOUD with
-  `AmbiguousTargetError` when an authored target names a non-unique `object_name` (an object
-  placed more than once) with no disambiguating `placement_name`; a specific `placement_name` of
-  that same twice-placed object still resolves uniquely (the disambiguation path). The module
-  also owns the DOM click-key name (`TARGET_DOM_ATTR` / `TARGET_DOM_SELECTOR`), the read-back
-  helper `placement_name_from_element`, and `IDENTITY_TARGET_ADAPTER` (the adapter-less default).
-  `tests/test_target_adapter.mjs` constructs the twice-placed case in-memory (no content fixture)
-  as the disambiguation probe.
-- Added `tests/playwright/e2e/walk_all_protocols.mjs`, an all-protocols walker sweep runner
-  (also `npm run walk:all`) that enumerates every `content/protocols/**/protocol.yaml` id and
-  spawns the existing single-protocol walker per id, classifying each run PASS /
-  `unsupported_gesture` / FAIL / error and writing a worst-first summary to
-  `test-results/walker/sweep_summary.json`. First sweep against `dist/`: 6 PASS, 15
-  `unsupported_gesture` (all `adjust` gesture, expected pending affordance work), 10 FAIL
-  (mostly `page.waitForFunction` timeouts on sequence-runner protocols and missing scene item
-  ids such as `hood_surface`, `kimwipe_pad`, `waste_container`).
-- Added `tests/content/dev_smoke/decoration_noninteractive_check/`, a dev_smoke fixture that
-  places a `decoration_only` object (`micropipette_tip_box`) beside a `clickable` object
-  (`ethanol_bottle`). Added `tests/playwright/test_decoration_noninteractive.mjs`, browser
-  evidence (production `mountScene` path, no internal API calls) proving the decoration object
-  renders with no `data-item-id` and a real click on it produces no observable progress, while
-  the clickable object beside it does.
-- M16-D "Load-time target-existence invariant": added
-  `src/scene_runtime/protocol/target_existence_check.ts`, the load-time pass that verifies every
-  authored interaction target resolves to a placed scene object before any browser session, so a
-  scene-placement gap (missing `hood_surface`, `plate_reader`, `kimwipe_pad`) fails loud at
-  protocol load with a named author-facing error instead of trapping a student mid-walk.
-- Added `run_all_checks.sh`, the umbrella gate that runs the repo's check suite in one entry
-  point (alongside the existing `run_validate.sh`).
-
-### Behavior or Interface Changes
-
 - M12 "Adjust/drag primitives": `dispatch_gesture`'s single `adjust`/`drag` seam arm
   (previously a throw "declared seam not yet wired (M12)") now routes to
   `handle_adjust_commit` / `handle_drag_commit` and returns the runtime accept
@@ -747,9 +507,165 @@
   (`tests/playwright/e2e/walker_helpers.mjs`) so an uncaught page exception thrown during
   next-target resolution (for example `AmbiguousTargetError` from a twice-placed object) is
   surfaced as the real exception instead of a bare `waitForFunction` timeout.
+- `microscope_basic`, `hemocytometer_view`, and
+  `passage_hood_detachment_microscope_view` now honestly stack two rows
+  (rear shelf and bench) instead of one fused band, so the uniform object
+  rescale engages and objects render somewhat smaller than the prior,
+  buggy, fused-band render. Aspect is preserved and no artwork is cropped;
+  all render-integrity gates pass.
 
 ### Fixes and Maintenance
 
+- Converted SVG XML parsing from stdlib `xml.etree` to a hardened lxml
+  parser (`resolve_entities=False`, `no_network=True`) in
+  `pipeline/gen_object_library.py`, `pipeline/gen_svg_manifest.py`,
+  `validation/svg/asset_audit.py`, and `tools/svg_validate.py` -- byte-identical
+  output, closes the XXE/entity-expansion threat class without `# nosec`
+  (owner preference: lxml over `xml.etree`).
+- Marked md5 filename-stem hashes `usedforsecurity=False` in
+  `tests/e2e/e2e_svg_gradient_recheck.py` and
+  `tests/e2e/e2e_svg_visual_regression.py` (non-security use; digest
+  unchanged).
+- Cleared the last three bandit findings at source (non-security use, digest
+  and path unchanged): `usedforsecurity=False` on the MD5 content-identity
+  hash in `tools/svg_identity_sweep.py` and the SHA1 path-derived ID in
+  `tools/svg_picker/build_candidate_manifest.py`; replaced three hardcoded
+  `Path('/tmp')` temp targets with `Path(tempfile.gettempdir())` in
+  `validation/scene_design/suggest.py` (B108). Relocated the bandit gate from
+  the custom `tests/e2e/e2e_bandit_security.py` to the vendored
+  `tests/test_bandit_security.py`, so it now runs in the fast `pytest tests/`
+  lane (147 -> 148 files scanned, all pass).
+- `super_all_tests.sh` runs TypeScript-importing `tests/e2e/*.mjs` under
+  `node --import tsx` (per-file selection); fixed the `../src` ->
+  `../../src` import path in `tests/e2e/e2e_generalization_preflight.mjs`.
+  The three TS-importing e2e (preflight, layout_parity_16x9,
+  layout_diagnostics_baseline) now run green.
+- Fixed `tools/svg_picker/apply_decisions.py` (and its README) to call the
+  current `tools/normalize_svg_v3.py` CLI (`-i <file> --in-place`) instead
+  of the deleted `normalize_svg_v2.py`.
+- Removed dead `normalize_svg_v2` doc references in
+  `docs/CODE_ARCHITECTURE.md` and `docs/FILE_STRUCTURE.md`.
+- Inlined the SVG input in
+  `tests/test_validation_clarity.py::test_check_normalization_accepts_real_normalized_svg`
+  (was reading a real asset file; now uses an inline minimal SVG per the
+  PYTEST_STYLE inline-inputs rule).
+- `tests/e2e/e2e_svg_visual_regression.py` render loop now uses
+  `page.setContent(...)` plus an image-decode wait instead of a temp-file
+  `goto(file://...)` with `networkidle` and a fixed 80ms sleep, and the
+  prescreen pass keeps and reuses each passing file's normalized output
+  instead of normalizing it a second time; measured well under 0.15s/render
+  (was ~0.6s/render), a large speedup on the ~300-file default run.
+- Re-typed 7 sub-100 mL reagents from bottle to tube and renamed
+  `*_bottle` -> `*_tube` (`bme`, `laemmli_4x`, `trypan_blue` -> 15 mL falcon;
+  `dmso`, `carboplatin_stock`, `metformin_stock` -> 50 mL;
+  `mtt_solution_bottle` -> `mtt_stock_tube`), atomically across object, scene,
+  and protocol surfaces; protocol target names moved with authored volumes
+  preserved.
+- Normalized and declared the previously-orphaned `falcon_50ml` SVG asset
+  (added the missing `anchor_liquid_clip` clipPath, mirroring `falcon_15ml`).
+- Swept old-name references in `tests/` and `tools/`; excluded `generated/**`
+  from ESLint in `eslint.config.local.js` (machine-emitted build output,
+  mirroring the `dist/**` ignore).
+- Base-scene test sets and their counts now derive from content discovery
+  instead of stale hand-maintained lists. Added
+  `tests/playwright/_scene_discovery.mjs` (`discoverBaseSceneNames`, reads
+  `content/base_scenes/*.yaml`, the definitional base-scene directory; the
+  generated `SCENES` map mixes base + protocol + smoke scenes so it is not a
+  clean base-only authority). `tests/playwright/test_viewport_sweep.mjs` and
+  `tests/playwright/test_generalization_render.mjs` now build `SCENES_TO_TEST` /
+  `SCENES_TO_RENDER` from the helper, and their pass gates and report counts are
+  derived (`SCENES_TO_TEST.length * VIEWPORTS.length` replaces the hardcoded
+  `18`; per-scene assertion totals replace the hardcoded `11`/`6`). The prior
+  hand lists already missed 4 of the 9 real base scenes
+  (`electrophoresis_bench`, `heat_block_bench`, `imaging_bench`,
+  `microscope_basic`).
+- `test_generalization_render.mjs` now exits non-zero honestly: the process
+  exit code reflects the per-scene assertion outcomes instead of always exiting
+  0. `main()` returns 0 only when every discovered base scene reaches a full
+  assertion pass; any assertion failure, render FAIL, or ERROR returns 1, read
+  by a single top-level `process.exit`. The final summary now names each
+  scene's failing assertions and prints a `RESULT: PASS/FAIL` line. Diagnosed
+  and fixed the previously fake-green assertions B and C, which were BROKEN
+  ASSERTIONS (false negatives), not real defects: both only inspected inline
+  `<svg>` and null-failed every img-mode asset. The renderer
+  (`src/scene_runtime/renderer/scene_item.tsx:273-308`) has two valid render
+  modes -- inline dom-svg and `<img data-svg-render-mode="img">` for static
+  assets. B now passes when a placement rendered a real asset in either mode
+  (inline `<svg>` with content OR a loaded `<img>`) and has no
+  `data-svg-load-error` fallback; C now checks the real distortion switch per
+  mode (inline svg `preserveAspectRatio !== "none"`, img
+  `object-fit` contain/scale-down) instead of comparing the `<svg>` element box
+  to its viewBox, a measure that wrongly flagged plain letterboxing (e.g.
+  `electrophoresis_bench` tank: landscape 114x99 asset in a portrait placement
+  box, art preserved via default `xMidYMid meet`). After the fix, 8 of 9 base
+  scenes reach 11/11.
+- The Phase 2-3 `.spec.ts` conversion surfaced and fixed real test rot the
+  library-model scripts had been carrying: `test_protocol_host` was
+  permanently SKIP (bare `npx esbuild` cannot transform Solid JSX; the
+  converted spec builds through the esbuild JS API with
+  `esbuild-plugin-solid`, the same plugin path `pipeline/build.mjs` already
+  uses); `test_scene_degrade` fake-passed (its throwaway fake server returned
+  200 HTML for every SVG fetch, so the degrade path it claimed to exercise
+  never actually ran); `test_generalization_render` exited 0 while its own
+  assertions failed (see the honest-exit-code fix above); several specs used
+  stale `placement_name`-vs-`object_name` selectors left over from earlier
+  scene refactors; and one spec navigated to a page `build_github_pages.sh`
+  no longer emits. Each is fixed in its `.spec.ts`, not papered over with a
+  skip.
+- Corrected the `unifiedDiagnostics` field doc-comment in
+  `src/scene_runtime/layout/types.ts`, which wrongly claimed the field is "not
+  serialized into the precompute". It IS serialized
+  (`pipeline/precompute_layout.mjs:118`) and rehydrated
+  (`src/scene_runtime/layout/precomputed_result.ts:71`), just unused at
+  runtime (report tooling only). Comment-only, no behavior change;
+  `./check_codebase.sh` green (504 tests pass).
+
+- Confirmed the per-subpart material overlay (the `data-subpart-overlay` /
+  `data-subpart-name` / `data-material-name` DOM stamping) is rendered only for
+  objects declaring the material-tint contract (`subpart_geometry` + a
+  `material_tint` subpart visual_state). In the current corpus that is
+  `well_plate_96` only. `gel_cassette` declares its per-lane `material_name` as a
+  `kind: svg` subpart swap whose three cases all emit the SAME asset
+  (`mini_protean_gel`), so a lane load produces no per-lane visual change and no
+  overlay stamping; `dilution_tube_rack_8` renders per-tube `material_volume` as a
+  `kind: composite` field with no `subpart_geometry`, so tubes get no overlay
+  either. These are flagged render-coverage gaps (per-subpart material STATE with
+  no proven visible per-area rendering), surfaced by the generic verifier as a gap
+  rather than fixed here; a per-area gel/tube render is a separate renderer change.
+
+- Seeded a standalone `conical_15ml` tube placement (`rear_center_conical_tube`,
+  rear_center) in
+  `content/protocols/cell_culture/passage_pellet_reseed/scenes/hood_workspace.yaml`.
+  The entry step `transfer_to_conical` writes `ObjectStateChange`/`CursorAttach`
+  state onto the `conical_15ml` object while in this scene, but the scene
+  previously seeded only `conical_15ml_rack`, causing
+  `UnseededSceneOpTargetError: conical_15ml` at protocol load. Mirrors the
+  existing standalone tube in the sibling `centrifuge_workspace.yaml`. Fixes the
+  load failure for `passage_pellet_reseed` and the two runners that flatten it
+  (`cell_culture_full`, `routine_passage`).
+
+- Investigated the reported `passage_hood_detachment` walker regression
+  (microscope click timeout in step `inspect_confluence`): traced it to STALE
+  gitignored build artifacts (`generated/`, `test-results/layout_metrics/`)
+  predating the committed `microscope_basic.yaml` fix, not a source defect. A
+  clean rebuild of current committed source produces `main_microscope` with
+  zero overlap edges and the walker clicks the microscope successfully; no
+  source change was made. A residual non-blocking `hood_return` <->
+  hemocytometer-slide cross-zone occlusion in
+  `passage_hood_detachment_microscope_view` is routed to the architect as a
+  shared `microscope_basic` base-zone decision.
+
+- Removed test magic-counts and a duplicated color literal that could silently
+  drift from content. `tests/playwright/test_bench_basic_render.mjs` now derives
+  its `Passed: N/M assertions` denominator from the length of the assertion
+  results array instead of a hardcoded `11`. `tests/playwright/
+  test_per_well_drug_walkthrough.mjs` and `tests/playwright/
+  test_subpart_well_plate_render.mjs` both read `CARBOPLATIN_COLOR` live from
+  `generated/protocol_materials.ts` (the `plate_drug_treatment_drug_addition`
+  registry's `carboplatin.display_color`) instead of hardcoding `#a719db`.
+  `tests/test_scene_op_deps.mjs` derives its expected well count from
+  `OBJECT_LIBRARY["well_plate_96"].subpart_geometry`'s key count instead of the
+  literal `96`, so the assertion no longer just re-reads the array under test.
 - Label-overlap handshake (walker M19 failBuild gate): cleared `unresolved_label_overlap` Errors
   on the 8 SDS-PAGE/electrophoresis scenes with one base edit -- placed the `front_right_gel_comb`
   label below the comb in `content/base_scenes/electrophoresis_bench.yaml`, moving it out of the
@@ -920,9 +836,40 @@
   took 30s to surface instead of 8s. Added the missing `undefined` `arg` argument so
   `{ timeout: timeoutMs }` lands in `options`. Verified with a scratch page that never defines
   the exports: the wait now times out at 8007ms (was previously falling through to 30000ms).
+- Root-caused the `microscope_basic` / `hemocytometer_view` /
+  `passage_hood_detachment_microscope_view` 100% item-overlap fail (O6) to a
+  transitive band-merge in `groupVerticalBands`
+  (`src/scene_runtime/layout/reflow_zones.ts`): the function used
+  vertical-range overlap as the band-membership test, so the tall
+  `instrument_area` zone (authored `[18, 92]`) bridged the vertically-disjoint
+  rear-shelf row `[5, 34]` and bench row `[40, 92]`, fusing all five zones of
+  the scene into one computed band. `rear_tip_box` and `left_microtube_rack`
+  (same `depth_tier`, same x-column) then landed at an identical position --
+  a 100% coincident box -- while the engine's own `overlap_count` read 0,
+  because containment was checked per-band and no cross-zone AABB check
+  existed. Fixed with a new `crossesDisjointRowGap` predicate that classifies
+  a zone bridging two vertically-disjoint row cohorts as a spanning overlay,
+  placed at its own authored bounds outside the contiguous row stack, while
+  genuine same-horizontal-row zones (side-by-side rows and the documented
+  small partial-overlap pair) still merge unchanged. The predicate stays
+  threshold-free apart from `BAND_EPS = 1e-9`.
+- Un-blinded the engine's overlap diagnostic: new
+  `src/scene_runtime/layout/diagnostics/item_overlap.ts` compares final
+  placed object AABBs across all zones and emits an `item_overlap`
+  diagnostic (added to `DIAGNOSTIC_KINDS`); `structural_guards.ts` now
+  imports the same shared AABB predicate as its single source of truth, so a
+  real 100% render overlap can no longer read `overlap_count = 0`.
 
 ### Removals and Deprecations
 
+- Retired the stale `tests/e2e/e2e_facade_smoke.py` (it smoke-loaded four
+  pre-migration facade modules that no longer exist; module loading and
+  exports are already covered by `tsc`, the node unit tests, and the build --
+  redundant). Removed the dead `normalize_svg_v2` orphans:
+  `tests/test_normalize_svg_geometry.py` (broke pytest collection),
+  `tests/data/scenes_freeze_baseline.json` (unreferenced), and
+  `tests/e2e/e2e_normalize_svg_parity.py` (dead v2 parity harness). Human ran
+  the `git rm`.
 - M14a "Delete stale walker tree (staleness check)": confirmed `tests/playwright/walker/`
   (`audit_all.mjs`, `click_resolver.js`, `engine.mjs`, `index.js`, `run.mjs`, `screenshot.js`,
   `tsconfig.json`) is dead. The tree targets an extinct runtime contract
@@ -946,9 +893,261 @@
   unaffordanced gesture before any browser session.
 - Removed `set -u` from `source_me.sh` and `run_validate.sh`: unset-variable strictness tripped
   on optional environment fallbacks; `run_validate.sh` retains `set -e`.
+- `tests/playwright/test_viewport_sweep.mjs` was already removed from the
+  repo (confirmed absent from the working tree, from `HEAD`, and from
+  `git ls-files`; it was deleted in the same commit that landed the
+  content-derived base-scene discovery helper, see the "Base-scene test
+  sets" entry above). It was dead (`rewriteMainTsForScene` read the
+  removed `src/main.ts`, ENOENT on every scene) and redundant with
+  `tests/playwright/test_generalization_render.mjs` (covers all 9 base
+  scenes) and `tests/playwright/test_letterbox_16x9.mjs` (covers
+  viewport-aspect/letterbox behavior); the layout engine is aspect-only, so
+  a multi-viewport-size sweep tested a dimension the product already
+  collapses. No further removal action is needed; a repo-wide grep found no
+  live reference in `package.json`, `run_playwright_tests.sh`, or any
+  `.sh`/`.mjs`/`.json` file, only historical mentions in `docs/CHANGELOG.md`,
+  its dated archive, and `docs/archive/`.
+- Retired the `microscope_basic` entry from `EXPECTED_FAIL_SCENES`
+  (`tests/playwright/test_generalization_render.spec.ts`) now that the
+  underlying overlap is fixed. Added
+  `tests/playwright/test_rear_tip_box_rack_identity.spec.ts` proving
+  `rear_tip_box` and `left_microtube_rack` are independently visible and
+  clickable by their own placement identity.
 
 ### Decisions and Failures
 
+- Recorded: `xml.etree` -> lxml hardened parser chosen over `# nosec` or
+  `defusedxml` (durable fix, no new dependency; lxml is already a declared
+  requirement). A fragile-test audit found the pytest suite otherwise near
+  the PYTEST_STYLE ideal (inline inputs, no snapshot counts) -- only the
+  normalize_svg_v2 orphans needed removal.
+- Playwright runner adoption is intentional: it reverses an earlier
+  library-model resolution per owner decision, aligning this repo with sibling
+  repos under `~/nsh/TYPESCRIPT/` (concept-map-maker is the house template).
+  Phase 1 ships config + smoke spec TOGETHER to avoid a vacuous green: a config
+  with zero specs makes `npx playwright test` exit 0 on an empty run. The spec
+  was proven non-vacuous by temporarily breaking its heading assertion
+  (confirmed RED, `1 failed`, exit 1) then restoring it (`1 passed`).
+- Two deviations from the concept-map-maker template, both driven by real
+  needs: (1) the `webServer` command builds then serves (the template serves a
+  prebuilt dist only), so a bare `npx playwright test` is self-sufficient and
+  matches the PLAYWRIGHT_TEST_STYLE build-first-then-serve load model; (2)
+  `baseURL` and the server bind to `127.0.0.1` rather than `localhost` (the
+  template uses `localhost`), because on this host `localhost` resolves to IPv6
+  `::1` while python's `http.server` listens on IPv4, so chromium refused the
+  connection. The repo's own library tests already standardized on `127.0.0.1`.
+- Random-port persistence was required, not optional: the config is evaluated
+  in both the main runner process and each worker process, so a bare
+  `Math.random()` picks a different port per process and the browser targets a
+  dead port (observed as `ERR_CONNECTION_REFUSED` after the readiness probe
+  passed). Persisting the port into `process.env.PORT` on first evaluation makes
+  workers inherit the main process's port.
+- The 23 remaining library-model `.mjs` tests and the walker sweep
+  (`walk_all_protocols.mjs`, `protocol_walkthrough_yaml.mjs`) are staged for a
+  later batch phase; `test_protocol_selector.mjs` (the smoke source) stays in
+  place this phase and must not be double-converted.
+- The completed runner-sweep spec matches the library sweep verdict-for-verdict
+  against the same `dist/` build (29 pass / 2 fail of 31), so the conversion
+  changed execution model, not acceptance outcome. The remaining reds are
+  routed honestly rather than hidden by the migration: the `microscope_basic`
+  base-scene overlap (register item O6, routed to scene-manager);
+  the `tube_A` dotted-subpart click in `per_well_drug` and
+  `plate_drug_treatment_drug_addition` (register item OP1, pedagogy-held,
+  needs an architect ruling); and the `cell_culture_full` mp5 material-quadrant
+  gap (a known scene-manager item already tracked in memory). Separately,
+  `test_decoration_noninteractive.spec.ts` is marked `test.fixme` because its
+  source dev-smoke fixture content was removed elsewhere in the repo; it is a
+  retire candidate, not a migration regression.
+- Making `test_generalization_render.mjs` honest surfaced one real layout defect
+  that the fake-green exit had hidden: `microscope_basic` fails F (no item
+  overlap) and I (no label-label overlap) with genuine, substantial overlaps
+  (`left_microtube_rack` over `rear_slide_cartridge` ~171x111px, over
+  `rear_tip_box` ~53x130px; `rear_ethanol_bottle` over `right_hemocytometer_slide`
+  ~67x181px; and the "Microtube rack (24-slot)" / "Cell counter slide cartridge"
+  labels overlap ~72x23px). These are keep-red-correctly failures, routed to the
+  scene-manager for microscope_basic layout/overlap; F/I logic was left intact
+  (not weakened). The test now exits 1 on the current tree for exactly this real
+  defect. Advisory for the same owner: the `electrophoresis_bench` tank is
+  letterboxed (landscape asset in a portrait placement box); art aspect is
+  preserved (not a contract violation), but the box shape could be sized to the
+  asset to reduce whitespace.
+- Added `docs/active_plans/decisions/subpart_and_layout_design_calls.md`, packaging
+  three held architect design calls into one brief: (a) discrimination-bearing
+  subpart click Direction-B RFC (pedagogy, needs human sign-off, clears register
+  row OP1); (b) D2 unfittable-asset WARNING -> failBuild promotion (engine/layout,
+  defaulted keep-WARNING); (c) centrifuge crowd=4 per-zone density (scene-manager
+  YAML plus architect ruling, defaulted accept-as-is). `pytest
+  tests/test_markdown_links.py`: 520 passed.
+
+- The single-subpart, single-lane, and single-tube writes remain unexercised
+  end-to-end by the generic verifier: single-well writes live only in
+  `plate_drug_treatment_drug_addition`, blocked upstream by a pre-existing
+  non-material scene-target bug (`rear_center_carb_stocks.tube_A` missing in DOM,
+  outside the walker task boundary); single-lane and single-tube writes render on
+  gel/tube objects that carry no material-tint overlay (see the stamping gap
+  above). The single-subpart positive + negative comparison logic is pinned
+  deterministically by `tests/test_material_area_verify.mjs`. The bespoke
+  `test_all_wells_group_write_walkthrough.mjs` is now subsumed by the generic path
+  and flagged for human `git rm` (agents do not run git).
+
+- M19b "Commit the durable layout baseline": added `docs/SCENE_LAYOUT_BASELINE.md`, a
+  committed, hand-refreshed snapshot of the settled corpus after the M19 failBuild gate
+  went live (38 scenes, `countBuildFailures` on non-exempt scenes = 0, health scorecard
+  top-10 plus the `severityDiagnostics` Error table). The only Error-level residuals are
+  `unresolved_overlap` x2 in the exempt `adversarial_overflow_smoke` fixture and
+  `unresolved_label_overlap` x3 in the exempt `hemocytometer_view`; both scenes are named
+  in `BUILD_GATE_EXEMPT_SCENES`. Added a pointer note at
+  `docs/active_plans/reports/scene_layout_baseline_pointer.md` and a refresh-command
+  section in `docs/USAGE.md`. This file is refreshed by hand at each release, not
+  auto-regenerated.
+
+- M19 "Honor the failBuild gate + carry diagnostics through production paths":
+  the layout never-crop/never-off-canvas gate is now enforced at build time and
+  the build-time diagnostics travel into the shipped artifact. `pipeline/
+  precompute_layout.mjs` main now calls `countBuildFailures` on each scene's
+  `severityDiagnostics`, skipping `isBuildGateExemptScene` scenes, and exits
+  nonzero naming the scene, object/placement, and code for every non-exempt scene
+  with a `failBuild` diagnostic; `build_github_pages.sh` (`set -euo pipefail`,
+  which invokes precompute directly) and the `run_all_checks.sh` umbrella both
+  fail when the gate fails. Separately, the `unifiedDiagnostics` report stream is
+  serialized alongside `final` into `generated/precomputed_layout.ts` (the
+  `PrecomputedSceneLayout` interface gains a `unifiedDiagnostics:
+  UnifiedDiagnostic[]` field), and `src/scene_runtime/layout/precomputed_result.ts`
+  rehydrates that field into the resolved `PipelineResult` instead of hard-coding
+  an empty list, so report tooling reading a resolved result sees the same
+  findings the engine produced.
+- M19 gate flip followed a verify-first hold. The first corpus scan found 8
+  non-exempt scenes tripping `unresolved_label_overlap` (Error, failBuild:true) on
+  the shared placements `front_right_gel_comb` and
+  `right_tool_area_p10_gel_loading_tip_box` (electrophoresis_bench,
+  extraction_workspace, and six sdspage_* workspaces), so the gate was held rather
+  than break the build on known-bad scenes; the blocker was recorded as item 5 of
+  the scene-manager handshake in
+  `docs/active_plans/audits/walker_click_bug_register.md`. After the scene-manager
+  placement edits landed, a fresh reconciliation confirmed all 8 clean and
+  `countBuildFailures` on non-exempt scenes is 0 (the only remaining
+  `unresolved_label_overlap` is on the exempt `hemocytometer_view`), so the gate
+  was flipped. The 3 historical object-overlap scenes (`seeding_workspace`,
+  `hood_workspace`, `imaging_bench`) are clean; the only remaining corpus
+  `unresolved_overlap` is the exempt `adversarial_overflow_smoke` fixture. Gate
+  proven by a scratch broken non-exempt scene (real overflowing layout under a
+  non-exempt name): `precompute_layout.mjs` exited 1 naming it, and the clean tree
+  exits 0 after the scratch was removed.
+
+- M17 "Layout diagnostics result + preventive below-viewport code": consolidated the
+  layout engine's four parallel diagnostic streams and added two closed-vocabulary
+  codes. `PipelineResult` (`layout/types.ts`) gains `unifiedDiagnostics`, one flat
+  normalized array folding the legacy `diagnostics`, per-pass `passes[].diagnostics`,
+  `severityDiagnostics`, and `offCanvasDiagnostics` streams (built by the new
+  `diagnostics/unified.ts`); it is the long-term single source of truth report tooling
+  reads instead of recomputing. Added the PREVENTIVE never-crop code `art_below_viewport`
+  (Error, `failBuild:true`) to the closed `severity_model.ts` vocabulary: the
+  report-only `fully_off_canvas` off-canvas classification is now promoted into
+  `severityDiagnostics` (`diagnostics/promote.ts` `promoteBelowViewport`). It is a
+  regression guard, not a fix -- 0 of 38 real scenes trip it today (the historical
+  below-viewport clipping was fixed by the uniform rescale); it fails loud if one ever
+  regresses. Added the D2 advisory code `unfittable_asset` (Warning, `failBuild:false`):
+  a final item shrunk below the readable floor (`READABLE_FLOOR_SCALE`, tied to
+  `MIN_SCALE`) emits a named Warning (`collectUnfittableAssets`); 40 such Warnings fire
+  across ~10 dense shrink scenes, making the degradation legible for the scene-manager
+  pass WITHOUT failing the build. Added `BUILD_GATE_EXEMPT_SCENES` /
+  `isBuildGateExemptScene` naming the intentional-void scenes plus the
+  `adversarial_overflow_smoke` dev fixture, for the M19 gate to skip. M17 does NOT wire
+  the build gate (M19 owns `countBuildFailures` in `precompute_layout.mjs`);
+  `precomputed_result.ts` gets an empty `unifiedDiagnostics: []` default to satisfy the
+  type until M19 wires the serialize/rehydrate path. Eleven new unit tests in
+  `tests/test_layout_diagnostics.mjs` cover the two codes, the promotion (synthetic
+  below-viewport item fires the code), the exempt set, and the unified builder.
+
+- M13 "Gesture load-time invariant": added
+  `src/scene_runtime/protocol/gesture_affordance_check.ts`, the PERMANENT load-time
+  gesture-affordance invariant that replaces the M2 temporary runtime guard. It exports the
+  named author-facing error `UnaffordancedGestureError` and the pass
+  `validate_gesture_affordances(config)`, following the `authored_value_check.ts` pattern
+  (named error, shared location suffix, single pass entry point). The pass reads
+  `GESTURE_REGISTRY` (the single source of registered/wired gestures) and throws at protocol
+  load, with full locating fields (protocol, step, interaction index, target, gesture), when any
+  authored interaction names a gesture whose registry row is absent or `wired: false`. It fires
+  inside `create_step_machine` beside `validate_protocol_presets` and
+  `validate_authored_validator_values`, BEFORE the emitter/handlers build and before any browser
+  session, so an unaffordanced gesture fails loud once at load instead of trapping a student
+  mid-walk. The invariant is data-driven off the registry: it hardcodes no gesture list and
+  grows automatically as the registry adds gestures or flips a `wired` flag.
+
+- M12 "Adjust/drag primitives": wired the two M11 registry seams into real visible
+  affordances. Added `src/shell/hud/set_point_editor.tsx`, the ONE shared numeric
+  set-point editor serving every `adjust` field (`set_volume`, `set_rpm`,
+  `set_temperature`, `set_voltage`, timed duration, pH): a stepper (decrement /
+  increment) plus a direct numeric input, mounted to `document.body` so it works
+  under `?shell=off`, shown only while `active_interaction_gesture === "adjust"`,
+  mirroring `type_input.tsx` slot-for-slot (`data-adjust-panel` / `-input` /
+  `-target` / `-decrement` / `-increment` / `-commit` / `-reject-message`). Added
+  `step_machine.handle_adjust_commit(target, committed_number)` and
+  `handle_drag_commit(target, destination_placement)` as the sole advance paths
+  for those gestures, each returning an accept/reject boolean like
+  `handle_type_commit`. `handle_adjust_commit` coerces the committed number to the
+  field's DECLARED type through the same authored-value-directed path
+  `handle_type_commit` uses (`build_typed_value_map`), so a float set-point
+  (voltage 3.5) compares as a float and an int (`set_volume` 1000) as an int; a
+  hard-coded numeric type would truncate a float. `handle_drag_commit` derives the
+  accepted destination from EXISTING authored slots (the `zone` of the first
+  `LayoutMove` in the interaction response) with no new YAML field. Added the
+  read-only `activeAdjustValue` and `activeDragDestination` projections to
+  `walker_debug.ts` gameState (derived the same way as `activeTypeValue`), and the
+  `adjustCommitAndWaitProgress` / `dragToAndWaitProgress` visible-UI walker drivers
+  to `walker_helpers.mjs`. Ten new step-machine unit tests cover adjust
+  accept/reject, float preservation vs truncation, and drag source/destination
+  validation (453 Node tests, 451 pass, 2 skipped).
+
+- M11 "Affordance registry": added `src/scene_runtime/protocol/gesture_registry.ts`, one
+  registry keyed by the closed `Gesture` union (`GESTURE_REGISTRY`) that co-locates the five
+  frozen affordance-contract slots per gesture (render shape, stable `data-*` selectors, value
+  extraction, single step-machine dispatch entry, walker-driver reference), transcribed from
+  `docs/active_plans/decisions/affordance_contract.md`. The module also owns
+  `scene_click_to_command` (the single home of the click-vs-select promotion that used to be an
+  inline ternary in `protocol_host.tsx`) and `dispatch_gesture`, the ONE gesture-routing point,
+  whose `switch` mirrors `scene_operations.ts`'s exhaustive `never` default so a new gesture is a
+  compile error rather than a runtime fallthrough. `click`/`select`/`type` route to live
+  step-machine methods (`handle_click`, `handle_type_commit`); `adjust`/`drag` carry the frozen
+  contract shape with `wired: false` and their `dispatch_gesture` arm is the single obvious seam
+  M12 plugs `handle_adjust_commit` / `handle_drag_commit` into. No affordance emits an
+  adjust/drag command at this milestone, so an active adjust/drag interaction reached by a bare
+  click still falls to the step machine's M2 temporary guard, unchanged. The M2 guard
+  (`step_machine.ts`) is preserved (M13 removes it).
+- M8 "Target adapter": added `src/scene_runtime/protocol/target_adapter.ts`, the single
+  protocol-target-to-DOM identity adapter, and `tests/test_target_adapter.mjs` (15 unit tests).
+  `build_target_adapter(bindings)` builds a scene-scoped adapter from a scene's
+  `{object_name, placement_name}` placements and exposes `resolve_to_placement` (semantic/object
+  target -> the unique DOM `placement_name`) and `resolve_to_object` (semantic/placement target
+  -> the `object_name` state-store key), both preserving a `.subpart` suffix. It FAILS LOUD with
+  `AmbiguousTargetError` when an authored target names a non-unique `object_name` (an object
+  placed more than once) with no disambiguating `placement_name`; a specific `placement_name` of
+  that same twice-placed object still resolves uniquely (the disambiguation path). The module
+  also owns the DOM click-key name (`TARGET_DOM_ATTR` / `TARGET_DOM_SELECTOR`), the read-back
+  helper `placement_name_from_element`, and `IDENTITY_TARGET_ADAPTER` (the adapter-less default).
+  `tests/test_target_adapter.mjs` constructs the twice-placed case in-memory (no content fixture)
+  as the disambiguation probe.
+- Added `tests/playwright/e2e/walk_all_protocols.mjs`, an all-protocols walker sweep runner
+  (also `npm run walk:all`) that enumerates every `content/protocols/**/protocol.yaml` id and
+  spawns the existing single-protocol walker per id, classifying each run PASS /
+  `unsupported_gesture` / FAIL / error and writing a worst-first summary to
+  `test-results/walker/sweep_summary.json`. First sweep against `dist/`: 6 PASS, 15
+  `unsupported_gesture` (all `adjust` gesture, expected pending affordance work), 10 FAIL
+  (mostly `page.waitForFunction` timeouts on sequence-runner protocols and missing scene item
+  ids such as `hood_surface`, `kimwipe_pad`, `waste_container`).
+- Added `tests/content/dev_smoke/decoration_noninteractive_check/`, a dev_smoke fixture that
+  places a `decoration_only` object (`micropipette_tip_box`) beside a `clickable` object
+  (`ethanol_bottle`). Added `tests/playwright/test_decoration_noninteractive.mjs`, browser
+  evidence (production `mountScene` path, no internal API calls) proving the decoration object
+  renders with no `data-item-id` and a real click on it produces no observable progress, while
+  the clickable object beside it does.
+- M16-D "Load-time target-existence invariant": added
+  `src/scene_runtime/protocol/target_existence_check.ts`, the load-time pass that verifies every
+  authored interaction target resolves to a placed scene object before any browser session, so a
+  scene-placement gap (missing `hood_surface`, `plate_reader`, `kimwipe_pad`) fails loud at
+  protocol load with a named author-facing error instead of trapping a student mid-walk.
+- Added `run_all_checks.sh`, the umbrella gate that runs the repo's check suite in one entry
+  point (alongside the existing `run_validate.sh`).
 - Subpart-click fix pattern (architect decision): adopted direction A as the MECHANISM for the
   dominant M16 walker-FAIL cluster (5 protocols authoring `gesture: click` on a `.<subpart>`
   target). A protocol interaction always clicks the BASE placement (plate/rack/gel scene object);
@@ -966,9 +1165,103 @@
   subpart-picking is a future direction-B RFC under the PRIMARY_DESIGN new-primitive evidence
   bar. Recorded in
   [docs/active_plans/decisions/subpart_click_pattern.md](active_plans/decisions/subpart_click_pattern.md).
+- Release closeout (velvet-napping-tower plan, Release 1 + Release 2 + follow-on fixes):
+  `FinalDiffReview` found the full diff merge-ready, and the full walker corpus is
+  clean-except-owned (`FullSweep` 26/31 PASS, the 5 remaining reds all triaged and
+  owned). This closes the release. Release 1 landed the trustworthy-walker chain end
+  to end: `target_with_value` and `final_state_matches` now read the real scene store
+  instead of trusting authored intent, the M2 temporary adjust/drag-collapse runtime
+  guard was replaced by the permanent `validate_gesture_affordances` load-time
+  invariant, actionability is capability-gated, target resolution is unified on one
+  adapter keyed by placement-name identity, gesture and validator dispatch moved to
+  discriminated unions, the affordance contract and `GESTURE_REGISTRY` are frozen
+  and intentionally never-exhaustive, `adjust`/`drag` are wired runtime primitives,
+  four load-time invariants now fail loud at protocol load
+  (`UnknownAuthoredTargetError`, `AmbiguousAuthoredTargetError`,
+  `UnseededSceneOpTargetError`, `UnknownAuthoredSubpartTargetError` in
+  `target_existence_check.ts`, plus `pedagogy_consistency_check.ts`), codegen closure
+  delegates to the one canonical validator, `run_all_checks.sh` plus a rewired
+  `run_playwright_tests.sh` and a root `ci.yml` seed give the repo one check entry
+  point, the extinct `tests/playwright/walker/` tree was confirmed dead and removed
+  from the doc set, and the certified walker sweep fixed the click-bug cluster it
+  found. Release 2 landed the layout side: `PipelineResult` gained the unified
+  `unifiedDiagnostics` stream plus the preventive `art_below_viewport` /
+  `unfittable_asset` codes, the `failBuild` gate now runs live in
+  `precompute_layout.mjs` (`countBuildFailures` / `isBuildGateExemptScene`, nonzero
+  exit on a real non-exempt failure), `tools/layout_metrics.mjs` (D6) gives the
+  scorecard a durable CLI, and `docs/SCENE_LAYOUT_BASELINE.md` commits the settled
+  corpus snapshot. Release 2 also landed the pedagogy side: `pipeline/gen_flow_view.py`
+  gives authors a flow-view audit as the first authoring-guide step, the gesture
+  rubric closes the `adjust` vs `click` ambiguity, `drug_dilution_setup` was
+  right-sized to Direction-A base-retarget, and a pedagogy-drift check plus prose and
+  prompt fixes tightened step wording. Follow-on fixes closed the remaining gaps:
+  `trypan_blue_counting`'s viability gate moved from an exact-match 90 to 92.5 to match
+  the authored data, `mtt_solubilization_readout` fixed same-step `SceneChange`
+  active-target re-resolution (the scene-change-completion family), the orphan
+  `validate.py` bugs in `validation/yaml_schema/` converged on one resolver of record
+  for placement-name targets and `add_placements` (3 errors -> 0), and the `all_wells`
+  material cascade fan-out was wired end to end with a generated
+  `subpart_groups`/`subparts` vocabulary, moving it from ratified-but-unimplemented to
+  live. Two decisions carry forward as owned, not release-blocking: subpart-click
+  discrimination stays held at Direction-A base-retarget, with genuine subpart-picking
+  parked as a Direction-B RFC owned by the architect (`all_wells` is explicitly
+  excluded from that RFC as a bulk write/group fan-out, not a subpart pick); and the
+  M16-D load-time subpart-suffix guard landed at 0/30 blast radius against the current
+  corpus. The 5 known owned reds: O1 (`conical_15ml` seeding) and O4 (hood
+  pointer-overlap) route to the scene-manager plan; OP1 (subpart-click) routes to the
+  architect's Direction-B RFC.
+- `microscope_basic` base scene fails generalization assertions F (item overlap) and
+  I (label-label overlap), 7/11, surfaced by the content-derived base-scene discovery
+  widening (see the "Base-scene test sets" entry above). Routed to the scene-manager
+  plan as a new owned row (O6 in
+  [docs/active_plans/audits/walker_click_bug_register.md](active_plans/audits/walker_click_bug_register.md)),
+  tagged as possibly the same shared-base-zone / instrument-band overlap family as O4
+  (hood pointer-overlap: `right_hemocytometer_slide_clear` over
+  `rear_right_hood_return`), pending scene-manager confirmation before opening a
+  separate investigation.
+
+- SCENE-LINT non-determinism (the reported 0/7/9 error-count flip between
+  identical runs) root-caused as a cross-process render-evidence race, not a
+  scene-lint rule bug: `pipeline/build_generated.sh` unconditionally
+  `rm -rf generated`s the whole `generated/` tree (including
+  `generated/scene_render_stats/`) early in `build_github_pages.sh`, while
+  `tools/scene_to_png.mjs` is the only writer of that evidence and runs near
+  the end of the same build, one scene at a time. A `validate.py` run
+  concurrent with a build observes anywhere from 0 to 9 spurious
+  `missing_render_evidence` findings purely from timing. Reproduced
+  (5x direct scene_lint runs at 0 errors, 5x aggregate validate runs at 9
+  errors, confirmed a live disappearance of `generated/scene_render_stats/`
+  mid-run) and documented with pinned file:line evidence and three candidate
+  durable fixes in `docs/active_plans/audits/scene_lint_nondeterminism.md`
+  (new, not yet git-tracked; link added once committed).
+  Routed jointly to the validation owner (`validation/scene_calc/dump.py`,
+  `validation/scene_lint/cli.py`) and the pipeline owner
+  (`pipeline/build_generated.sh`, `build_github_pages.sh`,
+  `tools/scene_to_png.mjs`); no fix applied by this audit.
+- Fixed the band-membership predicate rather than adding a vertical gap
+  constant or removing an object: a gap constant would have patched a scene
+  the engine already believed fit, and object removal was rejected as
+  whack-a-mole that deletes pedagogy and only moves which pair collides
+  (the same class of fix that previously targeted `rear_tip_box` itself).
 
 ### Developer Tests and Notes
 
+- Widening the base-scene test set surfaced findings the stale hand lists hid.
+  In `test_generalization_render.mjs`, assertions B (no fallback/placeholder
+  SVG) and C (aspect ratio preserved) fail on ALL 9 base scenes, including the
+  5 originally listed; this is pre-existing and systemic (the render/assertion
+  logic was untouched, the test exits 0 regardless). The newly-covered
+  `microscope_basic` additionally fails F (no item overlap) and I (no
+  label-label overlap) at 7/11 -- a real layout coverage gap the 5-scene list
+  was hiding; left failing for the owner to route. Separately,
+  `test_viewport_sweep.mjs` errors on every scene because its
+  `rewriteMainTsForScene` mechanism reads `src/main.ts`, which no longer exists
+  (the entry point moved to `src/*_entry.tsx` and the per-scene render path
+  migrated to `scene_viewer.html?scene=`); this ENOENT is pre-existing and
+  independent of the scene list (the old 5-scene version fails identically at
+  line 32 before any scene logic). The scene-list refactor is correct
+  (9 scenes discovered, gate derived as `9 * 3 = 27`); repairing the dead
+  rewrite-rebuild mechanism is a separate owner decision, out of scope here.
 - Verified the parallel sweep against a serial baseline. `./check_codebase.sh`
   green (`PASS: 5 checks passed`). Single-walker back-compat: `node
   tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol
@@ -1025,57 +1318,6 @@
   threshold gap (`trypan_blue_counting`, 92.5 vs an exact-match `contains: 90`). No
   `AmbiguousTargetError` (the pre-M12 dominant class) appears in the current 19; that class is
   confirmed retired.
-
-### Decisions and Failures
-
-- Release closeout (velvet-napping-tower plan, Release 1 + Release 2 + follow-on fixes):
-  `FinalDiffReview` found the full diff merge-ready, and the full walker corpus is
-  clean-except-owned (`FullSweep` 26/31 PASS, the 5 remaining reds all triaged and
-  owned). This closes the release. Release 1 landed the trustworthy-walker chain end
-  to end: `target_with_value` and `final_state_matches` now read the real scene store
-  instead of trusting authored intent, the M2 temporary adjust/drag-collapse runtime
-  guard was replaced by the permanent `validate_gesture_affordances` load-time
-  invariant, actionability is capability-gated, target resolution is unified on one
-  adapter keyed by placement-name identity, gesture and validator dispatch moved to
-  discriminated unions, the affordance contract and `GESTURE_REGISTRY` are frozen
-  and intentionally never-exhaustive, `adjust`/`drag` are wired runtime primitives,
-  four load-time invariants now fail loud at protocol load
-  (`UnknownAuthoredTargetError`, `AmbiguousAuthoredTargetError`,
-  `UnseededSceneOpTargetError`, `UnknownAuthoredSubpartTargetError` in
-  `target_existence_check.ts`, plus `pedagogy_consistency_check.ts`), codegen closure
-  delegates to the one canonical validator, `run_all_checks.sh` plus a rewired
-  `run_playwright_tests.sh` and a root `ci.yml` seed give the repo one check entry
-  point, the extinct `tests/playwright/walker/` tree was confirmed dead and removed
-  from the doc set, and the certified walker sweep fixed the click-bug cluster it
-  found. Release 2 landed the layout side: `PipelineResult` gained the unified
-  `unifiedDiagnostics` stream plus the preventive `art_below_viewport` /
-  `unfittable_asset` codes, the `failBuild` gate now runs live in
-  `precompute_layout.mjs` (`countBuildFailures` / `isBuildGateExemptScene`, nonzero
-  exit on a real non-exempt failure), `tools/layout_metrics.mjs` (D6) gives the
-  scorecard a durable CLI, and `docs/SCENE_LAYOUT_BASELINE.md` commits the settled
-  corpus snapshot. Release 2 also landed the pedagogy side: `pipeline/gen_flow_view.py`
-  gives authors a flow-view audit as the first authoring-guide step, the gesture
-  rubric closes the `adjust` vs `click` ambiguity, `drug_dilution_setup` was
-  right-sized to Direction-A base-retarget, and a pedagogy-drift check plus prose and
-  prompt fixes tightened step wording. Follow-on fixes closed the remaining gaps:
-  `trypan_blue_counting`'s viability gate moved from an exact-match 90 to 92.5 to match
-  the authored data, `mtt_solubilization_readout` fixed same-step `SceneChange`
-  active-target re-resolution (the scene-change-completion family), the orphan
-  `validate.py` bugs in `validation/yaml_schema/` converged on one resolver of record
-  for placement-name targets and `add_placements` (3 errors -> 0), and the `all_wells`
-  material cascade fan-out was wired end to end with a generated
-  `subpart_groups`/`subparts` vocabulary, moving it from ratified-but-unimplemented to
-  live. Two decisions carry forward as owned, not release-blocking: subpart-click
-  discrimination stays held at Direction-A base-retarget, with genuine subpart-picking
-  parked as a Direction-B RFC owned by the architect (`all_wells` is explicitly
-  excluded from that RFC as a bulk write/group fan-out, not a subpart pick); and the
-  M16-D load-time subpart-suffix guard landed at 0/30 blast radius against the current
-  corpus. The 5 known owned reds: O1 (`conical_15ml` seeding) and O4 (hood
-  pointer-overlap) route to the scene-manager plan; OP1 (subpart-click) routes to the
-  architect's Direction-B RFC.
-
-### Developer Tests and Notes
-
 - Release closeout verification snapshot (velvet-napping-tower plan): Node test suite
   501 pass / 2 skip, `check_codebase.sh` 5/5 green, `run_validate.sh` YAML validation 0
   errors, pytest 4794 pass, and the full walker sweep 26/31 PASS with the 5 remaining
@@ -1083,109 +1325,6 @@
   This is the last entry for the trustworthy-walker/layout-gate release; the
   in-progress material-oracle general-walker verification work (WP2-4) is a separate,
   later milestone and gets its own changelog entry when it lands.
-
-### Decisions and Failures
-
-- `microscope_basic` base scene fails generalization assertions F (item overlap) and
-  I (label-label overlap), 7/11, surfaced by the content-derived base-scene discovery
-  widening (see the "Base-scene test sets" entry above). Routed to the scene-manager
-  plan as a new owned row (O6 in
-  [docs/active_plans/audits/walker_click_bug_register.md](active_plans/audits/walker_click_bug_register.md)),
-  tagged as possibly the same shared-base-zone / instrument-band overlap family as O4
-  (hood pointer-overlap: `right_hemocytometer_slide_clear` over
-  `rear_right_hood_return`), pending scene-manager confirmation before opening a
-  separate investigation.
-
-- SCENE-LINT non-determinism (the reported 0/7/9 error-count flip between
-  identical runs) root-caused as a cross-process render-evidence race, not a
-  scene-lint rule bug: `pipeline/build_generated.sh` unconditionally
-  `rm -rf generated`s the whole `generated/` tree (including
-  `generated/scene_render_stats/`) early in `build_github_pages.sh`, while
-  `tools/scene_to_png.mjs` is the only writer of that evidence and runs near
-  the end of the same build, one scene at a time. A `validate.py` run
-  concurrent with a build observes anywhere from 0 to 9 spurious
-  `missing_render_evidence` findings purely from timing. Reproduced
-  (5x direct scene_lint runs at 0 errors, 5x aggregate validate runs at 9
-  errors, confirmed a live disappearance of `generated/scene_render_stats/`
-  mid-run) and documented with pinned file:line evidence and three candidate
-  durable fixes in `docs/active_plans/audits/scene_lint_nondeterminism.md`
-  (new, not yet git-tracked; link added once committed).
-  Routed jointly to the validation owner (`validation/scene_calc/dump.py`,
-  `validation/scene_lint/cli.py`) and the pipeline owner
-  (`pipeline/build_generated.sh`, `build_github_pages.sh`,
-  `tools/scene_to_png.mjs`); no fix applied by this audit.
-
-### Removals and Deprecations
-
-- `tests/playwright/test_viewport_sweep.mjs` was already removed from the
-  repo (confirmed absent from the working tree, from `HEAD`, and from
-  `git ls-files`; it was deleted in the same commit that landed the
-  content-derived base-scene discovery helper, see the "Base-scene test
-  sets" entry above). It was dead (`rewriteMainTsForScene` read the
-  removed `src/main.ts`, ENOENT on every scene) and redundant with
-  `tests/playwright/test_generalization_render.mjs` (covers all 9 base
-  scenes) and `tests/playwright/test_letterbox_16x9.mjs` (covers
-  viewport-aspect/letterbox behavior); the layout engine is aspect-only, so
-  a multi-viewport-size sweep tested a dimension the product already
-  collapses. No further removal action is needed; a repo-wide grep found no
-  live reference in `package.json`, `run_playwright_tests.sh`, or any
-  `.sh`/`.mjs`/`.json` file, only historical mentions in `docs/CHANGELOG.md`,
-  its dated archive, and `docs/archive/`.
-
-### Behavior or Interface Changes
-
-- `microscope_basic`, `hemocytometer_view`, and
-  `passage_hood_detachment_microscope_view` now honestly stack two rows
-  (rear shelf and bench) instead of one fused band, so the uniform object
-  rescale engages and objects render somewhat smaller than the prior,
-  buggy, fused-band render. Aspect is preserved and no artwork is cropped;
-  all render-integrity gates pass.
-
-### Fixes and Maintenance
-
-- Root-caused the `microscope_basic` / `hemocytometer_view` /
-  `passage_hood_detachment_microscope_view` 100% item-overlap fail (O6) to a
-  transitive band-merge in `groupVerticalBands`
-  (`src/scene_runtime/layout/reflow_zones.ts`): the function used
-  vertical-range overlap as the band-membership test, so the tall
-  `instrument_area` zone (authored `[18, 92]`) bridged the vertically-disjoint
-  rear-shelf row `[5, 34]` and bench row `[40, 92]`, fusing all five zones of
-  the scene into one computed band. `rear_tip_box` and `left_microtube_rack`
-  (same `depth_tier`, same x-column) then landed at an identical position --
-  a 100% coincident box -- while the engine's own `overlap_count` read 0,
-  because containment was checked per-band and no cross-zone AABB check
-  existed. Fixed with a new `crossesDisjointRowGap` predicate that classifies
-  a zone bridging two vertically-disjoint row cohorts as a spanning overlay,
-  placed at its own authored bounds outside the contiguous row stack, while
-  genuine same-horizontal-row zones (side-by-side rows and the documented
-  small partial-overlap pair) still merge unchanged. The predicate stays
-  threshold-free apart from `BAND_EPS = 1e-9`.
-- Un-blinded the engine's overlap diagnostic: new
-  `src/scene_runtime/layout/diagnostics/item_overlap.ts` compares final
-  placed object AABBs across all zones and emits an `item_overlap`
-  diagnostic (added to `DIAGNOSTIC_KINDS`); `structural_guards.ts` now
-  imports the same shared AABB predicate as its single source of truth, so a
-  real 100% render overlap can no longer read `overlap_count = 0`.
-
-### Removals and Deprecations
-
-- Retired the `microscope_basic` entry from `EXPECTED_FAIL_SCENES`
-  (`tests/playwright/test_generalization_render.spec.ts`) now that the
-  underlying overlap is fixed. Added
-  `tests/playwright/test_rear_tip_box_rack_identity.spec.ts` proving
-  `rear_tip_box` and `left_microtube_rack` are independently visible and
-  clickable by their own placement identity.
-
-### Decisions and Failures
-
-- Fixed the band-membership predicate rather than adding a vertical gap
-  constant or removing an object: a gap constant would have patched a scene
-  the engine already believed fit, and object removal was rejected as
-  whack-a-mole that deletes pedagogy and only moves which pair collides
-  (the same class of fix that previously targeted `rear_tip_box` itself).
-
-### Developer Tests and Notes
-
 - Added the "Band-owned AABB containment invariant" section to
   `docs/specs/LAYOUT_ENGINE.md`: the coordinate frame (scene-percent), the
   containment invariant (final placed object box inside its band; bands
@@ -1202,44 +1341,3 @@
 - Verified: `npx tsc --noEmit` clean; `node --import tsx --test` reflow_zones
   9/9, placement_containment 4/4, item_overlap 7/7; `./run_playwright_tests.sh`
   -> 91 passed / 1 skipped / PASS, no unexpected-pass.
-
-## 2026-07-03
-
-### Additions and New Features
-
-- Scene-layout tier-collapse pass: added `tools/rank_scene_layout.py`, a read-only developer
-  inspection helper that ranks every scene by layout-quality metrics from
-  `test-results/layout_metrics` plus content protocol data. It computes six
-  geometric/pedagogy rankers (`collapsibility`, `coupling_loss`, `victim_fraction`,
-  `crowd_bound_count`, `zone_spread`, `mean_scale`), plus a pedagogy axis
-  `target_prominence` (lowest clicked-target `final_scale` divided by non-target median),
-  flagging scenes where a clicked target renders smaller than a typical non-target. It
-  produces a combined per-scene table and a priority roll-up, and also reports
-  `label_dominant` and a derived `tier_collapsible` routing flag so label-dominant
-  false-positives are visibly marked. `crowd_bound_count == 0` predicts a clean
-  full-decouple; `crowd_bound_count > 0` or `label_dominant` predicts engine-only work.
-
-### Fixes and Maintenance
-
-- Tier-collapse wins: three sparse scenes collapsed from 2 tier-rows to 1, lifting the
-  scene-wide uniform rescale factor to 1.000 (full-size art) with no object shrunk and no
-  overlap/overflow regression:
-  `content/protocols/cell_culture/drug_dilution_setup/scenes/bench_setup.yaml`
-  (0.604 -> 1.000);
-  `content/protocols/cell_culture/mtt_solubilization_readout/scenes/bench_workspace.yaml`
-  (0.653 -> 1.000; also removed the non-target inherited `center_water_bath`, mirroring the
-  `bench_setup` precedent, to clear a same-tier collision);
-  `content/protocols/cell_culture/mtt_plate_reaction/scenes/incubator_workspace.yaml`
-  (0.667 -> 1.000; incubator kept at full authored size). All clicked targets stayed placed
-  and clickable.
-
-### Decisions and Failures
-
-- Engine-only finding: a measured base-scene tier-collapse of
-  `content/base_scenes/electrophoresis_bench.yaml` (7 SDS-PAGE children plus extraction) was
-  rejected and reverted net-zero. The base is label-dominant (its uniform factor 0.584 is set
-  by label vertical overflow, not tier-row overhead), so a tier collapse yields zero factor
-  gain and a full collapse even reopened unresolved `unresolved_label_overlap` errors. Routed
-  to the architect as label-space / engine work. The rank tool's `collapsibility` metric
-  flagged it as a false positive, which motivated the new `label_dominant` /
-  `tier_collapsible` flags.

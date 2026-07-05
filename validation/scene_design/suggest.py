@@ -44,7 +44,6 @@ from validation.scene_design.metrics.labels import (
 )
 from validation.scene_design.metrics.density import (
 	scene_density,
-	row_overcrowding,
 )
 from validation.scene_design.metrics.composition import (
 	tab_stops_symmetry,
@@ -57,7 +56,6 @@ from validation.scene_design.metrics.hierarchy import (
 	primary_detection_confidence,
 )
 from validation.scene_design.metrics.balance import (
-	zone_footprint_balance,
 	largest_empty_band,
 	scene_occupied,
 )
@@ -389,14 +387,12 @@ def compute_metrics_from_dict(scene: dict, dump_data: dict) -> dict[str, float |
 	metrics['label_to_object_distance'] = label_to_object_distance(scene, dump_data)
 	metrics['label_wrap_rate'] = label_wrap_rate(scene, dump_data)
 	metrics['scene_density'] = scene_density(scene, dump_data)
-	metrics['row_overcrowding'] = row_overcrowding(scene, dump_data)
 	metrics['tab_stops_symmetry'] = tab_stops_symmetry(scene, dump_data)
 	metrics['depth_tier_usage'] = depth_tier_usage(scene, dump_data)
 	metrics['aspect_fidelity'] = aspect_fidelity(scene, dump_data)
 	metrics['primary_area_ratio'] = primary_area_ratio(scene, dump_data)
 	metrics['primary_prominence'] = primary_prominence(scene, dump_data)
 	metrics['primary_detection_confidence'] = primary_detection_confidence(scene)
-	metrics['zone_footprint_balance'] = zone_footprint_balance(scene, dump_data)
 	metrics['largest_empty_band'] = largest_empty_band(scene, dump_data)
 	metrics['scene_occupied'] = scene_occupied(scene, dump_data)
 	metrics['support_distance'] = support_distance(scene, dump_data)

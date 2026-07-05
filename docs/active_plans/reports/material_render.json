@@ -1,0 +1,2091 @@
+{
+  "baseline_status": "known-bad-current-state",
+  "baseline_status_note": "Every fill_height overlay in this baseline currently paints the full object item bbox rather than being constrained to the SVG liquid interior (docs/ROADMAP.md:183, deferred fix, out of scope for this guard). All measured percentages below are CURRENT-STATE geometry, not a target to imitate; the guard only blocks this state from getting worse. The per-entry \"tag\" field stays empty and reserved for future targeted annotation once the render fix lands.",
+  "entries": {
+    "bench_basic::base_right_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "base_right_micropipette",
+      "scene": "bench_basic",
+      "tag": ""
+    },
+    "bench_basic::rear_center_ethanol::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.26,
+      "object_name": "ethanol_bottle",
+      "placement_name": "rear_center_ethanol",
+      "scene": "bench_basic",
+      "tag": ""
+    },
+    "bench_basic::rear_center_pbs::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.49,
+      "object_name": "pbs_bottle",
+      "placement_name": "rear_center_pbs",
+      "scene": "bench_basic",
+      "tag": ""
+    },
+    "bench_basic::rear_left_media_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 97.36,
+      "object_name": "media_bottle",
+      "placement_name": "rear_left_media_bottle",
+      "scene": "bench_basic",
+      "tag": ""
+    },
+    "bench_basic::rear_left_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_left_waste",
+      "scene": "bench_basic",
+      "tag": ""
+    },
+    "cell_counter_basic::rear_cell_suspension_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 73.9,
+      "object_name": "cell_suspension_tube",
+      "placement_name": "rear_cell_suspension_tube",
+      "scene": "cell_counter_basic",
+      "tag": ""
+    },
+    "cell_counter_basic::rear_trypan_blue_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 63.22,
+      "object_name": "trypan_blue_tube",
+      "placement_name": "rear_trypan_blue_tube",
+      "scene": "cell_counter_basic",
+      "tag": ""
+    },
+    "cell_counter_workspace::rear_cell_suspension_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 74.29,
+      "object_name": "cell_suspension_tube",
+      "placement_name": "rear_cell_suspension_tube",
+      "scene": "cell_counter_workspace",
+      "tag": ""
+    },
+    "cell_counter_workspace::rear_trypan_blue_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 61.52,
+      "object_name": "trypan_blue_tube",
+      "placement_name": "rear_trypan_blue_tube",
+      "scene": "cell_counter_workspace",
+      "tag": ""
+    },
+    "cell_counter_workspace::right_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "right_micropipette",
+      "scene": "cell_counter_workspace",
+      "tag": ""
+    },
+    "centrifuge_workspace::base_right_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "base_right_micropipette",
+      "scene": "centrifuge_workspace",
+      "tag": ""
+    },
+    "centrifuge_workspace::rear_left_conical_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "conical_15ml",
+      "placement_name": "rear_left_conical_tube",
+      "scene": "centrifuge_workspace",
+      "tag": ""
+    },
+    "centrifuge_workspace::rear_left_media_bottle_reseed::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.13,
+      "object_name": "media_bottle",
+      "placement_name": "rear_left_media_bottle_reseed",
+      "scene": "centrifuge_workspace",
+      "tag": ""
+    },
+    "centrifuge_workspace::rear_left_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_left_waste",
+      "scene": "centrifuge_workspace",
+      "tag": ""
+    },
+    "centrifuge_workspace::rear_right_biohazard_decant::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "biohazard_decant",
+      "placement_name": "rear_right_biohazard_decant",
+      "scene": "centrifuge_workspace",
+      "tag": ""
+    },
+    "centrifuge_workspace::rear_right_pbs::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.03,
+      "object_name": "pbs_bottle",
+      "placement_name": "rear_right_pbs",
+      "scene": "centrifuge_workspace",
+      "tag": ""
+    },
+    "centrifuge_workspace::right_aspirating_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "aspirating_pipette",
+      "placement_name": "right_aspirating_pipette",
+      "scene": "centrifuge_workspace",
+      "tag": ""
+    },
+    "dilution_workspace::base_right_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "base_right_micropipette",
+      "scene": "dilution_workspace",
+      "tag": ""
+    },
+    "dilution_workspace::carb_intermediate::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "microtube_15ml_intermediate",
+      "placement_name": "carb_intermediate",
+      "scene": "dilution_workspace",
+      "tag": ""
+    },
+    "dilution_workspace::carb_stock::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 93.99,
+      "object_name": "carboplatin_stock_tube",
+      "placement_name": "carb_stock",
+      "scene": "dilution_workspace",
+      "tag": ""
+    },
+    "dilution_workspace::met_stock::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 91.19,
+      "object_name": "metformin_stock_tube",
+      "placement_name": "met_stock",
+      "scene": "dilution_workspace",
+      "tag": ""
+    },
+    "dilution_workspace::met_working_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "metformin_working_tube",
+      "placement_name": "met_working_tube",
+      "scene": "dilution_workspace",
+      "tag": ""
+    },
+    "dilution_workspace::rear_left_media_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.72,
+      "object_name": "media_bottle",
+      "placement_name": "rear_left_media_bottle",
+      "scene": "dilution_workspace",
+      "tag": ""
+    },
+    "dilution_workspace::rear_left_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_left_waste",
+      "scene": "dilution_workspace",
+      "tag": ""
+    },
+    "drug_dilution_setup_bench_setup::base_right_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "base_right_micropipette",
+      "scene": "drug_dilution_setup_bench_setup",
+      "tag": ""
+    },
+    "drug_dilution_setup_bench_setup::center_metformin_working_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "metformin_working_tube",
+      "placement_name": "center_metformin_working_tube",
+      "scene": "drug_dilution_setup_bench_setup",
+      "tag": ""
+    },
+    "drug_dilution_setup_bench_setup::center_microtube_intermediate::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "microtube_15ml_intermediate",
+      "placement_name": "center_microtube_intermediate",
+      "scene": "drug_dilution_setup_bench_setup",
+      "tag": ""
+    },
+    "drug_dilution_setup_bench_setup::rear_center_metformin_stock::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 93.9,
+      "object_name": "metformin_stock_tube",
+      "placement_name": "rear_center_metformin_stock",
+      "scene": "drug_dilution_setup_bench_setup",
+      "tag": ""
+    },
+    "drug_dilution_setup_bench_setup::rear_left_carboplatin_stock::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 93.88,
+      "object_name": "carboplatin_stock_tube",
+      "placement_name": "rear_left_carboplatin_stock",
+      "scene": "drug_dilution_setup_bench_setup",
+      "tag": ""
+    },
+    "drug_dilution_setup_bench_setup::rear_left_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_left_waste",
+      "scene": "drug_dilution_setup_bench_setup",
+      "tag": ""
+    },
+    "electrophoresis_bench::center_ddh2o_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.25,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "center_ddh2o_bottle",
+      "scene": "electrophoresis_bench",
+      "tag": ""
+    },
+    "electrophoresis_bench::center_p200_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "p200_micropipette",
+      "placement_name": "center_p200_micropipette",
+      "scene": "electrophoresis_bench",
+      "tag": ""
+    },
+    "electrophoresis_bench::center_running_buffer_1x_carboy::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.55,
+      "object_name": "running_buffer_1x_carboy",
+      "placement_name": "center_running_buffer_1x_carboy",
+      "scene": "electrophoresis_bench",
+      "tag": ""
+    },
+    "electrophoresis_bench::center_serological_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "serological_pipette",
+      "placement_name": "center_serological_pipette",
+      "scene": "electrophoresis_bench",
+      "tag": ""
+    },
+    "electrophoresis_bench::front_center_waste_container::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "front_center_waste_container",
+      "scene": "electrophoresis_bench",
+      "tag": ""
+    },
+    "electrophoresis_bench::rear_center_electrophoresis_tank::inner_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "inner_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "electrophoresis_bench",
+      "tag": ""
+    },
+    "electrophoresis_bench::rear_center_electrophoresis_tank::outer_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "outer_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "electrophoresis_bench",
+      "tag": ""
+    },
+    "electrophoresis_bench::rear_left_protein_ladder_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.1,
+      "object_name": "protein_ladder_tube",
+      "placement_name": "rear_left_protein_ladder_tube",
+      "scene": "electrophoresis_bench",
+      "tag": ""
+    },
+    "electrophoresis_bench::rear_left_recycle_buffer_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "recycle_buffer_bottle",
+      "placement_name": "rear_left_recycle_buffer_bottle",
+      "scene": "electrophoresis_bench",
+      "tag": ""
+    },
+    "electrophoresis_bench::rear_left_running_buffer_10x::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.77,
+      "object_name": "running_buffer_10x_bottle",
+      "placement_name": "rear_left_running_buffer_10x",
+      "scene": "electrophoresis_bench",
+      "tag": ""
+    },
+    "extraction_workspace::center_ddh2o_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.25,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "center_ddh2o_bottle",
+      "scene": "extraction_workspace",
+      "tag": ""
+    },
+    "extraction_workspace::center_p200_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "p200_micropipette",
+      "placement_name": "center_p200_micropipette",
+      "scene": "extraction_workspace",
+      "tag": ""
+    },
+    "extraction_workspace::center_running_buffer_1x_carboy::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.55,
+      "object_name": "running_buffer_1x_carboy",
+      "placement_name": "center_running_buffer_1x_carboy",
+      "scene": "extraction_workspace",
+      "tag": ""
+    },
+    "extraction_workspace::center_serological_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "serological_pipette",
+      "placement_name": "center_serological_pipette",
+      "scene": "extraction_workspace",
+      "tag": ""
+    },
+    "extraction_workspace::front_center_staining_tray::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "staining_tray",
+      "placement_name": "front_center_staining_tray",
+      "scene": "extraction_workspace",
+      "tag": ""
+    },
+    "extraction_workspace::front_center_waste_container::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "front_center_waste_container",
+      "scene": "extraction_workspace",
+      "tag": ""
+    },
+    "extraction_workspace::rear_center_electrophoresis_tank::inner_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "inner_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "extraction_workspace",
+      "tag": ""
+    },
+    "extraction_workspace::rear_center_electrophoresis_tank::outer_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "outer_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "extraction_workspace",
+      "tag": ""
+    },
+    "extraction_workspace::rear_left_protein_ladder_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.1,
+      "object_name": "protein_ladder_tube",
+      "placement_name": "rear_left_protein_ladder_tube",
+      "scene": "extraction_workspace",
+      "tag": ""
+    },
+    "extraction_workspace::rear_left_recycle_buffer_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "recycle_buffer_bottle",
+      "placement_name": "rear_left_recycle_buffer_bottle",
+      "scene": "extraction_workspace",
+      "tag": ""
+    },
+    "extraction_workspace::rear_left_running_buffer_10x::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.77,
+      "object_name": "running_buffer_10x_bottle",
+      "placement_name": "rear_left_running_buffer_10x",
+      "scene": "extraction_workspace",
+      "tag": ""
+    },
+    "heat_block_bench::front_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "front_micropipette",
+      "scene": "heat_block_bench",
+      "tag": ""
+    },
+    "heat_block_bench::mid_microtube_sample::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "microtube",
+      "placement_name": "mid_microtube_sample",
+      "scene": "heat_block_bench",
+      "tag": ""
+    },
+    "heat_block_bench::rear_center_bme::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 31.24,
+      "object_name": "bme_tube",
+      "placement_name": "rear_center_bme",
+      "scene": "heat_block_bench",
+      "tag": ""
+    },
+    "heat_block_bench::rear_center_laemmli::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 63.86,
+      "object_name": "laemmli_4x_tube",
+      "placement_name": "rear_center_laemmli",
+      "scene": "heat_block_bench",
+      "tag": ""
+    },
+    "heat_block_bench::rear_left_protein_ladder::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.31,
+      "object_name": "protein_ladder_tube",
+      "placement_name": "rear_left_protein_ladder",
+      "scene": "heat_block_bench",
+      "tag": ""
+    },
+    "heat_block_bench::rear_left_protein_sample::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.12,
+      "object_name": "protein_sample_tube",
+      "placement_name": "rear_left_protein_sample",
+      "scene": "heat_block_bench",
+      "tag": ""
+    },
+    "heat_block_bench::rear_right_ddh2o::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.88,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "rear_right_ddh2o",
+      "scene": "heat_block_bench",
+      "tag": ""
+    },
+    "heat_block_bench::rear_right_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_right_waste",
+      "scene": "heat_block_bench",
+      "tag": ""
+    },
+    "hemocytometer_view::left_cell_suspension::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 74.01,
+      "object_name": "cell_suspension_tube",
+      "placement_name": "left_cell_suspension",
+      "scene": "hemocytometer_view",
+      "tag": ""
+    },
+    "hemocytometer_view::rear_ethanol_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 97.95,
+      "object_name": "ethanol_bottle",
+      "placement_name": "rear_ethanol_bottle",
+      "scene": "hemocytometer_view",
+      "tag": ""
+    },
+    "hemocytometer_view::right_microtube_left::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "microtube",
+      "placement_name": "right_microtube_left",
+      "scene": "hemocytometer_view",
+      "tag": ""
+    },
+    "hemocytometer_view::staining_tubes::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 61.42,
+      "object_name": "trypan_blue_tube",
+      "placement_name": "staining_tubes",
+      "scene": "hemocytometer_view",
+      "tag": ""
+    },
+    "hood_basic::base_rear_center_pbs::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.05,
+      "object_name": "pbs_bottle",
+      "placement_name": "base_rear_center_pbs",
+      "scene": "hood_basic",
+      "tag": ""
+    },
+    "hood_basic::base_rear_right_media::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.17,
+      "object_name": "media_bottle",
+      "placement_name": "base_rear_right_media",
+      "scene": "hood_basic",
+      "tag": ""
+    },
+    "hood_basic::base_rear_right_sterile_water::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.49,
+      "object_name": "sterile_water_bottle",
+      "placement_name": "base_rear_right_sterile_water",
+      "scene": "hood_basic",
+      "tag": ""
+    },
+    "hood_basic::base_right_serological_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "serological_pipette",
+      "placement_name": "base_right_serological_pipette",
+      "scene": "hood_basic",
+      "tag": ""
+    },
+    "hood_basic::rear_center_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_center_waste",
+      "scene": "hood_basic",
+      "tag": ""
+    },
+    "hood_basic::rear_left_ethanol::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 97.2,
+      "object_name": "ethanol_bottle",
+      "placement_name": "rear_left_ethanol",
+      "scene": "hood_basic",
+      "tag": ""
+    },
+    "hood_basic::right_aspirating_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "aspirating_pipette",
+      "placement_name": "right_aspirating_pipette",
+      "scene": "hood_basic",
+      "tag": ""
+    },
+    "hood_workspace::base_rear_center_pbs::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 93.93,
+      "object_name": "pbs_bottle",
+      "placement_name": "base_rear_center_pbs",
+      "scene": "hood_workspace",
+      "tag": ""
+    },
+    "hood_workspace::center_t75_flask::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "t75_flask",
+      "placement_name": "center_t75_flask",
+      "scene": "hood_workspace",
+      "tag": ""
+    },
+    "hood_workspace::rear_center_conical_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "conical_15ml",
+      "placement_name": "rear_center_conical_tube",
+      "scene": "hood_workspace",
+      "tag": ""
+    },
+    "hood_workspace::rear_center_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_center_waste",
+      "scene": "hood_workspace",
+      "tag": ""
+    },
+    "hood_workspace::rear_left_ethanol::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.48,
+      "object_name": "ethanol_bottle",
+      "placement_name": "rear_left_ethanol",
+      "scene": "hood_workspace",
+      "tag": ""
+    },
+    "hood_workspace::rear_left_fresh_media::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.86,
+      "object_name": "media_bottle",
+      "placement_name": "rear_left_fresh_media",
+      "scene": "hood_workspace",
+      "tag": ""
+    },
+    "hood_workspace::right_aspirating_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "aspirating_pipette",
+      "placement_name": "right_aspirating_pipette",
+      "scene": "hood_workspace",
+      "tag": ""
+    },
+    "imaging_bench::center_staining_tray::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "staining_tray",
+      "placement_name": "center_staining_tray",
+      "scene": "imaging_bench",
+      "tag": ""
+    },
+    "imaging_bench::left_microtube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "microtube",
+      "placement_name": "left_microtube",
+      "scene": "imaging_bench",
+      "tag": ""
+    },
+    "imaging_bench::rear_coomassie::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 93.76,
+      "object_name": "coomassie_stain_bottle",
+      "placement_name": "rear_coomassie",
+      "scene": "imaging_bench",
+      "tag": ""
+    },
+    "imaging_bench::rear_ddh2o::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.81,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "rear_ddh2o",
+      "scene": "imaging_bench",
+      "tag": ""
+    },
+    "imaging_bench::rear_destain::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.87,
+      "object_name": "destain_bottle",
+      "placement_name": "rear_destain",
+      "scene": "imaging_bench",
+      "tag": ""
+    },
+    "imaging_bench::rear_ethanol_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.13,
+      "object_name": "ethanol_bottle",
+      "placement_name": "rear_ethanol_bottle",
+      "scene": "imaging_bench",
+      "tag": ""
+    },
+    "imaging_bench::right_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "right_micropipette",
+      "scene": "imaging_bench",
+      "tag": ""
+    },
+    "imaging_bench::right_waste_container::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "right_waste_container",
+      "scene": "imaging_bench",
+      "tag": ""
+    },
+    "incubator_workspace::base_right_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "base_right_micropipette",
+      "scene": "incubator_workspace",
+      "tag": ""
+    },
+    "incubator_workspace::hazard_waste_bin::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "biohazard_decant_bin",
+      "placement_name": "hazard_waste_bin",
+      "scene": "incubator_workspace",
+      "tag": ""
+    },
+    "incubator_workspace::mtt_solution::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 18.97,
+      "object_name": "mtt_stock_tube",
+      "placement_name": "mtt_solution",
+      "scene": "incubator_workspace",
+      "tag": ""
+    },
+    "incubator_workspace::pipette_multichannel::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "multichannel_pipette",
+      "placement_name": "pipette_multichannel",
+      "scene": "incubator_workspace",
+      "tag": ""
+    },
+    "incubator_workspace::rear_left_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_left_waste",
+      "scene": "incubator_workspace",
+      "tag": ""
+    },
+    "microscope_basic::left_cell_suspension::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 72.23,
+      "object_name": "cell_suspension_tube",
+      "placement_name": "left_cell_suspension",
+      "scene": "microscope_basic",
+      "tag": ""
+    },
+    "microscope_basic::rear_ethanol_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.45,
+      "object_name": "ethanol_bottle",
+      "placement_name": "rear_ethanol_bottle",
+      "scene": "microscope_basic",
+      "tag": ""
+    },
+    "microscope_basic::right_microtube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "microtube",
+      "placement_name": "right_microtube",
+      "scene": "microscope_basic",
+      "tag": ""
+    },
+    "mtt_reagent_prep_bench_workspace::base_right_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "base_right_micropipette",
+      "scene": "mtt_reagent_prep_bench_workspace",
+      "tag": ""
+    },
+    "mtt_reagent_prep_bench_workspace::center_mtt_solution_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "mtt_solution_tube",
+      "placement_name": "center_mtt_solution_tube",
+      "scene": "mtt_reagent_prep_bench_workspace",
+      "tag": ""
+    },
+    "mtt_reagent_prep_bench_workspace::rear_center_pbs_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 93.63,
+      "object_name": "pbs_bottle",
+      "placement_name": "rear_center_pbs_bottle",
+      "scene": "mtt_reagent_prep_bench_workspace",
+      "tag": ""
+    },
+    "mtt_reagent_prep_bench_workspace::rear_left_mtt_powder::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 43.58,
+      "object_name": "mtt_powder_container",
+      "placement_name": "rear_left_mtt_powder",
+      "scene": "mtt_reagent_prep_bench_workspace",
+      "tag": ""
+    },
+    "mtt_reagent_prep_bench_workspace::rear_left_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_left_waste",
+      "scene": "mtt_reagent_prep_bench_workspace",
+      "tag": ""
+    },
+    "mtt_solubilization_readout_bench_workspace::base_right_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "base_right_micropipette",
+      "scene": "mtt_solubilization_readout_bench_workspace",
+      "tag": ""
+    },
+    "mtt_solubilization_readout_bench_workspace::rear_center_pbs::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.07,
+      "object_name": "pbs_bottle",
+      "placement_name": "rear_center_pbs",
+      "scene": "mtt_solubilization_readout_bench_workspace",
+      "tag": ""
+    },
+    "mtt_solubilization_readout_bench_workspace::rear_left_dmso::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 92.29,
+      "object_name": "dmso_tube",
+      "placement_name": "rear_left_dmso",
+      "scene": "mtt_solubilization_readout_bench_workspace",
+      "tag": ""
+    },
+    "mtt_solubilization_readout_bench_workspace::rear_left_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_left_waste",
+      "scene": "mtt_solubilization_readout_bench_workspace",
+      "tag": ""
+    },
+    "mtt_solubilization_readout_plate_reader_workspace::base_right_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "base_right_micropipette",
+      "scene": "mtt_solubilization_readout_plate_reader_workspace",
+      "tag": ""
+    },
+    "mtt_solubilization_readout_plate_reader_workspace::rear_center_pbs::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.27,
+      "object_name": "pbs_bottle",
+      "placement_name": "rear_center_pbs",
+      "scene": "mtt_solubilization_readout_plate_reader_workspace",
+      "tag": ""
+    },
+    "mtt_solubilization_readout_plate_reader_workspace::rear_left_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_left_waste",
+      "scene": "mtt_solubilization_readout_plate_reader_workspace",
+      "tag": ""
+    },
+    "passage_hood_detachment_hood_workspace::center_flask::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "t75_flask",
+      "placement_name": "center_flask",
+      "scene": "passage_hood_detachment_hood_workspace",
+      "tag": ""
+    },
+    "passage_hood_detachment_hood_workspace::rear_center_media::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 97.5,
+      "object_name": "media_bottle",
+      "placement_name": "rear_center_media",
+      "scene": "passage_hood_detachment_hood_workspace",
+      "tag": ""
+    },
+    "passage_hood_detachment_hood_workspace::rear_center_trypsin::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.28,
+      "object_name": "trypsin_bottle",
+      "placement_name": "rear_center_trypsin",
+      "scene": "passage_hood_detachment_hood_workspace",
+      "tag": ""
+    },
+    "passage_hood_detachment_hood_workspace::rear_left_ethanol::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 97.24,
+      "object_name": "ethanol_bottle",
+      "placement_name": "rear_left_ethanol",
+      "scene": "passage_hood_detachment_hood_workspace",
+      "tag": ""
+    },
+    "passage_hood_detachment_hood_workspace::rear_left_pbs::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 93.82,
+      "object_name": "pbs_bottle",
+      "placement_name": "rear_left_pbs",
+      "scene": "passage_hood_detachment_hood_workspace",
+      "tag": ""
+    },
+    "passage_hood_detachment_hood_workspace::right_aspirating_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "aspirating_pipette",
+      "placement_name": "right_aspirating_pipette",
+      "scene": "passage_hood_detachment_hood_workspace",
+      "tag": ""
+    },
+    "passage_hood_detachment_microscope_view::instrument_t75_flask::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "t75_flask",
+      "placement_name": "instrument_t75_flask",
+      "scene": "passage_hood_detachment_microscope_view",
+      "tag": ""
+    },
+    "passage_hood_detachment_microscope_view::left_cell_suspension::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 72.28,
+      "object_name": "cell_suspension_tube",
+      "placement_name": "left_cell_suspension",
+      "scene": "passage_hood_detachment_microscope_view",
+      "tag": ""
+    },
+    "plate_drug_treatment_media_adjustment_plate_workspace::base_rear_right_sterile_water::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.19,
+      "object_name": "sterile_water_bottle",
+      "placement_name": "base_rear_right_sterile_water",
+      "scene": "plate_drug_treatment_media_adjustment_plate_workspace",
+      "tag": ""
+    },
+    "plate_drug_treatment_media_adjustment_plate_workspace::rear_center_media::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 97.36,
+      "object_name": "media_bottle",
+      "placement_name": "rear_center_media",
+      "scene": "plate_drug_treatment_media_adjustment_plate_workspace",
+      "tag": ""
+    },
+    "plate_drug_treatment_media_adjustment_plate_workspace::rear_center_pbs_decor::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.48,
+      "object_name": "pbs_bottle",
+      "placement_name": "rear_center_pbs_decor",
+      "scene": "plate_drug_treatment_media_adjustment_plate_workspace",
+      "tag": ""
+    },
+    "plate_drug_treatment_media_adjustment_plate_workspace::rear_center_waste_decor::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_center_waste_decor",
+      "scene": "plate_drug_treatment_media_adjustment_plate_workspace",
+      "tag": ""
+    },
+    "plate_drug_treatment_media_adjustment_plate_workspace::rear_left_ethanol::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 97.64,
+      "object_name": "ethanol_bottle",
+      "placement_name": "rear_left_ethanol",
+      "scene": "plate_drug_treatment_media_adjustment_plate_workspace",
+      "tag": ""
+    },
+    "plate_drug_treatment_media_adjustment_plate_workspace::right_tool_multichannel::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "multichannel_pipette",
+      "placement_name": "right_tool_multichannel",
+      "scene": "plate_drug_treatment_media_adjustment_plate_workspace",
+      "tag": ""
+    },
+    "plate_workspace::base_rear_right_media::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.05,
+      "object_name": "media_bottle",
+      "placement_name": "base_rear_right_media",
+      "scene": "plate_workspace",
+      "tag": ""
+    },
+    "plate_workspace::base_rear_right_sterile_water::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.04,
+      "object_name": "sterile_water_bottle",
+      "placement_name": "base_rear_right_sterile_water",
+      "scene": "plate_workspace",
+      "tag": ""
+    },
+    "plate_workspace::rear_center_metformin_stock::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "metformin_working_tube",
+      "placement_name": "rear_center_metformin_stock",
+      "scene": "plate_workspace",
+      "tag": ""
+    },
+    "plate_workspace::rear_left_ethanol::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 97.98,
+      "object_name": "ethanol_bottle",
+      "placement_name": "rear_left_ethanol",
+      "scene": "plate_workspace",
+      "tag": ""
+    },
+    "plate_workspace::rear_left_pbs_decor::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.13,
+      "object_name": "pbs_bottle",
+      "placement_name": "rear_left_pbs_decor",
+      "scene": "plate_workspace",
+      "tag": ""
+    },
+    "plate_workspace::rear_right_waste_decor::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_right_waste_decor",
+      "scene": "plate_workspace",
+      "tag": ""
+    },
+    "plate_workspace::right_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "right_micropipette",
+      "scene": "plate_workspace",
+      "tag": ""
+    },
+    "sample_prep_bench::center_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "center_micropipette",
+      "scene": "sample_prep_bench",
+      "tag": ""
+    },
+    "sample_prep_bench::mid_microtube_sample::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "microtube",
+      "placement_name": "mid_microtube_sample",
+      "scene": "sample_prep_bench",
+      "tag": ""
+    },
+    "sample_prep_bench::rear_center_ddh2o::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.15,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "rear_center_ddh2o",
+      "scene": "sample_prep_bench",
+      "tag": ""
+    },
+    "sample_prep_bench::rear_center_laemmli::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 63.79,
+      "object_name": "laemmli_4x_tube",
+      "placement_name": "rear_center_laemmli",
+      "scene": "sample_prep_bench",
+      "tag": ""
+    },
+    "sample_prep_bench::rear_left_protein_ladder::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.31,
+      "object_name": "protein_ladder_tube",
+      "placement_name": "rear_left_protein_ladder",
+      "scene": "sample_prep_bench",
+      "tag": ""
+    },
+    "sample_prep_bench::rear_left_protein_sample::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.06,
+      "object_name": "protein_sample_tube",
+      "placement_name": "rear_left_protein_sample",
+      "scene": "sample_prep_bench",
+      "tag": ""
+    },
+    "sample_prep_bench::rear_right_bme::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 31.17,
+      "object_name": "bme_tube",
+      "placement_name": "rear_right_bme",
+      "scene": "sample_prep_bench",
+      "tag": ""
+    },
+    "sample_prep_bench::rear_right_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_right_waste",
+      "scene": "sample_prep_bench",
+      "tag": ""
+    },
+    "sdspage_attach_lid_and_leads_workspace::center_ddh2o_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.25,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "center_ddh2o_bottle",
+      "scene": "sdspage_attach_lid_and_leads_workspace",
+      "tag": ""
+    },
+    "sdspage_attach_lid_and_leads_workspace::center_p200_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "p200_micropipette",
+      "placement_name": "center_p200_micropipette",
+      "scene": "sdspage_attach_lid_and_leads_workspace",
+      "tag": ""
+    },
+    "sdspage_attach_lid_and_leads_workspace::center_running_buffer_1x_carboy::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.55,
+      "object_name": "running_buffer_1x_carboy",
+      "placement_name": "center_running_buffer_1x_carboy",
+      "scene": "sdspage_attach_lid_and_leads_workspace",
+      "tag": ""
+    },
+    "sdspage_attach_lid_and_leads_workspace::center_serological_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "serological_pipette",
+      "placement_name": "center_serological_pipette",
+      "scene": "sdspage_attach_lid_and_leads_workspace",
+      "tag": ""
+    },
+    "sdspage_attach_lid_and_leads_workspace::front_center_waste_container::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "front_center_waste_container",
+      "scene": "sdspage_attach_lid_and_leads_workspace",
+      "tag": ""
+    },
+    "sdspage_attach_lid_and_leads_workspace::rear_center_electrophoresis_tank::inner_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "inner_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "sdspage_attach_lid_and_leads_workspace",
+      "tag": ""
+    },
+    "sdspage_attach_lid_and_leads_workspace::rear_center_electrophoresis_tank::outer_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "outer_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "sdspage_attach_lid_and_leads_workspace",
+      "tag": ""
+    },
+    "sdspage_attach_lid_and_leads_workspace::rear_left_protein_ladder_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.1,
+      "object_name": "protein_ladder_tube",
+      "placement_name": "rear_left_protein_ladder_tube",
+      "scene": "sdspage_attach_lid_and_leads_workspace",
+      "tag": ""
+    },
+    "sdspage_attach_lid_and_leads_workspace::rear_left_recycle_buffer_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "recycle_buffer_bottle",
+      "placement_name": "rear_left_recycle_buffer_bottle",
+      "scene": "sdspage_attach_lid_and_leads_workspace",
+      "tag": ""
+    },
+    "sdspage_attach_lid_and_leads_workspace::rear_left_running_buffer_10x::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.77,
+      "object_name": "running_buffer_10x_bottle",
+      "placement_name": "rear_left_running_buffer_10x",
+      "scene": "sdspage_attach_lid_and_leads_workspace",
+      "tag": ""
+    },
+    "sdspage_destain_gel_rock_workspace::center_staining_tray::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "staining_tray",
+      "placement_name": "center_staining_tray",
+      "scene": "sdspage_destain_gel_rock_workspace",
+      "tag": ""
+    },
+    "sdspage_destain_gel_rock_workspace::rear_center_destain::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.78,
+      "object_name": "destain_bottle",
+      "placement_name": "rear_center_destain",
+      "scene": "sdspage_destain_gel_rock_workspace",
+      "tag": ""
+    },
+    "sdspage_destain_gel_rock_workspace::rear_center_destain_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "destain_waste_bottle",
+      "placement_name": "rear_center_destain_waste",
+      "scene": "sdspage_destain_gel_rock_workspace",
+      "tag": ""
+    },
+    "sdspage_destain_gel_rock_workspace::rear_left_coomassie_recycle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "coomassie_recycle_bottle",
+      "placement_name": "rear_left_coomassie_recycle",
+      "scene": "sdspage_destain_gel_rock_workspace",
+      "tag": ""
+    },
+    "sdspage_destain_gel_rock_workspace::rear_left_coomassie_stain::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.78,
+      "object_name": "coomassie_stain_bottle",
+      "placement_name": "rear_left_coomassie_stain",
+      "scene": "sdspage_destain_gel_rock_workspace",
+      "tag": ""
+    },
+    "sdspage_destain_gel_rock_workspace::rear_right_ddh2o::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.95,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "rear_right_ddh2o",
+      "scene": "sdspage_destain_gel_rock_workspace",
+      "tag": ""
+    },
+    "sdspage_destain_gel_rock_workspace::right_tool_area_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "right_tool_area_waste",
+      "scene": "sdspage_destain_gel_rock_workspace",
+      "tag": ""
+    },
+    "sdspage_fill_tank_buffer_workspace::center_ddh2o_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.25,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "center_ddh2o_bottle",
+      "scene": "sdspage_fill_tank_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_fill_tank_buffer_workspace::center_p200_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "p200_micropipette",
+      "placement_name": "center_p200_micropipette",
+      "scene": "sdspage_fill_tank_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_fill_tank_buffer_workspace::center_running_buffer_1x_carboy::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.55,
+      "object_name": "running_buffer_1x_carboy",
+      "placement_name": "center_running_buffer_1x_carboy",
+      "scene": "sdspage_fill_tank_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_fill_tank_buffer_workspace::center_serological_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "serological_pipette",
+      "placement_name": "center_serological_pipette",
+      "scene": "sdspage_fill_tank_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_fill_tank_buffer_workspace::front_center_waste_container::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "front_center_waste_container",
+      "scene": "sdspage_fill_tank_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_fill_tank_buffer_workspace::rear_center_electrophoresis_tank::inner_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "inner_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "sdspage_fill_tank_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_fill_tank_buffer_workspace::rear_center_electrophoresis_tank::outer_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "outer_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "sdspage_fill_tank_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_fill_tank_buffer_workspace::rear_left_protein_ladder_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.1,
+      "object_name": "protein_ladder_tube",
+      "placement_name": "rear_left_protein_ladder_tube",
+      "scene": "sdspage_fill_tank_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_fill_tank_buffer_workspace::rear_left_recycle_buffer_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "recycle_buffer_bottle",
+      "placement_name": "rear_left_recycle_buffer_bottle",
+      "scene": "sdspage_fill_tank_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_fill_tank_buffer_workspace::rear_left_running_buffer_10x::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.77,
+      "object_name": "running_buffer_10x_bottle",
+      "placement_name": "rear_left_running_buffer_10x",
+      "scene": "sdspage_fill_tank_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_heat_denature_samples_workspace::front_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "front_micropipette",
+      "scene": "sdspage_heat_denature_samples_workspace",
+      "tag": ""
+    },
+    "sdspage_heat_denature_samples_workspace::mid_microtube_sample::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "microtube",
+      "placement_name": "mid_microtube_sample",
+      "scene": "sdspage_heat_denature_samples_workspace",
+      "tag": ""
+    },
+    "sdspage_heat_denature_samples_workspace::rear_center_bme::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 31.24,
+      "object_name": "bme_tube",
+      "placement_name": "rear_center_bme",
+      "scene": "sdspage_heat_denature_samples_workspace",
+      "tag": ""
+    },
+    "sdspage_heat_denature_samples_workspace::rear_center_laemmli::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 63.86,
+      "object_name": "laemmli_4x_tube",
+      "placement_name": "rear_center_laemmli",
+      "scene": "sdspage_heat_denature_samples_workspace",
+      "tag": ""
+    },
+    "sdspage_heat_denature_samples_workspace::rear_left_protein_ladder::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.31,
+      "object_name": "protein_ladder_tube",
+      "placement_name": "rear_left_protein_ladder",
+      "scene": "sdspage_heat_denature_samples_workspace",
+      "tag": ""
+    },
+    "sdspage_heat_denature_samples_workspace::rear_left_protein_sample::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.12,
+      "object_name": "protein_sample_tube",
+      "placement_name": "rear_left_protein_sample",
+      "scene": "sdspage_heat_denature_samples_workspace",
+      "tag": ""
+    },
+    "sdspage_heat_denature_samples_workspace::rear_right_ddh2o::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.88,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "rear_right_ddh2o",
+      "scene": "sdspage_heat_denature_samples_workspace",
+      "tag": ""
+    },
+    "sdspage_heat_denature_samples_workspace::rear_right_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_right_waste",
+      "scene": "sdspage_heat_denature_samples_workspace",
+      "tag": ""
+    },
+    "sdspage_load_sample_single_lane_workspace::center_ddh2o_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.25,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "center_ddh2o_bottle",
+      "scene": "sdspage_load_sample_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_load_sample_single_lane_workspace::center_p200_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "p200_micropipette",
+      "placement_name": "center_p200_micropipette",
+      "scene": "sdspage_load_sample_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_load_sample_single_lane_workspace::center_running_buffer_1x_carboy::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.55,
+      "object_name": "running_buffer_1x_carboy",
+      "placement_name": "center_running_buffer_1x_carboy",
+      "scene": "sdspage_load_sample_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_load_sample_single_lane_workspace::center_serological_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "serological_pipette",
+      "placement_name": "center_serological_pipette",
+      "scene": "sdspage_load_sample_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_load_sample_single_lane_workspace::front_center_microtube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "microtube",
+      "placement_name": "front_center_microtube",
+      "scene": "sdspage_load_sample_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_load_sample_single_lane_workspace::front_center_waste_container::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "front_center_waste_container",
+      "scene": "sdspage_load_sample_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_load_sample_single_lane_workspace::rear_center_electrophoresis_tank::inner_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "inner_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "sdspage_load_sample_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_load_sample_single_lane_workspace::rear_center_electrophoresis_tank::outer_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "outer_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "sdspage_load_sample_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_load_sample_single_lane_workspace::rear_left_protein_ladder_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.1,
+      "object_name": "protein_ladder_tube",
+      "placement_name": "rear_left_protein_ladder_tube",
+      "scene": "sdspage_load_sample_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_load_sample_single_lane_workspace::rear_left_recycle_buffer_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "recycle_buffer_bottle",
+      "placement_name": "rear_left_recycle_buffer_bottle",
+      "scene": "sdspage_load_sample_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_load_sample_single_lane_workspace::rear_left_running_buffer_10x::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.77,
+      "object_name": "running_buffer_10x_bottle",
+      "placement_name": "rear_left_running_buffer_10x",
+      "scene": "sdspage_load_sample_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_running_buffer_workspace::center_ddh2o_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.25,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "center_ddh2o_bottle",
+      "scene": "sdspage_prepare_running_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_running_buffer_workspace::center_p200_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "p200_micropipette",
+      "placement_name": "center_p200_micropipette",
+      "scene": "sdspage_prepare_running_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_running_buffer_workspace::center_running_buffer_1x_carboy::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.55,
+      "object_name": "running_buffer_1x_carboy",
+      "placement_name": "center_running_buffer_1x_carboy",
+      "scene": "sdspage_prepare_running_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_running_buffer_workspace::center_serological_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "serological_pipette",
+      "placement_name": "center_serological_pipette",
+      "scene": "sdspage_prepare_running_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_running_buffer_workspace::front_center_waste_container::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "front_center_waste_container",
+      "scene": "sdspage_prepare_running_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_running_buffer_workspace::rear_center_electrophoresis_tank::inner_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "inner_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "sdspage_prepare_running_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_running_buffer_workspace::rear_center_electrophoresis_tank::outer_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "outer_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "sdspage_prepare_running_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_running_buffer_workspace::rear_left_protein_ladder_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.1,
+      "object_name": "protein_ladder_tube",
+      "placement_name": "rear_left_protein_ladder_tube",
+      "scene": "sdspage_prepare_running_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_running_buffer_workspace::rear_left_recycle_buffer_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "recycle_buffer_bottle",
+      "placement_name": "rear_left_recycle_buffer_bottle",
+      "scene": "sdspage_prepare_running_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_running_buffer_workspace::rear_left_running_buffer_10x::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.77,
+      "object_name": "running_buffer_10x_bottle",
+      "placement_name": "rear_left_running_buffer_10x",
+      "scene": "sdspage_prepare_running_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_sample_mix_single_lane_workspace::center_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "center_micropipette",
+      "scene": "sdspage_prepare_sample_mix_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_sample_mix_single_lane_workspace::eppendorf_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "microtube",
+      "placement_name": "eppendorf_tube",
+      "scene": "sdspage_prepare_sample_mix_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_sample_mix_single_lane_workspace::rear_center_ddh2o::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.93,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "rear_center_ddh2o",
+      "scene": "sdspage_prepare_sample_mix_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_sample_mix_single_lane_workspace::rear_center_laemmli::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 64.54,
+      "object_name": "laemmli_4x_tube",
+      "placement_name": "rear_center_laemmli",
+      "scene": "sdspage_prepare_sample_mix_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_sample_mix_single_lane_workspace::rear_left_protein_ladder::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.69,
+      "object_name": "protein_ladder_tube",
+      "placement_name": "rear_left_protein_ladder",
+      "scene": "sdspage_prepare_sample_mix_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_sample_mix_single_lane_workspace::rear_left_protein_sample::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.0,
+      "object_name": "protein_sample_tube",
+      "placement_name": "rear_left_protein_sample",
+      "scene": "sdspage_prepare_sample_mix_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_sample_mix_single_lane_workspace::rear_right_bme::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 31.28,
+      "object_name": "bme_tube",
+      "placement_name": "rear_right_bme",
+      "scene": "sdspage_prepare_sample_mix_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_prepare_sample_mix_single_lane_workspace::rear_right_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "rear_right_waste",
+      "scene": "sdspage_prepare_sample_mix_single_lane_workspace",
+      "tag": ""
+    },
+    "sdspage_recycle_buffer_workspace::center_ddh2o_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.25,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "center_ddh2o_bottle",
+      "scene": "sdspage_recycle_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_recycle_buffer_workspace::center_p200_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "p200_micropipette",
+      "placement_name": "center_p200_micropipette",
+      "scene": "sdspage_recycle_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_recycle_buffer_workspace::center_running_buffer_1x_carboy::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.55,
+      "object_name": "running_buffer_1x_carboy",
+      "placement_name": "center_running_buffer_1x_carboy",
+      "scene": "sdspage_recycle_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_recycle_buffer_workspace::center_serological_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "serological_pipette",
+      "placement_name": "center_serological_pipette",
+      "scene": "sdspage_recycle_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_recycle_buffer_workspace::front_center_waste_container::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "front_center_waste_container",
+      "scene": "sdspage_recycle_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_recycle_buffer_workspace::rear_center_electrophoresis_tank::inner_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "inner_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "sdspage_recycle_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_recycle_buffer_workspace::rear_center_electrophoresis_tank::outer_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "outer_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "sdspage_recycle_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_recycle_buffer_workspace::rear_left_protein_ladder_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.1,
+      "object_name": "protein_ladder_tube",
+      "placement_name": "rear_left_protein_ladder_tube",
+      "scene": "sdspage_recycle_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_recycle_buffer_workspace::rear_left_recycle_buffer_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "recycle_buffer_bottle",
+      "placement_name": "rear_left_recycle_buffer_bottle",
+      "scene": "sdspage_recycle_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_recycle_buffer_workspace::rear_left_running_buffer_10x::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.77,
+      "object_name": "running_buffer_10x_bottle",
+      "placement_name": "rear_left_running_buffer_10x",
+      "scene": "sdspage_recycle_buffer_workspace",
+      "tag": ""
+    },
+    "sdspage_run_electrophoresis_workspace::center_ddh2o_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 94.25,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "center_ddh2o_bottle",
+      "scene": "sdspage_run_electrophoresis_workspace",
+      "tag": ""
+    },
+    "sdspage_run_electrophoresis_workspace::center_p200_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "p200_micropipette",
+      "placement_name": "center_p200_micropipette",
+      "scene": "sdspage_run_electrophoresis_workspace",
+      "tag": ""
+    },
+    "sdspage_run_electrophoresis_workspace::center_running_buffer_1x_carboy::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.55,
+      "object_name": "running_buffer_1x_carboy",
+      "placement_name": "center_running_buffer_1x_carboy",
+      "scene": "sdspage_run_electrophoresis_workspace",
+      "tag": ""
+    },
+    "sdspage_run_electrophoresis_workspace::center_serological_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "serological_pipette",
+      "placement_name": "center_serological_pipette",
+      "scene": "sdspage_run_electrophoresis_workspace",
+      "tag": ""
+    },
+    "sdspage_run_electrophoresis_workspace::front_center_waste_container::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "front_center_waste_container",
+      "scene": "sdspage_run_electrophoresis_workspace",
+      "tag": ""
+    },
+    "sdspage_run_electrophoresis_workspace::rear_center_electrophoresis_tank::inner_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "inner_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "sdspage_run_electrophoresis_workspace",
+      "tag": ""
+    },
+    "sdspage_run_electrophoresis_workspace::rear_center_electrophoresis_tank::outer_chamber_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "outer_chamber_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "electrophoresis_tank",
+      "placement_name": "rear_center_electrophoresis_tank",
+      "scene": "sdspage_run_electrophoresis_workspace",
+      "tag": ""
+    },
+    "sdspage_run_electrophoresis_workspace::rear_left_protein_ladder_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.1,
+      "object_name": "protein_ladder_tube",
+      "placement_name": "rear_left_protein_ladder_tube",
+      "scene": "sdspage_run_electrophoresis_workspace",
+      "tag": ""
+    },
+    "sdspage_run_electrophoresis_workspace::rear_left_recycle_buffer_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "recycle_buffer_bottle",
+      "placement_name": "rear_left_recycle_buffer_bottle",
+      "scene": "sdspage_run_electrophoresis_workspace",
+      "tag": ""
+    },
+    "sdspage_run_electrophoresis_workspace::rear_left_running_buffer_10x::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.77,
+      "object_name": "running_buffer_10x_bottle",
+      "placement_name": "rear_left_running_buffer_10x",
+      "scene": "sdspage_run_electrophoresis_workspace",
+      "tag": ""
+    },
+    "seeding_workspace::rear_center_media_bottle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.83,
+      "object_name": "media_bottle",
+      "placement_name": "rear_center_media_bottle",
+      "scene": "seeding_workspace",
+      "tag": ""
+    },
+    "seeding_workspace::rear_left_cell_suspension_tube::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 72.77,
+      "object_name": "cell_suspension_tube",
+      "placement_name": "rear_left_cell_suspension_tube",
+      "scene": "seeding_workspace",
+      "tag": ""
+    },
+    "seeding_workspace::rear_left_conical_tube_for_dilution::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "conical_tube_for_dilution",
+      "placement_name": "rear_left_conical_tube_for_dilution",
+      "scene": "seeding_workspace",
+      "tag": ""
+    },
+    "seeding_workspace::rear_left_ethanol::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.49,
+      "object_name": "ethanol_bottle",
+      "placement_name": "rear_left_ethanol",
+      "scene": "seeding_workspace",
+      "tag": ""
+    },
+    "seeding_workspace::right_micropipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "micropipette",
+      "placement_name": "right_micropipette",
+      "scene": "seeding_workspace",
+      "tag": ""
+    },
+    "seeding_workspace::right_serological_pipette::held_material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "held_material_volume",
+      "measured_percent": 0.0,
+      "object_name": "serological_pipette",
+      "placement_name": "right_serological_pipette",
+      "scene": "seeding_workspace",
+      "tag": ""
+    },
+    "staining_bench::center_staining_tray::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "staining_tray",
+      "placement_name": "center_staining_tray",
+      "scene": "staining_bench",
+      "tag": ""
+    },
+    "staining_bench::rear_center_destain::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.78,
+      "object_name": "destain_bottle",
+      "placement_name": "rear_center_destain",
+      "scene": "staining_bench",
+      "tag": ""
+    },
+    "staining_bench::rear_center_destain_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "destain_waste_bottle",
+      "placement_name": "rear_center_destain_waste",
+      "scene": "staining_bench",
+      "tag": ""
+    },
+    "staining_bench::rear_left_coomassie_recycle::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "coomassie_recycle_bottle",
+      "placement_name": "rear_left_coomassie_recycle",
+      "scene": "staining_bench",
+      "tag": ""
+    },
+    "staining_bench::rear_left_coomassie_stain::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 96.78,
+      "object_name": "coomassie_stain_bottle",
+      "placement_name": "rear_left_coomassie_stain",
+      "scene": "staining_bench",
+      "tag": ""
+    },
+    "staining_bench::rear_right_ddh2o::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 95.95,
+      "object_name": "ddh2o_bottle",
+      "placement_name": "rear_right_ddh2o",
+      "scene": "staining_bench",
+      "tag": ""
+    },
+    "staining_bench::right_tool_area_waste::material_volume": {
+      "css_color": "rgba(120, 120, 120, 0.35)",
+      "field_name": "material_volume",
+      "measured_percent": 0.0,
+      "object_name": "waste_container",
+      "placement_name": "right_tool_area_waste",
+      "scene": "staining_bench",
+      "tag": ""
+    }
+  },
+  "meta": {
+    "diff_threshold": 15,
+    "entry_count": 231,
+    "generated_at": "2026-07-05T17:29:04.453514+00:00",
+    "regression_threshold_pp": 5.0
+  }
+}

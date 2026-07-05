@@ -280,7 +280,7 @@ the only override category.
 | `layout.label_width`     | no       | Width budget for the label.                                                                                         |
 | `layout.anchor_y_offset` | no       | Vertical anchor adjustment; observed on pipette assets.                                                             |
 | `layout.width_scale`     | no       | Per-object width multiplier; observed mainly on equipment.                                                          |
-| `layout.anchor_y`        | no       | One of `bottom` or `tip`. A serological pipette is anchored at its tip wherever it is placed. A scene may override. |
+| `layout.anchor_y`        | no       | One of `bottom`, `tip`, or `top` (engine fallback, centers on the baseline). A serological pipette is anchored at its tip wherever it is placed. A scene may override. |
 
 ## Object ownership of SVG manipulation
 

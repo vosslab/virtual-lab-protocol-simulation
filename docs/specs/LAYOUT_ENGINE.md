@@ -99,8 +99,12 @@ The surrounding loose objects may still use the layout engine.
 
 ## Zones
 
-A zone is a horizontal row-like placement area with x bounds (`x0`, `x1`), a
-vertical baseline, a minimum gap, and an alignment mode.
+A zone is a horizontal row-like placement area declared by `bounds` (`left`,
+`right`, `top`, `bottom`, in scene percent), an optional authored `baseline`
+seed, and an alignment mode. The fused-format per-zone `gap` field is
+retired; the inter-placement gap budget lives on scene-wide
+`layout_rules.zone_gap` instead. See [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md)
+"Zones" for the authored schema.
 
 Alignment modes:
 
@@ -115,8 +119,38 @@ Alignment modes:
 Zones represent meaningful physical regions. Avoid creating a zone for every
 item; use `tab-stops` when one row has left, center, and right clusters.
 
-The engine applies zone padding internally (`x0 + ZONE_PADDING .. x1 - ZONE_PADDING`).
-Scene authors do not pre-subtract padding in YAML.
+The engine applies zone padding internally
+(`bounds.left + ZONE_PADDING .. bounds.right - ZONE_PADDING`). Scene authors
+do not pre-subtract padding in YAML.
+
+### Zone population and alignment aesthetics
+
+Think about the scene from an aesthetic scope: better alignment looks better,
+especially where a zone holds only 1-2 objects. Objects that share a zone share
+that zone's row baselines, so they line up cleanly; objects split across
+separate side-by-side zones each resolve their own baseline and read as floating
+at slightly different heights.
+
+Author for alignment:
+
+- Group related objects into ONE zone and let the alignment mode (`justify`,
+  `center`, `tab-stops`) organize them into rows. Prefer fewer, fuller zones
+  over many sparse zones.
+- Leaving a zone empty is fine and often better. An empty zone costs nothing; a
+  needless extra zone splits what should be one row and hurts alignment.
+- Reserve a separate zone for a genuinely separate physical region, not for a
+  horizontal slot within one shelf. For left/center/right clusters in a single
+  shelf, use one zone with `tab-stops`, not three side-by-side zones.
+- Put like with like. Keep a set of similar objects together in one group: five
+  similar reagent bottles belong in one zone, organized as a row. When a scene
+  has two distinct sets (for example reagent bottles versus waste containers),
+  give each set its own group rather than interleaving them, so each group reads
+  as a coherent unit.
+
+Example: a rear shelf of five similar bottles reads best as one rear zone
+(bottles aligned across it, like with like) rather than three side-by-side rear
+zones holding one or two bottles each. Grouping by kind and aligning within the
+group is the organizing goal; balancing footprint across many zones is not.
 
 ## Overflow
 
@@ -128,26 +162,90 @@ overflow by moving objects to a new zone, using tab stops, or reducing
 
 ## Vertical placement
 
-Vertical placement starts from the zone baseline. Baseline precedence:
+Vertical placement depends on two distinct per-placement fields that are
+easy to confuse:
 
-1. `item.baseline_override` if present.
-2. `zone.baseline + depthBaselineOffsetFor(item.depth)`.
+- `depth` (`back`, `mid`, `front`) scales an item's HORIZONTAL footprint
+  only (`DEPTH_SCALE`: `back` 0.80, `mid` 1.00, `front` 1.10; see
+  `footprint.ts`). It has no effect on vertical position or baseline. No
+  current scene authors it; every placement defaults to `mid` (scale 1.00).
+- `depth_tier` (a number) is the key that drives VERTICAL row banding.
+  Items in a zone bucket into one row per distinct `depth_tier` value;
+  ascending `depth_tier` orders rows toward the band top (rear tier
+  first). See [Two-pass vertical reflow](#two-pass-vertical-reflow) below
+  for how tier rows and their shared baseline are computed.
 
-Depth states:
+A SHELF is one `depth_tier` row across every zone that authors the SAME
+`bounds.top..bottom` (a horizontal row of side-by-side zones, for example
+`rear_left` / `rear_center` / `rear_right`). Every object on a shelf shares
+ONE baseline, so a row of unequal-height objects lands its bottom edges on
+one common line instead of each zone floating at its own height. Zones the
+reflow merely fused for a partial vertical overlap (a working-surface band
+that touches a front band) keep their own shelves; only zones authored at
+identical bounds form one shelf (`groupBandsByAuthoredRow` in
+`vertical_layout.ts`).
 
-| Depth   | Scale | Baseline offset | Meaning                                  |
-| ------- | ----- | --------------- | ---------------------------------------- |
-| `back`  | 0.80  | -4              | Parked farther back, smaller and higher. |
-| `mid`   | 1.00  | 0               | Normal working position.                 |
-| `front` | 1.10  | +4              | Active or pulled forward.                |
+The shared shelf baseline for a placement resolves in this order:
 
-Anchor modes:
+1. `item.baseline_override` if present. This pins the object baseline
+   directly and bypasses the shelf entirely (rare; no current content
+   uses it).
+2. `shelfBaselineFor()`: the lowest computed row bottom across the
+   shelf's tier rows (`max(rowTop + rowHeight)`, so the tallest column
+   defines the line), pulled up by the largest bottom-side label reserve
+   present on the shelf, and floored so the tallest object's top never
+   rises above its own row (containment). This computed geometry is the
+   sole source of the final anchor line.
 
-| `anchor_y` | Placement rule                                              |
-| ---------- | ----------------------------------------------------------- |
-| `bottom`   | Object bottom sits on the baseline.                         |
-| `tip`      | Object tip sits on the baseline, adjusted by `anchor_y_offset`. |
-| `top`      | Engine fallback centers the object vertically around the baseline. |
+A zone's authored `baseline` field has two narrower, EARLIER-stage uses
+that do not feed the shelf baseline above: the horizontal placement
+strategies (`row_strategy.ts`, `pack_strategy.ts`) read it as a
+provisional pre-reflow y-seed, and the reflow stage separately reports a
+`ComputedZoneBand.baseline` (the authored fraction preserved against the
+reflowed band, or the band center when unauthored) for diagnostics. Both
+are earlier or reporting-only signals; neither determines where an object
+finally lands.
+
+The `anchor_y` mode then maps the shelf baseline to the item's top edge;
+see [Anchor-coordinate convention](#anchor-coordinate-convention) below for
+the three modes and their `_top` formulas.
+
+### Placement-layer alignment, not an extent-layer constraint
+
+Cross-zone shelf alignment is a PLACEMENT-layer preference; it must never
+become an EXTENT-layer (reflow) constraint. Shelf alignment moves anchor
+LINES only, and it runs strictly after the reflow stage has already fixed
+every band's height and reserved its label space (see
+[Two-pass vertical reflow](#two-pass-vertical-reflow)), so aligning a shelf
+can never grow a band or push a label into overflow.
+
+This ordering is a hard rule, not a style preference. Reflow decides band
+and tier-row heights, including each item's label reserve, before any
+shelf line is computed; `shelfBaselineFor()` only reads that already-fixed
+geometry and never feeds back into it. Folding shelf alignment into the
+extent layer instead -- letting a cross-zone alignment goal renegotiate
+band or tier-row heights -- would force label reserve to be recomputed
+after label space was already budgeted, reopening exactly the class of
+regression this two-pass split exists to prevent (see the
+`groupVerticalBands` transitive band-merge defect and the
+`unresolved_label_overlap` label-relayout note in
+[wp_f1_bottom_align_scene_churn.md](../active_plans/reports/wp_f1_bottom_align_scene_churn.md)
+for two real incidents caused by cross-zone geometry decisions leaking
+into the wrong phase). Keeping shelf alignment strictly placement-layer
+makes that class of regression structurally impossible, not merely rare.
+
+A scene dense enough that a clean shared shelf line is not available
+degrades gracefully rather than failing the build: an item whose band
+lookup comes up empty falls back to its own per-zone baseline (computed
+from that item's own zone bounds alone, not the cross-zone shelf), and the
+engine emits an `item_escapes_zone_vertically` Warning-severity diagnostic
+naming the zone and placement. Because every item on an unalignable tier
+takes this same per-item fallback path, the net effect is that the whole
+tier demotes to independent per-zone baselines rather than one shared
+shelf line. This is always a Warning, never a build-failing Error; the
+scene still renders, and the diagnostic tells a reviewer exactly which
+placement lost shared shelf alignment. Alignment yields to
+label-resolvability, tier by tier, locally -- never the other way around.
 
 ## Anchor-coordinate convention
 
@@ -191,7 +289,7 @@ The three anchor modes are (see `src/scene_runtime/layout/vertical_layout.ts`):
 | ---------- | --------------------------------------------------------------- |
 | `bottom`   | `_top = _baselineY - _height`                                   |
 | `tip`      | `_top = _baselineY + anchor_y_offset - _height`                 |
-| `center`   | `_top = _baselineY - _height / 2` (engine fallback; no mode keyword) |
+| `top`      | `_top = _baselineY - _height / 2` (centering fallback; the `top` keyword is treated as center, unused by authored scenes) |
 
 `_top` is a derived output field computed by `anchorTop()` in
 `vertical_layout.ts`. It is stored for renderer consumption and is not
@@ -351,9 +449,10 @@ The vertical layout manager is forgiving, lenient, mutable, and mercurial:
 ## Adding a new layout-driven scene
 
 1. Create the scene YAML under `content/base_scenes/<name>.yaml`.
-2. Define `items` with stable ids, `asset_name`, `zone`, `depth_tier`,
-   `width_scale`, `label`, and `anchor_y`.
-3. Define `zones` with `id`, `x0`, `x1`, `baseline`, `gap`, and `align`.
+2. Define `placements` with stable `placement_name`, `object_name`, `zone`,
+   `depth_tier`, and any `layout` overrides (`width_scale`, `anchor_y`, etc).
+3. Define `zones` with `zone_name`, `bounds` (`left`, `right`, `top`,
+   `bottom`), an optional `baseline`, and `align`.
 4. Add any missing `ASSET_SPECS` entries in `generated/object_library.ts`
    (via `content/objects/` YAML and `pipeline/gen_object_library.py`).
 5. Re-run `bash pipeline/build_generated.sh` and then `pipeline/precompute_layout.mjs`
@@ -364,12 +463,12 @@ The vertical layout manager is forgiving, lenient, mutable, and mercurial:
 
 ## Tuning order
 
-1. Zone geometry (`x0`, `x1`, `baseline`).
-2. Item zone membership.
+1. Zone geometry (`bounds`, `baseline`).
+2. Placement zone membership.
 3. `align` and `align_stop`.
 4. Asset `default_width` (if the global asset size is wrong everywhere).
-5. Item `width_scale` (if the asset size is only wrong in this scene).
-6. Renderer-level label suppression for dense, secondary items.
+5. Placement `width_scale` (if the asset size is only wrong in this scene).
+6. Renderer-level label suppression for dense, secondary placements.
 7. `baseline_override` only for exceptional visual-contact fixes.
 
 Avoid changing engine constants for a single scene; constants affect every

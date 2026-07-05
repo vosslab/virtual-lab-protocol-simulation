@@ -117,6 +117,34 @@ a silent invisible success; that invariant is fixed in
 [MATERIAL_VOCABULARY.md](MATERIAL_VOCABULARY.md) and surfaced by the resolver,
 not by this schema. This schema's job is to require the field and fix its format.
 
+## Glyph rendering
+
+This is the canonical statement of the author-entity -> codegen-decode ->
+DOM-glyph convention. Every other spec that states the ASCII/entity escaping
+rule for an authored string (material `label` above, object unit strings and
+labels, protocol prompts, descriptions, and feedback) cross-links here rather
+than restating it.
+
+- Authors write non-ASCII characters as named or numeric HTML entities in
+  committed YAML (for example `&micro;M`, `&alpha;`, `&#181;`). The committed
+  source stays ASCII, satisfying the repo-wide rule in
+  [../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md).
+- Codegen decodes each entity to its Unicode character at the string-emit
+  choke point, so `generated/**` carries the real glyph (for example U+00B5,
+  the micro sign) instead of the literal entity text. `generated/**` carries
+  no ASCII restriction, so a decoded Unicode character in build output is not
+  a violation.
+- The runtime renders the decoded string as a plain DOM text node, never
+  `innerHTML`. Decoding to a text node keeps the path free of HTML injection
+  and entity-expansion risk regardless of which entity was authored.
+- Both named entities (`&micro;`, `&alpha;`, `&beta;`, `&mu;`, and similar)
+  and numeric entities (`&#181;`, `&#xB5;`) decode. A named entity outside the
+  decode map that is not numeric is left verbatim: a visible, safe
+  pass-through rather than a silent failure.
+- This convention applies to every generated text path that can carry an
+  entity: material `label` (this doc), object unit strings and labels, and
+  protocol prompts, descriptions, feedback, and learning-hook text.
+
 ## Closed schema: unknown keys rejected
 
 The entry schema is closed. The only allowed keys in a material entry are `label`

@@ -74,7 +74,7 @@ function runHeatBlock() {
   });
 }
 
-// ─── Stage 2 ────────────────────────────────────────────────────────
+// ---- Stage 2 ----
 test("normalizeSchema: Schema A passthrough applies layout_rules defaults", () => {
   const out = normalizeSchema({ ...HEAT_BLOCK_BENCH });
   assert.equal(out.source, "zone_bounds");
@@ -82,7 +82,7 @@ test("normalizeSchema: Schema A passthrough applies layout_rules defaults", () =
   assert.notEqual(out.scene.layout_rules.label_offset_y, undefined);
 });
 
-// ─── Stage 3 ────────────────────────────────────────────────────────
+// ---- Stage 3 ----
 test("resolveInheritance: extends applies remove/deactivate/reposition/add in order", () => {
   const base = {
     scene_name: "base",
@@ -139,7 +139,7 @@ test("resolveInheritance: extends applies remove/deactivate/reposition/add in or
   assert.ok(out.placements.find((p) => p.placement_name === "new_one"));
 });
 
-// ─── Stage 4 ────────────────────────────────────────────────────────
+// ---- Stage 4 ----
 test("bindObjects: merges layout hints, identity fields cannot be overridden", () => {
   const diags = [];
   const bound = bindObjects(
@@ -165,7 +165,7 @@ test("bindObjects: unknown_object emits diagnostic + renderable placeholder", ()
   // Diagnostic is still recorded so the missing object is visible to tooling.
   assert.equal(diags.length, 1);
   assert.equal(diags[0].kind, "unknown_object");
-  // New contract (WS-M3-B): a missing object is NOT marked _error (which would
+  // New contract: a missing object is NOT marked _error (which would
   // orphan it in group_by_zone and blank the scene). It binds as a renderable
   // placeholder so it flows through layout and renders a "missing object" box.
   assert.equal(bound[0]._error, undefined);
@@ -175,7 +175,7 @@ test("bindObjects: unknown_object emits diagnostic + renderable placeholder", ()
   assert.equal(bound[0].kind, "decoration");
 });
 
-// ─── Stage 5 ────────────────────────────────────────────────────────
+// ---- Stage 5 ----
 test("scaleToRealWorld: cm_model formula matches SCALING_MODEL.md", () => {
   const diags = [];
   const bound = bindObjects(
@@ -210,7 +210,7 @@ test("scaleToRealWorld: unknown workspace falls back to authored width_scale + e
   assert.ok(diags.some((d) => d.kind === "unknown_workspace"));
 });
 
-// ─── Stage 6 ────────────────────────────────────────────────────────
+// ---- Stage 6 ----
 test("groupByZone: sorts by depth_tier ASC, then placement_name", () => {
   const placements = [
     {
@@ -263,7 +263,7 @@ test("groupByZone: unknown zone -> orphan + diagnostic", () => {
   assert.equal(diags[0].kind, "unknown_zone");
 });
 
-// ─── Stage 7 ────────────────────────────────────────────────────────
+// ---- Stage 7 ----
 test("horizontalLayout: center alignment positions a single item at zone midpoint", () => {
   const placements = [
     {
@@ -296,7 +296,7 @@ test("horizontalLayout: center alignment positions a single item at zone midpoin
   assert.equal(items[0]._centerX, 50);
 });
 
-// ─── Stage 8: place-vertical consumes computed zone bands (WP-3a) ─────
+// ---- Stage 8: place-vertical consumes computed zone bands ----
 //
 // The rewritten verticalLayout(zoneLayouts, zones, zoneBands, viewport, diags,
 // config) places each item's object strip inside its tier row and back-solves the
@@ -335,49 +335,121 @@ test("verticalLayout: object keeps natural height, aspect preserved (no shrink)"
   assert.ok(Math.abs(item._visualWidth - measured._visualWidth) < 1e-9, "width unchanged");
 });
 
-test("verticalLayout: top label places the object below the label strip in the row", () => {
+test("verticalLayout: top label rests the object bottom on the row shelf (row bottom)", () => {
+  const placements = [{ placement_name: "p", object_name: "heat_block", zone: "w", depth_tier: 0 }];
+  const bound = bindObjects(placements, DEMO_OBJECT_LIBRARY, DEMO_ASSET_SPECS, []);
+  const scaled = scaleToRealWorld(bound, "bench", {}, []);
+  const zones = [{ id: "w", bounds: { left: 20, right: 80, top: 45, bottom: 99 } }];
+  const horiz = horizontalLayout(groupByZone(scaled, zones).groups, zones);
+  const measured = horiz.get("w")[0];
+  // Fix the natural height (visualWidth * 1920/1080 / aspect = 12 * 1.7778 / 2 =
+  // 10.667) well below the row height so the shelf term wins.
+  measured._visualWidth = 12;
+  measured.aspect = 2;
+  measured._labelBoxHeight = 2.2;
+  measured._labelPlacement = "top";
+  const rowTop = 48;
+  const rowHeight = 30;
+  const bands = new Map([["w", makeBand("w", 45, 99, rowTop, rowHeight, ["p"])]]);
+  const vert = verticalLayout(horiz, zones, bands, { w: 1920, h: 1080 });
+  const item = vert.get("w")[0];
+  // Bottom-anchor: a top-label object's bottom edge sits on the row shelf, which is
+  // the row bottom because a top label reserves no space below the shelf.
+  assert.ok(
+    Math.abs(item._top + item._height - (rowTop + rowHeight)) < 1e-9,
+    "object bottom rests on the row bottom shelf",
+  );
+  // The object stays inside the row (its top is at or below the row top).
+  assert.ok(item._top >= rowTop - 1e-9, "object top stays inside the row");
+});
+
+test("verticalLayout: bottom label rests the object bottom on the shelf above the label reserve", () => {
   const cfg = buildGlobalDefaults();
   const gap = cfg.labelOffsetY;
   const placements = [{ placement_name: "p", object_name: "heat_block", zone: "w", depth_tier: 0 }];
   const bound = bindObjects(placements, DEMO_OBJECT_LIBRARY, DEMO_ASSET_SPECS, []);
   const scaled = scaleToRealWorld(bound, "bench", {}, []);
-  const zones = [{ id: "w", bounds: { left: 20, right: 80, top: 45, bottom: 75 } }];
+  const zones = [{ id: "w", bounds: { left: 20, right: 80, top: 45, bottom: 99 } }];
   const horiz = horizontalLayout(groupByZone(scaled, zones).groups, zones);
   const measured = horiz.get("w")[0];
+  measured._visualWidth = 12;
+  measured.aspect = 2; // nH = 10.667, well under the row height
   const labelBox = 2.2;
   measured._labelBoxHeight = labelBox;
-  measured._labelPlacement = "top"; // anchor_y defaults to bottom for heat_block
-  const rowTop = 48;
-  const bands = new Map([["w", makeBand("w", 45, 75, rowTop, 30, ["p"])]]);
-  const vert = verticalLayout(horiz, zones, bands, { w: 1920, h: 1080 });
-  const item = vert.get("w")[0];
-  // Top label: object strip starts below the label strip: rowTop + labelBox + gap.
-  assert.ok(Math.abs(item._top - (rowTop + labelBox + gap)) < 1e-9, "object below label strip");
-});
-
-test("verticalLayout: bottom label places the object at the row top", () => {
-  const placements = [{ placement_name: "p", object_name: "heat_block", zone: "w", depth_tier: 0 }];
-  const bound = bindObjects(placements, DEMO_OBJECT_LIBRARY, DEMO_ASSET_SPECS, []);
-  const scaled = scaleToRealWorld(bound, "bench", {}, []);
-  const zones = [{ id: "w", bounds: { left: 20, right: 80, top: 45, bottom: 75 } }];
-  const horiz = horizontalLayout(groupByZone(scaled, zones).groups, zones);
-  const measured = horiz.get("w")[0];
-  measured._labelBoxHeight = 2.2;
   measured._labelPlacement = "bottom";
   const rowTop = 48;
-  const bands = new Map([["w", makeBand("w", 45, 75, rowTop, 30, ["p"])]]);
+  const rowHeight = 30;
+  const bands = new Map([["w", makeBand("w", 45, 99, rowTop, rowHeight, ["p"])]]);
   const vert = verticalLayout(horiz, zones, bands, { w: 1920, h: 1080 });
   const item = vert.get("w")[0];
-  // Bottom label: the object strip sits at the row top (label strip is below it).
-  assert.ok(Math.abs(item._top - rowTop) < 1e-9, "object at the row top for a bottom label");
+  // Bottom label: the shelf is pulled UP by the label reserve (gap + label box) so
+  // the label strip stays inside the row below the object bottom.
+  const shelf = rowTop + rowHeight - (gap + labelBox);
+  assert.ok(
+    Math.abs(item._top + item._height - shelf) < 1e-9,
+    "object bottom rests on the shelf above the reserved label strip",
+  );
+  // The reserved strip between the object bottom and the row bottom is exactly the
+  // label gap plus the label box.
+  const reserve = rowTop + rowHeight - (item._top + item._height);
+  assert.ok(
+    Math.abs(reserve - (gap + labelBox)) < 1e-9,
+    "the label reserve equals gap + label box",
+  );
 });
 
-test("verticalLayout: anchor back-solve maps objectTop to baseline for all three modes", () => {
+test("verticalLayout: a tier row shares one baseline so unequal objects bottom-align", () => {
+  // The core fix: two objects of DIFFERENT natural heights in one tier row land
+  // their bottom edges on one common line (the shared shelf baseline), instead of
+  // hanging from the row top.
+  const placements = [
+    { placement_name: "a", object_name: "heat_block", zone: "w", depth_tier: 0 },
+    { placement_name: "b", object_name: "heat_block", zone: "w", depth_tier: 0 },
+  ];
+  const bound = bindObjects(placements, DEMO_OBJECT_LIBRARY, DEMO_ASSET_SPECS, []);
+  const scaled = scaleToRealWorld(bound, "bench", {}, []);
+  const zones = [{ id: "w", bounds: { left: 10, right: 90, top: 45, bottom: 99 } }];
+  const horiz = horizontalLayout(groupByZone(scaled, zones).groups, zones);
+  const items = horiz.get("w");
+  // Force two different natural heights via aspect (nH = visualWidth * 1920/1080 /
+  // aspect): item a is tall (aspect 1.5 -> nH 14.22), item b is short (aspect 3 ->
+  // nH 7.11).
+  items[0]._visualWidth = 12;
+  items[0].aspect = 1.5;
+  items[0]._labelBoxHeight = 2.0;
+  items[0]._labelPlacement = "top";
+  items[1]._visualWidth = 12;
+  items[1].aspect = 3;
+  items[1]._labelBoxHeight = 2.0;
+  items[1]._labelPlacement = "top";
+  const rowTop = 48;
+  const rowHeight = 40;
+  const bands = new Map([["w", makeBand("w", 45, 99, rowTop, rowHeight, ["a", "b"])]]);
+  const vert = verticalLayout(horiz, zones, bands, { w: 1920, h: 1080 });
+  const a = vert.get("w").find((it) => it.placement_name === "a");
+  const b = vert.get("w").find((it) => it.placement_name === "b");
+  // The two objects have genuinely different heights (the scene the fix targets).
+  assert.ok(Math.abs(a._height - b._height) > 1, "the two objects differ in height");
+  // Their bottom edges land on one common line.
+  assert.ok(
+    Math.abs(a._top + a._height - (b._top + b._height)) < 1e-9,
+    "unequal-height objects share one bottom shelf line",
+  );
+  // They share one baseline (the shelf), and a bottom-anchored object's bottom sits
+  // on it.
+  assert.ok(Math.abs(a._baselineY - b._baselineY) < 1e-9, "the row shares one baseline");
+  assert.ok(
+    Math.abs(a._top + a._height - a._baselineY) < 1e-9,
+    "a bottom-anchored object's bottom sits on the baseline",
+  );
+});
+
+test("verticalLayout: tip offset 0 bottoms on the shelf; tip offset and center shift predictably", () => {
+  // With the shared baseline, anchor_y maps the baseline to the object edge: bottom
+  // and tip(offset 0) put the bottom on the baseline; a positive tip offset hangs
+  // the tip below it; center (anchor_y "top") puts the object center on it.
   const rowTop = 50;
-  const labelBox = 2.2;
-  const gap = buildGlobalDefaults().labelOffsetY;
-  // For a bottom-label item the objectTop == rowTop, so the back-solved baseline
-  // depends only on the anchor mode and the natural height.
+  const rowHeight = 40;
   function placeWithAnchor(anchor, anchorOffset = 0) {
     const placements = [
       { placement_name: "p", object_name: "heat_block", zone: "w", depth_tier: 0 },
@@ -386,27 +458,33 @@ test("verticalLayout: anchor back-solve maps objectTop to baseline for all three
     const scaled = scaleToRealWorld(bound, "bench", {}, []);
     scaled[0].layout.anchor_y = anchor;
     scaled[0].layout.anchor_y_offset = anchorOffset;
-    const zones = [{ id: "w", bounds: { left: 20, right: 80, top: 45, bottom: 95 } }];
+    const zones = [{ id: "w", bounds: { left: 20, right: 80, top: 45, bottom: 99 } }];
     const horiz = horizontalLayout(groupByZone(scaled, zones).groups, zones);
     const measured = horiz.get("w")[0];
-    measured._labelBoxHeight = labelBox;
-    measured._labelPlacement = "bottom"; // objectTop == rowTop
-    const bands = new Map([["w", makeBand("w", 45, 95, rowTop, 40, ["p"])]]);
+    measured._visualWidth = 12;
+    measured.aspect = 2; // nH = 10.667 < rowHeight, so the shelf term wins
+    measured._labelBoxHeight = 2.2;
+    measured._labelPlacement = "top";
+    const bands = new Map([["w", makeBand("w", 45, 99, rowTop, rowHeight, ["p"])]]);
     const vert = verticalLayout(horiz, zones, bands, { w: 1920, h: 1080 });
     return vert.get("w")[0];
   }
-  // bottom anchor: baseline = objectTop + height; _top == baseline - height.
+  // Top-label single item: the shelf is the row bottom.
+  const shelf = rowTop + rowHeight;
   const bot = placeWithAnchor("bottom");
-  assert.ok(Math.abs(bot._top - rowTop) < 1e-9, "bottom: object at row top");
-  assert.ok(Math.abs(bot._baselineY - (rowTop + bot._height)) < 1e-9, "bottom baseline");
-  // center anchor: baseline = objectTop + height/2.
-  const cen = placeWithAnchor("top"); // anchor_y "top" maps to center in anchorTop
-  assert.ok(Math.abs(cen._baselineY - (rowTop + cen._height / 2)) < 1e-9, "center baseline");
-  // tip anchor: baseline = objectTop + height - anchorOffset.
-  const tip = placeWithAnchor("tip", 3);
-  assert.ok(Math.abs(tip._baselineY - (rowTop + tip._height - 3)) < 1e-9, "tip baseline");
-  // Sanity: the gap is the same label_offset_y the measure stage folds in.
-  assert.ok(gap > 0, "label gap is positive");
+  assert.ok(Math.abs(bot._top + bot._height - shelf) < 1e-9, "bottom anchor sits on the shelf");
+  const tip0 = placeWithAnchor("tip", 0);
+  assert.ok(Math.abs(tip0._top + tip0._height - shelf) < 1e-9, "tip offset 0 sits on the shelf");
+  const tip3 = placeWithAnchor("tip", 3);
+  assert.ok(
+    Math.abs(tip3._top + tip3._height - (shelf + 3)) < 1e-9,
+    "a positive tip offset hangs the tip below the shelf",
+  );
+  const cen = placeWithAnchor("top");
+  assert.ok(
+    Math.abs(cen._top + cen._height / 2 - shelf) < 1e-9,
+    "center anchor puts the object center on the shelf",
+  );
 });
 
 test("verticalLayout: missing band falls back to the zone top and flags the item", () => {
@@ -428,7 +506,7 @@ test("verticalLayout: missing band falls back to the zone top and flags the item
   assert.ok(escape !== undefined, "missing band flags item_escapes_zone_vertically");
 });
 
-// ─── Stage 9 ────────────────────────────────────────────────────────
+// ---- Stage 9 ----
 test("layoutLabels: short labels emit one line", () => {
   assert.deepEqual(wrapLabel("Hi", 10), ["Hi"]);
 });
@@ -438,7 +516,7 @@ test("layoutLabels: long labels wrap at nearest space to middle", () => {
   assert.equal(lines.length, 2);
 });
 
-// ── layoutLabels seed geometry (WP-3a: label_placement top | bottom) ──
+// ---- layoutLabels seed geometry (label_placement top | bottom) ----
 //
 // Build a minimal ComputedItem carrying just the fields layoutLabels reads at
 // seed time: artwork box (_centerX/_top/_visualWidth/_height), the row baseline
@@ -541,7 +619,7 @@ test("layoutLabels: per-placement override wins over scene rule and default", ()
   );
 });
 
-// ── layoutLabels computed-band clamp + terminal flip (WP-3a) ──
+// ---- layoutLabels computed-band clamp + terminal flip ----
 //
 // After the reflow, the vertical label clamp and the terminal safety flip read
 // the COMPUTED band (reflow-zones output) instead of the authored zone bounds.
@@ -659,7 +737,7 @@ test("layoutLabels: terminal flip stays inside the measured row extent", () => {
   assert.ok(labelBottom <= bandBottom + 1e-6, "label bottom inside the band floor");
 });
 
-// ── layoutLabels direction-aware stagger (WP-3b: per-zone, per-group ladder) ──
+// ---- layoutLabels direction-aware stagger (per-zone, per-group ladder) ----
 //
 // The seed helpers above (seedItem / runSeed / SEED_ZONE) feed these too. Two
 // items sharing a centerX seed both labels at the same _labelX; a wide label
@@ -787,7 +865,7 @@ test("layoutLabels: a rear-zone top label with no room above falls back to botto
   const topClamp = 5 + pad;
   const ceiling = 6 - lineH * 1; // highest top-label Y whose bottom clears the object
   assert.ok(ceiling < topClamp, "test geometry: no room above the object for a top label");
-  // The label must NOT overprint its own art. WP-3a seeds the bottom label below
+  // The label must NOT overprint its own art. The seed logic places the bottom label below
   // the object's ART bottom (_top + _height = 6 + 20 = 26), not below _baselineY,
   // so the clearance check uses the art bottom.
   const objectBottom = 6 + 20;
@@ -922,8 +1000,8 @@ test("layoutLabels: mixed top/bottom zone staggers each group independently", ()
   assert.ok(topYs[1] < botYs[0], "top group stays entirely above bottom group");
 });
 
-// ─── Stage 10 / validate (M6/WP-VERT1: report-only bounds validation) ──
-test("clampSceneBounds: report-only — measures overflow, never shifts positions", () => {
+// ---- Stage 10 / validate (report-only bounds validation) ----
+test("clampSceneBounds: report-only - measures overflow, never shifts positions", () => {
   const items = [
     {
       placement_name: "p",
@@ -1038,14 +1116,14 @@ test("clampSceneBounds: item inside bounds records no overflow", () => {
   assert.equal(overflows.length, 0);
 });
 
-// ─── runPipeline + convergence loop ─────────────────────────────────
+// ---- runPipeline + convergence loop ----
 test("runPipeline: heat_block_bench fixture converges in 1 pass, no diagnostics", () => {
   const result = runHeatBlock();
   assert.equal(result.diagnostics.length, 0);
   assert.equal(result.passes[0].zones_shrunk.length, 0);
 });
 
-test("runPipeline: _width_scale fixture values match spec §7", () => {
+test("runPipeline: _width_scale fixture values match spec section 7", () => {
   const result = runHeatBlock();
   const byName = new Map(result.stages.scaled.map((p) => [p.placement_name, p]));
   const pxPerCm = WORKSPACE_PX_PER_CM.bench;
@@ -1115,7 +1193,7 @@ test("runPipeline: identityDiagCount excludes placement-stage diagnostics", () =
   assert.equal(result.identityDiagCount, 0);
 });
 
-// ─── Stage 7 packer (M5/WP-STRAT2) ──────────────────────────────────
+// ---- Stage 7 packer ----
 // A deliberately overloaded single-row zone: a narrow zone packed with an
 // equipment primary plus several lower-priority fillers whose scale-1 footprints
 // overflow. The packer must engage, fit with no negative gap, preserve the

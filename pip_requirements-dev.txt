@@ -3,6 +3,7 @@ bandit  # security linting for Python code
 cairosvg  # rasterize SVG to PNG for the identity sweep
 imagehash  # perceptual hashing for SVG duplicate detection
 lxml  # XML parse/serialize for tools/normalize_svg_v3.py (preferred over ElementTree)
+numpy
 packaging  # version parsing/comparison helpers used by tooling/tests
 pillow
 pyflakes  # static analysis lint checks

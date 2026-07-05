@@ -283,24 +283,17 @@ dispense in pedagogy terms.
 
 ## Rendering and content display
 
-### Fix unit rendering for browser-displayed YAML labels
+### Fix unit rendering for browser-displayed YAML labels (RESOLVED 2026-07-05)
 
-Authored YAML strings that render in the browser should support proper
-scientific unit display, especially micro units. The desired browser display is
-`&mu;L` and `&mu;M`, but the source must remain safe and consistent with the
-repo's ASCII documentation rules. Current workaround is to write `uL` and `uM`
-in YAML labels and fenced code examples.
-
-Acceptance criteria:
-
-- Browser-displayed YAML labels can show `&mu;L` and `&mu;M` correctly.
-- HTML entities such as `&mu;` or `&micro;` do not appear literally in the UI.
-- The rendering path uses safe text handling and does not introduce unsafe
-  HTML injection.
-- Docs clarify the final convention for Markdown prose, fenced YAML examples,
-  and authored YAML labels.
-- Existing ASCII compliance checks still pass, or the exception is explicitly
-  documented if source files are allowed to contain Unicode units.
+Resolved: the author-entity -> codegen-decode -> DOM-glyph convention is now
+the documented, canonical rendering path. Authors write HTML entities in
+committed YAML (`&micro;M`, `&alpha;`); codegen decodes each entity to its
+Unicode glyph at the string-emit choke point, so `generated/**` carries the
+real character; the runtime renders that string as a plain DOM text node,
+never `innerHTML`. See the "Glyph rendering" convention in
+[specs/MATERIAL_YAML_FORMAT.md](specs/MATERIAL_YAML_FORMAT.md#glyph-rendering),
+cross-linked from `OBJECT_YAML_FORMAT.md`, `PROTOCOL_YAML_FORMAT.md`, and
+`PROTOCOL_AUTHORING_GUIDE.md`. The prior `uL`/`uM` ASCII stopgap is retired.
 
 ## Pre-existing failures surfaced during M1b (2026-05-09)
 

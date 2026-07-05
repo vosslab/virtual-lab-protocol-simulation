@@ -223,14 +223,14 @@ validated by `correct_choice`:
 
 ```yaml
 - step_name: choose_dilution
-  prompt: "Which recipe makes 1 mL of 200 uM working solution from a 10 mM stock?"
+  prompt: "Which recipe makes 1 mL of 200 &micro;M working solution from a 10 mM stock?"
   sequence:
     - target: choice_20uL_stock
       gesture: select
       validator: { preset: correct_choice }
       response:
         feedback:
-          correct: "Correct: 20 uL stock + 980 uL media is 200 uM."
+          correct: "Correct: 20 &micro;L stock + 980 &micro;L media is 200 &micro;M."
           incorrect: "Check your math with C1V1 = C2V2."
   step_validator: { preset: sequence_complete }
   outcome:
@@ -256,7 +256,7 @@ Worked example for two wells in row B:
 
 ```yaml
 - step_name: add_media_row_b
-  prompt: "Add 100 uL media to wells B1 and B2."
+  prompt: "Add 100 &micro;L media to wells B1 and B2."
   sequence:
     - target: serological_pipette
       gesture: click

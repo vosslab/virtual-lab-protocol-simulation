@@ -41,7 +41,7 @@ def test_scene_design_cli_populates_metrics_with_dump():
 	# At least one dump-consuming metric should also populate.
 	dump_consuming = [
 		'predicted_label_overlap', 'label_to_object_distance', 'label_wrap_rate',
-		'scene_density', 'row_overcrowding', 'tab_stops_symmetry', 'aspect_fidelity',
+		'scene_density', 'tab_stops_symmetry', 'aspect_fidelity',
 	]
 	assert any(metrics.get(m) is not None for m in dump_consuming)
 

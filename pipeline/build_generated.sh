@@ -19,6 +19,11 @@
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
+# Make repo-root packages (pipeline.*, validation.*) importable by the
+# generators regardless of whether the caller sourced source_me.sh
+# (run_playwright_tests.sh does not). Mirrors source_me.sh's PYTHONPATH export.
+export PYTHONPATH="$(git rev-parse --show-toplevel)${PYTHONPATH:+:$PYTHONPATH}"
+
 # Wipe and recreate the artifact tree so no stale outputs survive.
 rm -rf generated
 mkdir -p generated
