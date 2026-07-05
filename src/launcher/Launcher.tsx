@@ -155,7 +155,6 @@ export function Launcher(props: LauncherProps): JSXElement {
     } else if (entry.protocol_type === "mini_protocol") {
       minis.push(entry);
     }
-    // dev_smoke not in slim index; ignore silently.
   }
   const runners_sorted = runners
     .slice()

@@ -36,6 +36,8 @@ Read task-specific docs as needed:
 - Materials (liquids, mixtures, suspensions, waste): terms and classification in
   [docs/specs/MATERIAL_VOCABULARY.md](docs/specs/MATERIAL_VOCABULARY.md); render
   convention and color resolver in [docs/specs/MATERIAL_CONVENTION.md](docs/specs/MATERIAL_CONVENTION.md).
+- Test data policy: content is the fixture; see
+  [docs/specs/NO_FIXTURE_POLICY.md](docs/specs/NO_FIXTURE_POLICY.md).
 
 These rules come from the primary contract and primary spec. See those files for the full authority and rationale.
 

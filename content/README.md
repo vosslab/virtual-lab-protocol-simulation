@@ -35,11 +35,10 @@ The three clusters organize protocols by pedagogical workflow:
 - `sdspage/` -- mini-protocols for the SDS-PAGE electrophoresis workflow.
 - `runners/` -- sequence runners that assemble existing mini-protocols into longer pathways (examples: `cell_culture_full`, `routine_passage`, `sdspage_full`).
 
-Three `protocol_type` values are authored under `content/protocols/`:
+Two `protocol_type` values are authored under `content/protocols/`:
 
 - `mini_protocol`: one pedagogical unit; the standard authoring shape. Lives under `cell_culture/` or `sdspage/`.
 - `sequence_runner`: assembles existing mini-protocols into a longer pathway. Lives under `runners/`.
-- `dev_smoke`: developer smoke fixtures. These do NOT live here; they live under `tests/content/dev_smoke/`. They are listed only so the enum is complete.
 
 The binding rule for cluster membership, folder naming, and enforcement lives in [docs/specs/TARGET_FILE_STRUCTURE.md](../docs/specs/TARGET_FILE_STRUCTURE.md#protocol-cluster-layout). Definitions for each protocol kind live in [docs/specs/PROTOCOL_VOCABULARY.md](../docs/specs/PROTOCOL_VOCABULARY.md). YAML schema in [docs/specs/PROTOCOL_YAML_FORMAT.md](../docs/specs/PROTOCOL_YAML_FORMAT.md). Authoring walk-through in [docs/specs/PROTOCOL_AUTHORING_GUIDE.md](../docs/specs/PROTOCOL_AUTHORING_GUIDE.md).
 

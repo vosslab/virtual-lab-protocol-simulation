@@ -10,7 +10,6 @@
 // through @playwright/test so the runner owns pass/fail for the whole suite.
 //
 // Verifies:
-//   - PROTOCOLS_INDEX excludes protocol_type: "dev_smoke" entries.
 //   - Every entry has a non-empty protocol_name and cluster field.
 //   - learning_hook field is present on the type (may be null per entry).
 //   - Parsed entries have unique protocol_name and a valid protocol_type.
@@ -35,12 +34,6 @@ function readProtocolsIndexText(): string {
 test.describe("generated/protocols.ts PROTOCOLS_INDEX shape", () => {
   test("PROTOCOLS_INDEX array literal is present", () => {
     expect(readProtocolsIndexText().length).toBeGreaterThan(0);
-  });
-
-  test("excludes dev_smoke entries", () => {
-    const indexText = readProtocolsIndexText();
-    const devSmokeMatches = indexText.match(/protocol_type:\s*["']dev_smoke["']/g);
-    expect(devSmokeMatches, "gen_protocols.py must exclude dev_smoke entries").toBeNull();
   });
 
   test("every entry has a non-empty protocol_name", () => {

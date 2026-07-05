@@ -250,7 +250,7 @@ export type UnsubscribeFn = () => void;
 //============================================
 
 // Closed enum for protocol kinds per PRIMARY_SPEC.md and PROTOCOL_VOCABULARY.md
-export type ProtocolKind = "mini_protocol" | "sequence_runner" | "dev_smoke";
+export type ProtocolKind = "mini_protocol" | "sequence_runner";
 
 // Learning block for mini-protocols and sequence runners.
 export interface LearningBlock {
@@ -393,7 +393,7 @@ export interface ProtocolStep {
   readonly next_step: string | null;
 }
 
-// Protocol configuration (mini_protocol, sequence_runner, or dev_smoke).
+// Protocol configuration (mini_protocol or sequence_runner).
 export interface ProtocolConfig {
   readonly protocol_name: string;
   readonly protocol_type: ProtocolKind;
@@ -403,7 +403,7 @@ export interface ProtocolConfig {
   readonly mini_protocols?: ReadonlyArray<string>;
 }
 
-// Index entry for student-visible protocols (excludes dev_smoke).
+// Index entry for student-visible protocols.
 export interface ProtocolIndexEntry {
   readonly protocol_name: string;
   readonly cluster: string;

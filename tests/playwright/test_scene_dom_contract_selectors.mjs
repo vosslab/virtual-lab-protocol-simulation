@@ -341,36 +341,6 @@ async function main() {
     // Test 2: hood_workspace -- multi-scene spot-check.
     await loadScene(page, server.baseUrl, "hood_workspace");
     await testSceneSelectorContract(page, "hood_workspace");
-
-    // Test 3: missing_svg_check -- placeholder attribute contract.
-    // This scene intentionally contains missing-svg placeholders; verify the
-    // data-missing-svg attribute is correctly set on placeholder items.
-    await loadScene(page, server.baseUrl, "missing_svg_check");
-    const missingItems = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll("[data-missing-svg='true']")).map((el) => ({
-        placementName: el.getAttribute("data-placement-name") ?? "",
-        missingSvg: el.getAttribute("data-missing-svg"),
-        placeholderKind: el.getAttribute("data-placeholder-kind"),
-      }));
-    });
-    // The scene should have at least one placeholder item.
-    assertGt(
-      missingItems.length,
-      0,
-      "missing_svg_check: at least one [data-missing-svg='true'] element",
-    );
-    for (const item of missingItems) {
-      assertEq(
-        item.missingSvg,
-        "true",
-        `missing_svg_check[${item.placementName}]: data-missing-svg="true"`,
-      );
-      // data-placeholder-kind must be present on placeholder items.
-      assert(
-        item.placeholderKind !== null && item.placeholderKind.length > 0,
-        `missing_svg_check[${item.placementName}]: data-placeholder-kind present`,
-      );
-    }
   } finally {
     await browser.close();
     await server.close();

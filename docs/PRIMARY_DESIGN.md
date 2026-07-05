@@ -47,7 +47,7 @@ learning:
 
 ## Protocol kinds
 
-The authored kinds (`mini_protocol`, `sequence_runner`, `dev_smoke`) and the surrounding structural terms (protocol package, `protocol_type`, `protocol.yaml`) are defined canonically in [PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md#protocol-kinds). Large protocols are assembled from mini-protocols so each part can be authored, tested, and walked independently.
+The authored kinds (`mini_protocol`, `sequence_runner`) and the surrounding structural terms (protocol package, `protocol_type`, `protocol.yaml`) are defined canonically in [PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md#protocol-kinds). Large protocols are assembled from mini-protocols so each part can be authored, tested, and walked independently.
 
 ## Visible interaction standard
 
@@ -77,7 +77,7 @@ This repository treats primitives as durable vocabulary infrastructure, not shor
 
 Authored TypeScript source for the shared scene runtime lives under `src/scene_runtime/`. Generated protocol, scene, inventory, and registry data emits under `generated/` at the repo root. Generated files do not live under `src/`.
 
-Curriculum content lives under `content/protocols/<cluster>/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. Smoke protocols use the same YAML schema, builder, and walker path as curriculum mini-protocols, but they are excluded from the student launcher and the full-protocol sequence.
+Curriculum content lives under `content/protocols/<cluster>/<protocol_name>/`.
 
 ## Vocabulary closure and anti-drift
 

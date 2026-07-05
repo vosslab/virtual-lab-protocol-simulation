@@ -10,8 +10,7 @@
 //
 // Why not generated/scenes.ts's SCENES map: that map mixes every scene the
 // pipeline emits -- base scenes PLUS protocol workspace scenes (seeding_workspace,
-// dilution_workspace, ...) PLUS dev-smoke check scenes (select_check, type_check,
-// missing_svg_check, ...). There is no clean base-only subset of its keys, so it
+// dilution_workspace, ...). There is no clean base-only subset of its keys, so it
 // is the right authority for "every scene that renders" (see
 // tests/e2e/e2e_layout_parity_16x9.mjs, which walks Object.keys(SCENES) for
 // exactly that broader purpose) but the wrong authority for "the base scenes that

@@ -14,7 +14,6 @@ tests/
     test_*.mjs           smoke/layout/regression
     repo_root.mjs        shared helper: exports REPO_ROOT (centrally propagated)
     helpers.mjs          shared test utilities
-    fixtures/            test data
     e2e/                 OPTIONAL: full-path browser walkthroughs
       test_*.mjs
   e2e/                   non-browser whole-system E2E (shell/Python)

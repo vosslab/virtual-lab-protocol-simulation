@@ -286,7 +286,7 @@ Developer-only helpers that do not appear in any build chain.
 | --- | --- |
 | [run_smoke.py](../tools/run_smoke.py) | Fast browser smoke test wrapper |
 | [run_protocol_walkthrough.py](../tools/run_protocol_walkthrough.py) | Full protocol E2E wrapper |
-| [build_test_fixture.sh](../tools/build_test_fixture.sh) | Build a single dev-smoke protocol for local testing |
+| [build_test_fixture.sh](../tools/build_test_fixture.sh) | Bundle a well-plate adapter for a Playwright test fixture directory |
 | `tools/normalize_svg_v3.py` | SVG ingestion-gate normalizer (lxml + tinycss2 + shapely); see below |
 | [check_css_content_policy.py](../tools/check_css_content_policy.py) | CSS content policy checker (invoked by check_codebase.sh) |
 | [html_to_pdf.mjs](../tools/html_to_pdf.mjs) | Playwright-based HTML-to-PDF renderer |
@@ -580,9 +580,6 @@ for browser-test conventions.
   next scene under the reset policy, `TimedWait` is observable through the
   subsequent state write, and `LayoutMove` is an explicit reported no-op (zero
   authored uses, Option A).
-- End-to-end placeholder rendering through the full pipeline is not yet
-  proven: `gen_object_library.py` does not scan `tests/content/dev_smoke/`
-  fixtures, so dev_smoke fixture objects are not loaded into `OBJECT_LIBRARY`.
 - `drag` has no content protocol yet. The drag affordance and
   `step_machine.handle_drag_commit` are wired and unit-tested, but the walker
   sweep still classifies a `drag` interaction `unsupported_gesture` because no

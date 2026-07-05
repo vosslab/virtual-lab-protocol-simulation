@@ -18,6 +18,9 @@ import re
 import subprocess
 import sys
 
+import pipeline.gen_protocols
+import validation.yaml_schema.protocol_validator
+
 
 def get_repo_root() -> str:
 	result = subprocess.run(
@@ -56,13 +59,24 @@ def check_exports(content: str) -> None:
 		raise SystemExit("PROTOCOLS_INDEX export missing from generated/protocols.ts")
 
 
-def check_dev_smoke_split(content: str) -> None:
-	# dev_smoke protocols ship in PROTOCOLS but never in PROTOCOLS_INDEX.
+def check_index_covers_all_protocols(content: str) -> None:
+	# Every protocol carries mini_protocol or sequence_runner; PROTOCOLS_INDEX
+	# lists every protocol, so the entry count matches PROTOCOLS.
 	protocols_section = content.split("export const PROTOCOLS:")[1].split("} as const;")[0]
-	index_section = content.split("export const PROTOCOLS_INDEX:")[1]
-	if "dev_smoke" in protocols_section and "dev_smoke" in index_section:
+	index_section = content.split("export const PROTOCOLS_INDEX:")[1].split("] as const;")[0]
+	protocol_count = len(re.findall(r'protocol_name: "([^"]+)"', protocols_section))
+	index_count = len(re.findall(r"protocol_name: '([^']+)'", index_section))
+	if protocol_count == 0:
+		raise SystemExit("PROTOCOLS export has no entries")
+	if protocol_count != index_count:
 		raise SystemExit(
-			"dev_smoke protocols must be absent from PROTOCOLS_INDEX"
+			"PROTOCOLS_INDEX entry count does not match PROTOCOLS: "
+			f"protocols={protocol_count}, index={index_count}"
+		)
+	protocol_types = set(re.findall(r"protocol_type: '([^']+)'", index_section))
+	if not protocol_types <= {"mini_protocol", "sequence_runner"}:
+		raise SystemExit(
+			f"PROTOCOLS_INDEX has unexpected protocol_type values: {protocol_types}"
 		)
 
 
@@ -95,6 +109,62 @@ def check_index_field_alignment(content: str) -> None:
 		)
 
 
+def check_dev_smoke_rejected_by_codegen() -> None:
+	"""gen_protocols.py's own protocol_type enum must reject dev_smoke.
+
+	dev_smoke was removed from the active protocol vocabulary; this proves
+	the codegen gate still fails loudly on a stale protocol_type value
+	instead of silently accepting it.
+	"""
+	protocol_data = {
+		"protocol_type": "dev_smoke",
+		"protocol_name": "rejected_dev_smoke_check",
+		"entry_step": "only_step",
+	}
+	path = "content/protocols/cell_culture/rejected_dev_smoke_check/protocol.yaml"
+	raised = False
+	try:
+		pipeline.gen_protocols.validate_protocol(protocol_data, "cell_culture", path)
+	except ValueError as error:
+		raised = True
+		if "dev_smoke" not in str(error):
+			raise SystemExit(
+				f"gen_protocols.py rejected dev_smoke without naming it: {error}"
+			)
+	if not raised:
+		raise SystemExit(
+			"gen_protocols.py accepted protocol_type: dev_smoke; expected ValueError"
+		)
+
+
+def check_dev_smoke_rejected_by_schema_validator() -> None:
+	"""The schema validator's PROTOCOL_TYPES enum must reject dev_smoke.
+
+	Independent of the codegen gate above: proves the schema validator
+	(validation/yaml_schema/protocol_validator.py) also rejects dev_smoke,
+	so removing it from the vocabulary was not silently bypassed by only
+	one of the two gates.
+	"""
+	protocol_data = {
+		"protocol_type": "dev_smoke",
+		"protocol_name": "rejected_dev_smoke_check",
+		"entry_step": "only_step",
+		"learning": {},
+		"steps": [],
+	}
+	path = "content/protocols/cell_culture/rejected_dev_smoke_check/protocol.yaml"
+	validator = validation.yaml_schema.protocol_validator.ProtocolValidator()
+	findings = validator.validate(protocol_data, path)
+	protocol_type_findings = [
+		finding for finding in findings if "protocol_type 'dev_smoke'" in finding.message
+	]
+	if not protocol_type_findings:
+		raise SystemExit(
+			"protocol_validator.py accepted protocol_type: dev_smoke; expected a "
+			f"protocol_type finding, got: {[f.message for f in findings]}"
+		)
+
+
 def main() -> int:
 	repo_root = get_repo_root()
 	# Run twice and confirm byte-for-byte determinism.
@@ -106,9 +176,11 @@ def main() -> int:
 		raise SystemExit("gen_protocols.py output is non-deterministic across runs")
 	# Structural checks on the most recent run.
 	check_exports(second)
-	check_dev_smoke_split(second)
+	check_index_covers_all_protocols(second)
 	check_sorted_index(second)
 	check_index_field_alignment(second)
+	check_dev_smoke_rejected_by_codegen()
+	check_dev_smoke_rejected_by_schema_validator()
 	print("e2e_gen_protocols: OK")
 	return 0
 

@@ -6,9 +6,8 @@
 // M4 WP-4-1 launcher test. Loads dist/index.html (served by the
 // playwright.config.ts webServer block; no per-file server, no chromium
 // import, no process.exit) and asserts:
-//   - Every entry in PROTOCOLS_INDEX (from generated/protocols.ts)
-//     renders as a card with [data-protocol-id].
-//   - No dev_smoke entries appear in the launcher.
+//   - The launcher renders exactly the protocol ids listed in
+//     PROTOCOLS_INDEX (from generated/protocols.ts), no more and no fewer.
 //   - Clicking the mtt_reagent_prep entry navigates to
 //     mtt_reagent_prep.html and both #scene-root and #shell-root
 //     render on that page.
@@ -33,7 +32,7 @@ interface ProtocolIndexEntry {
 }
 
 //============================================
-// Extract expected protocol_name list + dev_smoke filter check
+// Extract expected protocol_name list
 //============================================
 
 function loadExpectedIndex(): ProtocolIndexEntry[] {
@@ -64,14 +63,10 @@ function loadExpectedIndex(): ProtocolIndexEntry[] {
   return names;
 }
 
-test("launcher renders every non-dev_smoke protocol and navigates to one", async ({ page }) => {
+test("launcher renders exactly the PROTOCOLS_INDEX protocols and navigates to one", async ({
+  page,
+}) => {
   const expected = loadExpectedIndex();
-  for (const entry of expected) {
-    expect(
-      entry.protocol_type,
-      `PROTOCOLS_INDEX contains dev_smoke entry ${entry.protocol_name}; gen_protocols.py should exclude them`,
-    ).not.toBe("dev_smoke");
-  }
   const expectedNames = expected.map((e) => e.protocol_name);
 
   const consoleErrors: string[] = [];
@@ -96,19 +91,20 @@ test("launcher renders every non-dev_smoke protocol and navigates to one", async
     expect(rendered, `Launcher missing [data-protocol-id=${name}]`).toContain(name);
   }
 
-  // No dev_smoke ids should appear at all, and no unknown ids either. (This
-  // stays a hard lookup against the parsed index, not a suffix sniff, to
-  // keep the test honest.)
+  // The rendered set must be exactly the expected set: every rendered id
+  // must be a real PROTOCOLS_INDEX entry, and the counts must match so
+  // nothing extra sneaks in.
   for (const id of rendered) {
     const match = expected.find((e) => e.protocol_name === id);
     expect(
       match,
       `Launcher rendered unknown id ${String(id)} (not in PROTOCOLS_INDEX)`,
     ).toBeDefined();
-    expect(match?.protocol_type, `Launcher rendered dev_smoke id ${String(id)}`).not.toBe(
-      "dev_smoke",
-    );
   }
+  expect(
+    rendered.length,
+    `Launcher rendered ${rendered.length} entries; PROTOCOLS_INDEX has ${expectedNames.length}`,
+  ).toBe(expectedNames.length);
 
   await page.screenshot({ path: "test-results/test_launcher_00_index.png" });
 

@@ -1,5 +1,63 @@
 # Changelog
 
+## 2026-07-05
+
+### Additions and New Features
+
+- Added `docs/specs/NO_FIXTURE_POLICY.md`, the repo-specific no-fixture policy
+  ("content is the fixture": curriculum content under `content/protocols/**`
+  is exercised directly by the walker sweep; there is no separate diagnostic
+  fixture surface). Linked from `AGENTS.md`.
+
+### Removals and Deprecations
+
+- Removed the `dev_smoke` `protocol_type` as a concept from the whole
+  authoring and runtime surface: the Python codegen enum
+  (`pipeline/gen_protocols.py`) and validator (`validation/yaml_schema`) now
+  accept only `mini_protocol` and `sequence_runner`; the TypeScript
+  `ProtocolKind` union dropped the third value; the runtime exemptions built
+  around it were removed (`resolve_entry_scene.ts` no longer exempts an empty
+  scene from the fail-loud guard; `authored_value_check.ts` dropped its
+  `is_dev_smoke` plumbing). `dev_smoke`/fixture wording was purged from every
+  editable local spec and doc.
+- Neutered the four Playwright specs that depended on removed `dev_smoke`
+  fixtures (`test_decoration_noninteractive`, `test_type_input_feedback`,
+  `test_affordance_evidence`, `test_initial_scene_evidence_m1`, `.mjs` +
+  `.spec.ts` pairs) to a skipped no-op with an "OBSOLETE: dev_smoke removed"
+  header; their coverage is now carried by the real all-protocols walker
+  sweep over `content/protocols/**`. Regenerated `generated/**` from the
+  two-value protocol vocabulary; it contains zero `dev_smoke` references.
+- Listed six tracked files for human `git rm` at closeout (de-referenced and,
+  where executable, neutered so the gate stays green until removed):
+  `tests/playwright/test_decoration_noninteractive.{mjs,spec.ts}`,
+  `tests/playwright/test_type_input_feedback.{mjs,spec.ts}`,
+  `tests/playwright/test_affordance_evidence.{mjs,spec.ts}`,
+  `tests/playwright/test_initial_scene_evidence_m1.{mjs,spec.ts}`,
+  `tests/playwright/smoke_fixtures/one_object.json`,
+  `content/base_scenes_quarantine/well_plate_96_zoom.yaml`.
+
+### Decisions and Failures
+
+- "Content is the fixture" is now the single documented rule for exercising
+  protocol behavior; `dev_smoke` is removed as a concept rather than
+  reformed. `docs/PRIMARY_CONTRACT.md` never named `dev_smoke`, so this is
+  not a contract change.
+
+### Developer Tests and Notes
+
+- `./run_fast_checks.sh` (renamed from `run_all_checks.sh` per the
+  2026-07-04 entry below) green: 4963 pytest passed, build/typescript/pytest/
+  validate all PASS. `run_validate` reports 0 errors. `./build_github_pages.sh`
+  builds clean. `grep -rn dev_smoke generated/` empty. `pytest
+  tests/test_markdown_links.py` passed all 526 links checked.
+- `./run_playwright_tests.sh` surfaced one pre-existing, unrelated failure:
+  `test_scene_dom_contract_selectors.spec.ts`'s `missing_svg_check` case
+  expected a scene that depended on the `tests/content/dev_smoke/` fixture
+  tree removed by an earlier, separate initiative. Fixed by removing the
+  obsolete `missing_svg_check` placeholder-contract case from the `.spec.ts`
+  and its `.mjs` twin; `./run_playwright_tests.sh` now passes clean
+  (83 passed, 5 skipped, 0 failed).
+
 ## 2026-07-04
 
 ### Additions and New Features

@@ -22,8 +22,7 @@
 //
 // References:
 //   - docs/active_plans/decisions/m1b2_discovery_seam_proposal.md
-//     (Items 1-4: authored shapes, result kinds, dev_smoke exemption, the two
-//     state-touching presets)
+//     (Items 1-4: authored shapes, result kinds, the two state-touching presets)
 //   - src/scene_runtime/protocol/state_field_lookup.ts (StateFieldLookup,
 //     StateFieldLookupResult)
 
@@ -164,18 +163,10 @@ function is_finite_numeric(authored_value: string | number | boolean): boolean {
 
 // Check one (target, field, authored_value) against its structured lookup
 // result, throwing the appropriate named error on a miss. Returns normally when
-// the value is acceptable for the resolved field type.
-//
-// The dev_smoke exemption lives LOCAL to the unknown-resolution branch only:
-// when the result is unknown_object / unknown_subpart / unknown_field AND the
-// protocol_type is "dev_smoke", the miss is skipped for that one target. Every
-// resolved-kind branch (typed/enum/material) always runs the full check, even on
-// a dev_smoke protocol, and every miss on a non-dev_smoke protocol always errors.
-function check_one_value(
-  result: StateFieldLookupResult,
-  location: AuthoredValueLocation,
-  is_dev_smoke: boolean,
-): void {
+// the value is acceptable for the resolved field type. Every miss (unknown
+// object, subpart, or field, or a bad value) always errors; there is no
+// exemption path.
+function check_one_value(result: StateFieldLookupResult, location: AuthoredValueLocation): void {
   switch (result.kind) {
     case "typed": {
       // int/float: a finite number or finite-parseable numeric string.
@@ -222,23 +213,15 @@ function check_one_value(
       return;
     }
     case "unknown_field": {
-      // A known object/subpart with a bad field name always errors; this is not
-      // an unknown-reference miss, so the dev_smoke exemption does not apply.
+      // A known object/subpart with a bad field name always errors.
       throw new UnknownAuthoredFieldError(location);
     }
     case "unknown_object": {
-      // Unknown-reference miss: dev_smoke fixtures may intentionally reference a
-      // not-yet-declared object. Skip ONLY here, ONLY for dev_smoke.
-      if (is_dev_smoke) {
-        return;
-      }
+      // An authored value naming an object with no declared schema always errors.
       throw new UnknownAuthoredObjectError(location);
     }
     case "unknown_subpart": {
-      // Unknown-reference miss: same dev_smoke exemption as unknown_object.
-      if (is_dev_smoke) {
-        return;
-      }
+      // An authored value naming an undeclared subpart always errors.
       throw new UnknownAuthoredSubpartError(location);
     }
     default: {
@@ -256,13 +239,12 @@ function check_one_value(
 // Validate every authored value in the two state-touching validators against the
 // declared field type reported by the injected lookup. Throws a named
 // author-facing error on the first miss; returns normally when all authored
-// values are well-typed (or skipped under the dev_smoke unknown-reference
-// exemption). Called inside create_step_machine, beside validate_protocol_presets.
+// values are well-typed. Called inside create_step_machine, beside
+// validate_protocol_presets.
 export function validate_authored_validator_values(options: AuthoredValueCheckOptions): void {
   const config = options.protocol_config;
   const lookup = options.lookup_state_field;
   const protocol_name = config.protocol_name;
-  const is_dev_smoke = config.protocol_type === "dev_smoke";
 
   for (const step of config.steps ?? []) {
     const step_name = step.step_name;
@@ -288,7 +270,7 @@ export function validate_authored_validator_values(options: AuthoredValueCheckOp
           field,
           authored_value,
         };
-        check_one_value(result, location, is_dev_smoke);
+        check_one_value(result, location);
       }
     }
 
@@ -313,7 +295,7 @@ export function validate_authored_validator_values(options: AuthoredValueCheckOp
         field,
         authored_value,
       };
-      check_one_value(result, location, is_dev_smoke);
+      check_one_value(result, location);
     }
   }
 }

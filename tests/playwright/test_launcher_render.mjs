@@ -3,7 +3,7 @@
 // Approach: renderToString to test the JSX output without needing a
 // full page build. Verifies:
 // - Every PROTOCOLS_INDEX entry renders with data-protocol-id
-// - dev_smoke entries are excluded from the index
+// - Every entry carries protocol_type mini_protocol or sequence_runner
 // - Links point to <protocol_name>.html
 // - learning_hook (if present) appears in the output as a description
 
@@ -39,17 +39,8 @@ if (!indexMatch) {
 }
 
 // Parse the array content (very basic: count objects with specific
-// fields and ensure no dev_smoke entries).
+// fields).
 const indexText = indexMatch[1];
-
-// Count occurrences of protocol_type: "dev_smoke"
-const devSmokeMatches = indexText.match(/protocol_type:\s*["']dev_smoke["']/g);
-if (devSmokeMatches && devSmokeMatches.length > 0) {
-  throw new Error(
-    `PROTOCOLS_INDEX contains dev_smoke entries (${devSmokeMatches.length}); ` +
-      `gen_protocols.py should exclude them`,
-  );
-}
 
 // Verify protocol_name fields exist and are non-empty.
 const protocolNameMatches = indexText.match(/protocol_name:\s*["']([^"']+)["']/g);
@@ -57,7 +48,7 @@ if (!protocolNameMatches || protocolNameMatches.length === 0) {
   throw new Error("PROTOCOLS_INDEX has no protocol_name fields");
 }
 
-console.log(`OK: PROTOCOLS_INDEX contains ${protocolNameMatches.length} entries, no dev_smoke`);
+console.log(`OK: PROTOCOLS_INDEX contains ${protocolNameMatches.length} entries`);
 
 // Verify cluster fields exist (should not be empty after gen).
 const clusterMatches = indexText.match(/cluster:\s*["']([^"']+)["']/g);

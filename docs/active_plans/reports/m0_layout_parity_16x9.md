@@ -5,8 +5,8 @@ Work package WP-FEAS1. Proves the existing layout engine produces the same `Comp
 ## Verdict
 
 - Go signal: GO
-- Scenes checked: 38
-- Scenes passing parity + scene_name keying: 38
+- Scenes checked: 34
+- Scenes passing parity + scene_name keying: 34
 - All scenes exact bit-for-bit (no epsilon needed): yes
 - Viewport sweep correct: yes
 
@@ -23,7 +23,6 @@ Work package WP-FEAS1. Proves the existing layout engine produces the same `Comp
 
 | scene_name | items | parity | exact-zero | max abs delta | scene_name keyed | consumed artifact |
 | --- | --- | --- | --- | --- | --- | --- |
-| adversarial_overflow_smoke | 21 | PASS | yes | 0 | yes | match |
 | bench_basic | 11 | PASS | yes | 0 | yes | match |
 | cell_counter_basic | 7 | PASS | yes | 0 | yes | match |
 | cell_counter_workspace | 9 | PASS | yes | 0 | yes | match |
@@ -39,7 +38,6 @@ Work package WP-FEAS1. Proves the existing layout engine produces the same `Comp
 | imaging_bench | 12 | PASS | yes | 0 | yes | match |
 | incubator_workspace | 9 | PASS | yes | 0 | yes | match |
 | microscope_basic | 7 | PASS | yes | 0 | yes | match |
-| missing_svg_check | 1 | PASS | yes | 0 | yes | match |
 | mtt_reagent_prep_bench_workspace | 7 | PASS | yes | 0 | yes | match |
 | mtt_solubilization_readout_bench_workspace | 7 | PASS | yes | 0 | yes | match |
 | mtt_solubilization_readout_plate_reader_workspace | 7 | PASS | yes | 0 | yes | match |
@@ -58,9 +56,7 @@ Work package WP-FEAS1. Proves the existing layout engine produces the same `Comp
 | sdspage_recycle_buffer_workspace | 16 | PASS | yes | 0 | yes | match |
 | sdspage_run_electrophoresis_workspace | 16 | PASS | yes | 0 | yes | match |
 | seeding_workspace | 10 | PASS | yes | 0 | yes | match |
-| select_check | 2 | PASS | yes | 0 | yes | match |
 | staining_bench | 10 | PASS | yes | 0 | yes | match |
-| type_check | 1 | PASS | yes | 0 | yes | match |
 
 The consumed-artifact column compares `PRECOMPUTED_LAYOUT[scene].final` (generated/precomputed_layout.ts, the exact array the browser production path renders under WP-PRECOMP2) against the runtime engine at the canonical 16:9 frame. `match` means the build artifact is byte-current with the engine.
 

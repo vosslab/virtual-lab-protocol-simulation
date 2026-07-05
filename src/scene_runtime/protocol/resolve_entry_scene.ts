@@ -16,30 +16,28 @@
 // No protocol-level entry_scene field is read (forbidden by PRIMARY_SPEC.md).
 // The brittle protocol-name prefix guess is removed.
 
-import type { ProtocolConfig, ProtocolKind } from "../../shell/adapter/types.js";
+import type { ProtocolConfig } from "../../shell/adapter/types.js";
 
 //============================================
 
 /**
- * Assert that a rendered scene is non-empty for a student-visible protocol.
+ * Assert that a rendered scene is non-empty for every protocol.
  *
  * An empty final[] would silently paint only the background, violating the
- * fail-loud rule. The only exemption is dev_smoke protocols, which are
- * test scaffolds that intentionally exercise partial or empty scenes.
+ * fail-loud rule. The guard applies uniformly: every protocol's entry scene
+ * must resolve to at least one placement.
  *
  * @param final_count - Number of ComputedItems in pipeline_result.final.
- * @param protocol_type - The protocol_type discriminator.
  * @param protocol_name - For the error message.
  * @param scene_name - For the error message.
- * @throws Error if final_count === 0 and protocol_type is not dev_smoke.
+ * @throws Error if final_count === 0.
  */
 export function assert_scene_not_empty(
   final_count: number,
-  protocol_type: ProtocolKind,
   protocol_name: string,
   scene_name: string,
 ): void {
-  if (final_count === 0 && protocol_type !== "dev_smoke") {
+  if (final_count === 0) {
     throw new Error(
       `protocol_host: scene "${scene_name}" for protocol "${protocol_name}" rendered ` +
         `empty (final.length === 0). The scene must contain at least one placement. ` +
@@ -89,7 +87,7 @@ export function resolve_entry_scene_name(
   }
 
   // Find the entry step in config.steps.
-  // sequence_runner protocols branch and return earlier; this path is mini_protocol/dev_smoke only.
+  // sequence_runner protocols branch and return earlier; this path is mini_protocol only.
   const steps = config.steps ?? [];
   for (const step of steps) {
     if (step.step_name !== config.entry_step) {

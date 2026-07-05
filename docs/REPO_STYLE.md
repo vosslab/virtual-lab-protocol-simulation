@@ -24,7 +24,32 @@ Core principles guide work in this repo. Cite them by name when making judgment 
 
 ## Project type marker
 
-Every repo carries `REPO_TYPE` at the repo root: one lowercase token plus newline. Tokens: `python`, `typescript`, `rust`, `swift`, `other`, `all`. `all` means the repo consumes every template family and should receive every typed overlay in addition to universal files. Missing marker triggers detection via `tools/detect_repo_type.py`; if detection is unavailable or ambiguous, falls back to `LANG_UNKNOWN`. An unrecognized token in an existing marker (a typo or a not-yet-added type) logs a warning and falls back to `other`, rather than aborting propagation. `LANG_UNKNOWN` repos receive only universal walker-routed files (`docs/`, `tests/`, `devel/`); no `ROUTING_OVERRIDES` `exclude_repos` rule applies. The propagator (`propagate_style_guides.py` entry script + `repolib/` package: `repolib.repo.read_repo_type` reads the marker, `repolib.files.compute_propagation_plan` dispatches overlays) routes files by repo type; `reset_repo.py` writes the marker during bootstrap by calling `repolib` directly (no longer shells out to `propagate_style_guides.py`). `REPO_TYPE` is maintained after bootstrap; it controls future propagation behavior, not just initial scaffolding. File location is the primary routing determinant: every file under `templates/<type>/` ships to that type, files under `docs/`, `tests/`, and `devel/` ship universally. `docs/PYTHON_STYLE.md` ships to all repo types. The only routing exception encoded in `ROUTING_OVERRIDES` is `exclude_repos` (blocks a file from shipping back to its source repo). Conditional overlays (`_folder` convention, see `meta/docs/PROPAGATION_RULES.md`) are selected by a `conditional_overlays` manifest rule. A shared overlay routes one or more files under `templates/shared/<path>` to a chosen SET of repo types via a `shared_overlays` manifest rule (named `paths`, `repo_types`, and an optional `lacks_file` presence condition that ships only when a marker file is absent at the consumer); every `templates/shared/` file must be named by a rule or the shared walk raises. All propagation manifests live in `meta/propagation/manifests.yaml`. `swift` currently ships universal files only (no `templates/swift/` overlay); future swift-specific files are added by folder location (`templates/swift/<path>`) with no code change required.
+Every repo carries `REPO_TYPE` at the repo root: one lowercase token plus newline. Tokens: `python`, `typescript`, `rust`, `swift`, `other`, `scripted`, `website`, `compiled`, `all`. Every token is a directly usable marker, including the three base types. `all` means the repo consumes every template family and should receive every typed overlay in addition to universal files. Missing marker triggers detection via `tools/detect_repo_type.py`; if detection is unavailable or ambiguous, falls back to `LANG_UNKNOWN`. An unrecognized token in an existing marker (a typo or a not-yet-added type) logs a warning and falls back to `other`, rather than aborting propagation. `LANG_UNKNOWN` repos receive only universal walker-routed files (`docs/`, `tests/`, `devel/`); no `ROUTING_OVERRIDES` `exclude_repos` rule applies. The propagator (`propagate_style_guides.py` entry script + `repolib/` package: `repolib.repo.read_repo_type` reads the marker, `repolib.files.compute_propagation_plan` dispatches overlays) routes files by repo type; `reset_repo.py` writes the marker during bootstrap by calling `repolib` directly (no longer shells out to `propagate_style_guides.py`). `REPO_TYPE` is maintained after bootstrap; it controls future propagation behavior, not just initial scaffolding. File location is the primary routing determinant: every file under `templates/<type>/` ships to that type, files under `docs/`, `tests/`, and `devel/` ship universally. `docs/PYTHON_STYLE.md` ships to all repo types. The only routing exception encoded in `ROUTING_OVERRIDES` is `exclude_repos` (blocks a file from shipping back to its source repo). Conditional overlays (`_folder` convention, see `meta/docs/PROPAGATION_RULES.md`) are selected by a `conditional_overlays` manifest rule. A shared overlay routes one or more files under `templates/shared/<path>` to a chosen SET of repo types via a `shared_overlays` manifest rule (named `paths`, `repo_types`, and an optional `lacks_file` presence condition that ships only when a marker file is absent at the consumer); every `templates/shared/` file must be named by a rule or the shared walk raises. All propagation manifests live in `meta/propagation/manifests.yaml`. `swift` currently ships universal files only (no `templates/swift/` overlay); future swift-specific files are added by folder location (`templates/swift/<path>`) with no code change required.
+
+### Repo type inheritance
+
+Concrete repo types inherit overlays from a base type, forming a single-token
+inheritance DAG (`repo_type_inherits` in `meta/propagation/manifests.yaml`):
+`python -> scripted`, `rust -> compiled`, `swift -> compiled`, `typescript ->
+website`. `scripted`, `website`, `compiled`, and `other` are roots with no
+parent. `repolib.model.effective_type_chain(repo_type)` returns
+`[repo_type, *ancestors]` nearest-first; every overlay- and shared-routing path
+consumes this one helper, so a repo receives its own overlay plus every
+ancestor's overlay, unioned. A child and its ancestors never ship the same
+file, so overlay walk order does not matter for correctness.
+
+Routing rules target a base type so every descendant inherits automatically.
+The `source_release` shared overlay targets `[scripted, compiled, other]`:
+any future scripted or compiled language picks up `devel/make_release.py`
+with no manifest edit, while the website family (`website`, `typescript`)
+stays out, because a docs or game site publishes builds rather than GitHub
+source releases. `PLAYWRIGHT_TEST_STYLE.md` ships from
+`templates/website/docs/` as a normal type overlay (the old
+`html_playwright_style` shared-overlay rule and its `[typescript, other]`
+hand list are retired); `typescript` receives it by inheriting `website`, so
+any repo that serves HTML gets browser-test-authoring style by declaring
+`REPO_TYPE=website` (or a type that inherits it) rather than by a per-file
+manifest rule.
 
 ## AGENTS.md files
 
@@ -234,7 +259,7 @@ Preferred structure:
 - `docs/AUTHORS.md`: primary maintainers and notable contributors
 - `docs/CLAUDE_HOOK_USAGE_GUIDE.md`: generated hook behavior reference, not a repo style source of truth. If repo style differs from hook examples, update repo style docs and recommend a hook rule update upstream.
 - `docs/MARKDOWN_STYLE.md`: Markdown writing rules and formatting conventions for this repo.
-- `docs/PLAYWRIGHT_TEST_STYLE.md`: browser test authoring style for repos that serve HTML (typescript and `other`); ships via shared overlay.
+- `docs/PLAYWRIGHT_TEST_STYLE.md`: browser test authoring style for the website family (`website` and its inheriting `typescript`); ships via the `templates/website/` overlay.
 - `docs/PYTEST_STYLE.md`: pytest test-writing rules, commands, fixture policy, and failure triage.
 - `docs/PYTHON_STYLE.md`: Python formatting, linting, and project-specific conventions.
 - `docs/REPO_STYLE.md`: repo-level organization, conventions, and file placement rules.

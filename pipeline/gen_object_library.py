@@ -932,28 +932,6 @@ def main() -> None:
 
 	object_files.sort()
 
-	# Fixture-local objects from tests/content/dev_smoke/*/objects/. tests/content/
-	# is the explicit dev/test content root for smoke fixtures (PRIMARY_SPEC.md
-	# "Source-code and content layout"). gen_scene_index.py already discovers
-	# these fixture-local object dirs for scene placement cross-checks; the object
-	# library must carry the same objects so the runtime store can seed their
-	# declared state_fields when a smoke scene renders them. These are processed
-	# with tolerant failure: a smoke fixture may INTENTIONALLY reference a missing
-	# asset (e.g. missing_svg_check) to exercise the placeholder path, so a
-	# processing failure here is skipped with a warning rather than failing the
-	# whole build (curriculum objects below keep strict hard-fail).
-	smoke_object_files = []
-	smoke_dir = os.path.join(repo_root, "tests", "content", "dev_smoke")
-	if os.path.isdir(smoke_dir):
-		for subdir in sorted(os.listdir(smoke_dir)):
-			local_objects_dir = os.path.join(smoke_dir, subdir, "objects")
-			if not os.path.isdir(local_objects_dir):
-				continue
-			for root, dirs, files in os.walk(local_objects_dir):
-				for file in sorted(files):
-					if file.endswith(".yaml"):
-						smoke_object_files.append(os.path.join(root, file))
-
 	# Process each curriculum object YAML (strict hard-fail). No try/except:
 	# a malformed curriculum object is a real build error and must surface
 	# loudly (fix the design, not the symptom). process_object_yaml raises
@@ -971,31 +949,6 @@ def main() -> None:
 		object_name = obj_def["object_name"]
 		object_library[object_name] = obj_def
 		asset_specs[obj_def["asset"]] = asset_spec
-
-	# Process fixture-local smoke objects (tolerant: skip on failure with a warn).
-	# A dev_smoke fixture may INTENTIONALLY be broken to exercise a runtime path
-	# (e.g. missing_svg_check references a missing asset to test the placeholder
-	# path). Those deliberate breaks surface as one of these expected types:
-	#   - ValueError: validation failure (including missing asset in registry),
-	#   - KeyError: a required YAML field omitted on purpose,
-	#   - yaml.YAMLError: a deliberately malformed YAML fixture,
-	#   - FileNotFoundError: a fixture that references a moved/missing path.
-	# We narrow the catch to exactly those types so a genuine bug in the generator
-	# itself (TypeError, AttributeError, etc.) still aborts the build with a full
-	# traceback rather than being silently skipped as an intentional fixture break.
-	for yaml_path in smoke_object_files:
-		try:
-			obj_def, asset_spec = process_object_yaml(
-				yaml_path,
-				svg_files,
-				kinds_enum,
-			)
-			object_name = obj_def["object_name"]
-			object_library[object_name] = obj_def
-			asset_specs[obj_def["asset"]] = asset_spec
-		except (ValueError, KeyError, yaml.YAMLError, FileNotFoundError) as e:
-			# Intentional fixture break: skip it rather than break the build.
-			print(f"SKIP smoke object {yaml_path}: {e}", file=sys.stderr)
 
 	# Generate TypeScript output
 	output_path = os.path.join(repo_root, "generated", "object_library.ts")

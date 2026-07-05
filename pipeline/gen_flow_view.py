@@ -11,9 +11,9 @@ changes back out as plain text, so a reviewer can check a finished protocol
 against its intended flow. It is an audit/consistency artifact only.
 
 Output: one generated/flow_views/<protocol_name>.txt file per mini_protocol
-and dev_smoke protocol found under content/protocols/**/protocol.yaml.
-sequence_runner protocols are skipped; they carry no authored `steps` of
-their own to render (see PROTOCOL_VOCABULARY.md#protocol-kinds).
+found under content/protocols/**/protocol.yaml. sequence_runner protocols
+are skipped; they carry no authored `steps` of their own to render (see
+PROTOCOL_VOCABULARY.md#protocol-kinds).
 """
 
 # Standard Library

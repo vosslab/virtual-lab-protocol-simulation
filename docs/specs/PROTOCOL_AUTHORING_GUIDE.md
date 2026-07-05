@@ -25,7 +25,7 @@ Related references:
 
 ## Terminology
 
-The authored kinds (`mini_protocol`, `sequence_runner`, `dev_smoke`) and
+The authored kinds (`mini_protocol`, `sequence_runner`) and
 the surrounding structural terms (protocol package, `protocol_type`,
 `protocol.yaml`) are defined canonically in
 [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md#protocol-kinds). This
@@ -46,7 +46,7 @@ content/protocols/<cluster>/<protocol_name>/
 
 Shared objects live in `content/objects/`. Protocol scenes place them under
 `content/protocols/<cluster>/<protocol_name>/scenes/`. Every `protocol.yaml` declares
-a `protocol_type` (one of `mini_protocol`, `sequence_runner`, `dev_smoke`).
+a `protocol_type` (one of `mini_protocol`, `sequence_runner`).
 A mini-protocol must define a `learning` block with required fields
 `objectives`, `outcomes`, and `goals`, and a top-level `entry_step`
 field naming the first step's `step_name`. The protocol has no `entry`

@@ -178,7 +178,7 @@ function resolve_step_scene(step: ProtocolStep): string | null {
 
 // Build the read-only PROTOCOL_STEPS list from a protocol config. Empty for a
 // sequence_runner (no authored steps list); the walker reads PROTOCOL_STEPS
-// only for mini_protocol / dev_smoke flows.
+// only for mini_protocol flows.
 export function build_protocol_steps(config: ProtocolConfig): WalkerStep[] {
   const steps = config.steps ?? [];
   const out: WalkerStep[] = [];

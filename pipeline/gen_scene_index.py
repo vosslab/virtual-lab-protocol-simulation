@@ -18,8 +18,8 @@ Validation:
 - per-protocol scenes: extends chain resolves to an existing base scene
 
 Scene discovery and classification (no curated allowlist):
-- Every base scene under content/base_scenes/, every dev-smoke fixture, and every
-  per-protocol scene is discovered and classified into exactly one outcome.
+- Every base scene under content/base_scenes/ and every per-protocol scene is
+  discovered and classified into exactly one outcome.
 - emitted: the scene validates and is buildable; it is written into SCENES.
 - skipped: the scene is invalid/unsupported but NON-FATAL (validation error,
   strict-mode missing-SVG, or a documented quarantine reason). It is recorded in
@@ -142,18 +142,15 @@ def collect_svg_asset_names(repo_root: str) -> set:
 
 #============================================
 
-def collect_object_svg_refs(repo_root: str, extra_object_dirs: list = None) -> dict:
+def collect_object_svg_refs(repo_root: str) -> dict:
 	"""
 	Walk content/objects/**/*.yaml and collect asset_name references from visual_states.
-	Also walks any additional object directories supplied via extra_object_dirs.
 
 	Returns a dict mapping object_name -> set of asset_name strings.
 	Only svg-kind visual_states entries contribute asset_name references.
 	"""
 	# Directories to scan for object YAML files
 	object_dirs = [os.path.join(repo_root, "content", "objects")]
-	if extra_object_dirs:
-		object_dirs.extend(extra_object_dirs)
 
 	object_svg_refs = {}
 
@@ -289,18 +286,15 @@ def emit_missing_asset_report(
 
 #============================================
 
-def collect_object_names(repo_root: str, extra_object_dirs: list = None) -> set:
+def collect_object_names(repo_root: str) -> set:
 	"""
 	Collect all object_name values from content/objects/**/*.yaml.
-	Also collects from any additional directories supplied via extra_object_dirs.
 	Returns a set of all valid object names.
 	"""
 	object_names = set()
 
 	# Directories to scan
 	scan_dirs = [os.path.join(repo_root, "content", "objects")]
-	if extra_object_dirs:
-		scan_dirs.extend(extra_object_dirs)
 
 	for objects_dir in scan_dirs:
 		if not os.path.isdir(objects_dir):
@@ -767,37 +761,19 @@ def main() -> None:
 	# when a scene is genuinely unbuildable for a durable, documented reason.
 	QUARANTINE_SKIP_REASONS = {
 		"well_plate_96_zoom": "Quarantined: references quarantined object well_plate_96",
-		"adversarial_overflow_smoke": "Design skip: capacity stress test, expected to fail loudly",
-		"long_labels_smoke": "Object gap: requires 6 chemical bottle objects not yet authored",
 	}
 
 	# Collect SVG assets available in assets/equipment/
 	available_svgs = collect_svg_asset_names(repo_root)
 
-	# Collect per-smoke-fixture local object directories for extended object discovery
-	# This supports dev-smoke fixtures that need test-only objects not in content/objects/
-	smoke_dir = os.path.join(repo_root, "tests", "content", "dev_smoke")
-	extra_object_dirs = []
-	if os.path.isdir(smoke_dir):
-		for subdir in os.listdir(smoke_dir):
-			local_objects_dir = os.path.join(smoke_dir, subdir, "objects")
-			if os.path.isdir(local_objects_dir):
-				extra_object_dirs.append(local_objects_dir)
+	# Read object names from content/objects/
+	object_names = collect_object_names(repo_root)
 
-	# Read object names (standard content/objects/ plus any fixture-local objects)
-	object_names = collect_object_names(repo_root, extra_object_dirs=extra_object_dirs)
+	# Collect SVG references from all objects
+	object_svg_refs = collect_object_svg_refs(repo_root)
 
-	# Collect SVG references from all objects (standard + fixture-local)
-	all_extra_object_dirs = []
-	if extra_object_dirs:
-		all_extra_object_dirs.extend(extra_object_dirs)
-	object_svg_refs = collect_object_svg_refs(repo_root, extra_object_dirs=all_extra_object_dirs)
-
-	# Find all base scene YAML files and smoke fixtures.
-	# scene_files is a list of (filename, yaml_path, is_smoke_fixture).
-	# is_smoke_fixture=True means the scene is exempt from quarantine skips and
-	# never skips on SVG gaps (smoke fixtures are dev/test only and may
-	# intentionally reference missing assets to exercise the gap code path).
+	# Find all base scene YAML files.
+	# scene_files is a list of (filename, yaml_path).
 	scene_files = []
 
 	# Scan content/base_scenes/
@@ -808,25 +784,7 @@ def main() -> None:
 	for file in os.listdir(scenes_dir):
 		if file.endswith(".yaml"):
 			abs_path = os.path.join(scenes_dir, file)
-			# is_smoke_fixture=False for base scenes
-			scene_files.append((file, abs_path, False))
-
-	# Scan tests/content/dev_smoke/ for smoke fixtures
-	if os.path.isdir(smoke_dir):
-		for subdir in os.listdir(smoke_dir):
-			scene_yaml = os.path.join(smoke_dir, subdir, "scene.yaml")
-			if os.path.isfile(scene_yaml):
-				# Extract scene_name from the YAML to form a unique filename
-				with open(scene_yaml, "r") as f:
-					data = yaml.safe_load(f)
-				if not isinstance(data, dict):
-					raise ValueError(
-						f"Smoke scene YAML must be a mapping: {scene_yaml}"
-					)
-				# scene_name is required in smoke fixtures -- fail loudly if missing
-				scene_name = data["scene_name"]
-				# is_smoke_fixture=True for dev-smoke fixtures
-				scene_files.append((f"{scene_name}.yaml", scene_yaml, True))
+			scene_files.append((file, abs_path))
 
 	scene_files.sort(key=lambda x: x[0])
 
@@ -847,8 +805,8 @@ def main() -> None:
 	# Accumulates all missing-SVG findings across all scenes for the final report
 	all_missing_svg_findings = []
 
-	# ----- base scenes and dev-smoke fixtures -----
-	for filename, yaml_path, is_smoke_fixture in scene_files:
+	# ----- base scenes -----
+	for filename, yaml_path in scene_files:
 		try:
 			scene_name, scene_data = process_scene_yaml(yaml_path, object_names)
 		except (ValueError, KeyError, yaml.YAMLError, OSError) as e:
@@ -865,9 +823,7 @@ def main() -> None:
 		placement_names = collect_resolved_placement_names(scene_data)
 
 		# Documented quarantine/design skip takes precedence over emission.
-		# Smoke fixtures are exempt: they exist to exercise code paths and always
-		# emit (they are excluded from the student launcher elsewhere).
-		if not is_smoke_fixture and scene_name in QUARANTINE_SKIP_REASONS:
+		if scene_name in QUARANTINE_SKIP_REASONS:
 			reason = QUARANTINE_SKIP_REASONS[scene_name]
 			print(f"SKIP scene '{scene_name}': {reason}", file=sys.stderr)
 			manifest_entries[scene_name] = {
@@ -884,10 +840,9 @@ def main() -> None:
 		if gaps:
 			all_missing_svg_findings.append((scene_name, gaps))
 			emit_missing_asset_report(scene_name, gaps, missing_svg_mode)
-			# Strict mode for non-smoke scenes: SKIP with a missing-SVG reason
-			# (non-fatal; recorded in the manifest). Smoke fixtures never skip on
-			# SVG gaps -- they exercise the gap path intentionally.
-			if missing_svg_mode == "strict" and not is_smoke_fixture:
+			# Strict mode: SKIP with a missing-SVG reason (non-fatal; recorded
+			# in the manifest).
+			if missing_svg_mode == "strict":
 				missing_assets = sorted({a for _p, _o, assets in gaps for a in assets})
 				reason = "missing SVG assets: " + ", ".join(missing_assets)
 				print(
@@ -904,7 +859,7 @@ def main() -> None:
 				}
 				skipped_files.append(filename.replace(".yaml", ""))
 				continue
-			# Placeholder mode (default) or smoke fixture: emit with markers.
+			# Placeholder mode (default): emit with markers.
 			scenes_missing_svg_placements[scene_name] = {p for p, _o, _a in gaps}
 
 		# Emit the scene.

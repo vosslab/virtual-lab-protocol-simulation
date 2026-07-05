@@ -1,10 +1,10 @@
 # SVG v3 visual regression report
 
-**Sample mode:** sample (300 of 833 passing files, screened from 1500 candidates, seed=42)  
-**Files processed:** 300  
-**Engines:** chromium, firefox  
-**Render size:** 256x256 px  
-**Hash type:** phash (primary), dhash (secondary)  
+**Sample mode:** sample (300 of 833 passing files, screened from 1500 candidates, seed=42)
+**Files processed:** 300
+**Engines:** chromium, firefox
+**Render size:** 256x256 px
+**Hash type:** phash (primary), dhash (secondary)
 
 > NOTE: v3 flattens simple clipPaths (allowlist) and rejects complex ones.
 > Only the small simple-clip subset is normalized; most clip-bearing files
@@ -74,11 +74,11 @@
 
 ## Worst-offender gallery
 
-Before/after PNG pairs saved under `test-results/svg_visual_regression/` (gitignored).  
+Before/after PNG pairs saved under `test-results/svg_visual_regression/` (gitignored).
 Files are named `NNN_<stem>_<engine>_orig.png` and `NNN_<stem>_<engine>_norm.png`.
 
 ## Visual fidelity assessment
 
-**Chromium:** 26.3% identical, 23.7% minor, 50.0% divergent  
-**Firefox:** 27.7% identical, 21.0% minor, 51.3% divergent  
+**Chromium:** 26.3% identical, 23.7% minor, 50.0% divergent
+**Firefox:** 27.7% identical, 21.0% minor, 51.3% divergent
 

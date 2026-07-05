@@ -2,9 +2,8 @@
 //
 // M4 WP-4-1 launcher Playwright test. Loads dist/index.html (the built
 // launcher) and asserts:
-//   - Every entry in PROTOCOLS_INDEX (from generated/protocols.ts)
-//     renders as a button with [data-protocol-id].
-//   - No dev_smoke entries appear in the launcher.
+//   - The launcher renders exactly the protocol ids listed in
+//     PROTOCOLS_INDEX (from generated/protocols.ts), no more and no fewer.
 //   - Clicking the mtt_reagent_prep entry navigates to
 //     mtt_reagent_prep.html and both #scene-root and #shell-root
 //     render on that page.
@@ -70,7 +69,7 @@ async function start_server(port, dist_dir) {
 }
 
 //============================================
-// Extract expected protocol_name list + dev_smoke filter check
+// Extract expected protocol_name list
 //============================================
 
 function load_expected_index() {
@@ -112,13 +111,6 @@ async function main() {
   }
 
   const expected = load_expected_index();
-  for (const entry of expected) {
-    if (entry.protocol_type === "dev_smoke") {
-      throw new Error(
-        `PROTOCOLS_INDEX contains dev_smoke entry ${entry.protocol_name}; gen_protocols.py should exclude them`,
-      );
-    }
-  }
   const expected_names = expected.map((e) => e.protocol_name);
 
   const port = await pick_free_port();
@@ -155,20 +147,22 @@ async function main() {
         );
       }
     }
-    // No dev_smoke ids should appear at all. (Anything with "_check"
-    // suffix is a dev_smoke convention; assert by hard list, not by
-    // suffix sniff, to keep the test honest.)
+    // The rendered set must be exactly the expected set: every rendered
+    // id must be a real PROTOCOLS_INDEX entry, and the counts must match
+    // so nothing extra sneaks in.
     for (const id of rendered) {
       const match = expected.find((e) => e.protocol_name === id);
       if (!match) {
         throw new Error(`Launcher rendered unknown id ${id} (not in PROTOCOLS_INDEX)`);
       }
-      if (match.protocol_type === "dev_smoke") {
-        throw new Error(`Launcher rendered dev_smoke id ${id}`);
-      }
+    }
+    if (rendered.length !== expected_names.length) {
+      throw new Error(
+        `Launcher rendered ${rendered.length} entries; PROTOCOLS_INDEX has ${expected_names.length}`,
+      );
     }
 
-    console.log(`OK: launcher rendered ${rendered.length} entries, 0 dev_smoke`);
+    console.log(`OK: launcher rendered exactly the ${rendered.length} PROTOCOLS_INDEX entries`);
 
     // Click the mtt_reagent_prep entry and confirm navigation.
     const link = page.locator('[data-protocol-id="mtt_reagent_prep"]');

@@ -152,8 +152,8 @@ protocol authors a drag yet, so the sweep still classifies a `drag` interaction
 `unsupported_gesture` rather than silently skipping or branching per protocol;
 adding `drag` to the sweep set is a one-line change once a real drag protocol
 lands. The simplest all-`click` protocols (`sdspage_assemble_electrode_module`,
-`sdspage_extract_gel_from_cassette`) walk end-to-end, and the `select_check` /
-`type_check` dev_smoke fixtures exercise the `select` and `type` gestures
+`sdspage_extract_gel_from_cassette`) walk end-to-end, and the real walker
+sweep over `content/protocols/**` exercises the `select` and `type` gestures
 (including a wrong-selection rejection under `--wrong-order`).
 
 The `--screenshots` flag accepts `per-step` (default), `per-interaction`, or

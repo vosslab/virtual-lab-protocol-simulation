@@ -32,7 +32,7 @@
 //
 // This test uses bench_basic as the canonical scene for selector coverage.
 // It then spot-checks one protocol scene (hood_workspace) for multi-scene
-// coverage, plus missing_svg_check for the placeholder attribute contract.
+// coverage.
 //
 // Click-target behavior: asserts that a [data-item-id] element receives
 // synthetic click events dispatched via a page.evaluate MouseEvent, not that a
@@ -251,34 +251,5 @@ test.describe("scene DOM contract selectors", () => {
 
     await loadScene(page, "hood_workspace");
     await assertSceneSelectorContract(page, "hood_workspace");
-  });
-
-  test("missing_svg_check: placeholder attribute contract", async ({ page }) => {
-    page.on("console", () => {});
-
-    await loadScene(page, "missing_svg_check");
-    const missingItems = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll("[data-missing-svg='true']")).map((el) => ({
-        placementName: el.getAttribute("data-placement-name") ?? "",
-        missingSvg: el.getAttribute("data-missing-svg"),
-        placeholderKind: el.getAttribute("data-placeholder-kind"),
-      }));
-    });
-
-    expect(
-      missingItems.length,
-      "missing_svg_check: at least one [data-missing-svg='true'] element",
-    ).toBeGreaterThan(0);
-
-    for (const item of missingItems) {
-      expect(
-        item.missingSvg,
-        `missing_svg_check[${item.placementName}]: data-missing-svg="true"`,
-      ).toBe("true");
-      expect(
-        item.placeholderKind !== null && item.placeholderKind.length > 0,
-        `missing_svg_check[${item.placementName}]: data-placeholder-kind present`,
-      ).toBe(true);
-    }
   });
 });

@@ -102,62 +102,12 @@ function always(result) {
 }
 
 //============================================
-// Required Case 1: dev_smoke + unknown_object/unknown_subpart -> no throw
+// Required Case 2: typed int field + bad value -> throws (unknown-reference
+// checks and value-type checks always run; there is no exempt protocol_type)
 //============================================
 
-test("Case 1a: dev_smoke + unknown_object does not throw (exemption)", () => {
+test("Case 2a: typed int + malformed string throws BadAuthoredValueError (twv)", () => {
   const config = make_config_twv({
-    protocol_type: "dev_smoke",
-    authored_value: "anything",
-  });
-  const lookup = always({ kind: "unknown_object" });
-  // Must not throw.
-  assert.doesNotThrow(() => {
-    validate_authored_validator_values({ protocol_config: config, lookup_state_field: lookup });
-  });
-});
-
-test("Case 1b: dev_smoke + unknown_subpart does not throw (exemption)", () => {
-  const config = make_config_twv({
-    protocol_type: "dev_smoke",
-    authored_value: "anything",
-  });
-  const lookup = always({ kind: "unknown_subpart" });
-  assert.doesNotThrow(() => {
-    validate_authored_validator_values({ protocol_config: config, lookup_state_field: lookup });
-  });
-});
-
-test("Case 1c: dev_smoke + unknown_object final_state_matches does not throw", () => {
-  const config = make_config_fsm({
-    protocol_type: "dev_smoke",
-    authored_value: "anything",
-  });
-  const lookup = always({ kind: "unknown_object" });
-  assert.doesNotThrow(() => {
-    validate_authored_validator_values({ protocol_config: config, lookup_state_field: lookup });
-  });
-});
-
-test("Case 1d: dev_smoke + unknown_subpart final_state_matches does not throw", () => {
-  const config = make_config_fsm({
-    protocol_type: "dev_smoke",
-    authored_value: "anything",
-  });
-  const lookup = always({ kind: "unknown_subpart" });
-  assert.doesNotThrow(() => {
-    validate_authored_validator_values({ protocol_config: config, lookup_state_field: lookup });
-  });
-});
-
-//============================================
-// Required Case 2: dev_smoke + resolvable typed int field + bad value -> throws
-// The exemption does NOT cover resolved fields.
-//============================================
-
-test("Case 2a: dev_smoke + typed int + malformed string throws BadAuthoredValueError (twv)", () => {
-  const config = make_config_twv({
-    protocol_type: "dev_smoke",
     authored_value: "high",
   });
   const lookup = always({ kind: "typed", field_type: "int" });
@@ -183,9 +133,8 @@ test("Case 2a: dev_smoke + typed int + malformed string throws BadAuthoredValueE
   );
 });
 
-test("Case 2b: dev_smoke + typed int + malformed string throws BadAuthoredValueError (fsm)", () => {
+test("Case 2b: typed int + malformed string throws BadAuthoredValueError (fsm)", () => {
   const config = make_config_fsm({
-    protocol_type: "dev_smoke",
     authored_value: "high",
   });
   const lookup = always({ kind: "typed", field_type: "int" });
@@ -205,10 +154,10 @@ test("Case 2b: dev_smoke + typed int + malformed string throws BadAuthoredValueE
 });
 
 //============================================
-// Required Case 3: non-dev_smoke unknown errors; dev_smoke + unknown_field still throws
+// Required Case 3: unknown-reference errors always throw
 //============================================
 
-test("Case 3a: non-dev_smoke + unknown_object throws UnknownAuthoredObjectError (twv)", () => {
+test("Case 3a: unknown_object throws UnknownAuthoredObjectError (twv)", () => {
   const config = make_config_twv({ authored_value: "x" });
   const lookup = always({ kind: "unknown_object" });
   assert.throws(
@@ -230,7 +179,7 @@ test("Case 3a: non-dev_smoke + unknown_object throws UnknownAuthoredObjectError 
   );
 });
 
-test("Case 3b: non-dev_smoke + unknown_field throws UnknownAuthoredFieldError (twv)", () => {
+test("Case 3b: unknown_field throws UnknownAuthoredFieldError (twv)", () => {
   const config = make_config_twv({ authored_value: "x" });
   const lookup = always({ kind: "unknown_field" });
   assert.throws(
@@ -249,28 +198,7 @@ test("Case 3b: non-dev_smoke + unknown_field throws UnknownAuthoredFieldError (t
   );
 });
 
-test("Case 3c: dev_smoke + unknown_field still throws UnknownAuthoredFieldError (no exemption)", () => {
-  // unknown_field exemption does NOT apply, even for dev_smoke.
-  const config = make_config_twv({
-    protocol_type: "dev_smoke",
-    authored_value: "x",
-  });
-  const lookup = always({ kind: "unknown_field" });
-  assert.throws(
-    () => {
-      validate_authored_validator_values({ protocol_config: config, lookup_state_field: lookup });
-    },
-    (err) => {
-      assert.ok(
-        err instanceof UnknownAuthoredFieldError,
-        `Expected UnknownAuthoredFieldError, got ${err.name}`,
-      );
-      return true;
-    },
-  );
-});
-
-test("Case 3d: non-dev_smoke + unknown_field throws UnknownAuthoredFieldError (fsm)", () => {
+test("Case 3d: unknown_field throws UnknownAuthoredFieldError (fsm)", () => {
   const config = make_config_fsm({ authored_value: "x" });
   const lookup = always({ kind: "unknown_field" });
   assert.throws(
@@ -286,7 +214,7 @@ test("Case 3d: non-dev_smoke + unknown_field throws UnknownAuthoredFieldError (f
 });
 
 test("Case 3e: normal protocol + unknown_subpart throws with context", () => {
-  // Non-dev_smoke protocol: unknown_subpart must throw UnknownAuthoredSubpartError
+  // unknown_subpart must throw UnknownAuthoredSubpartError
   // and the error message must include the protocol name and step name.
   const config = make_config_twv({
     protocol_type: "mini_protocol",

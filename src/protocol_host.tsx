@@ -309,13 +309,8 @@ function mount(): void {
     );
 
     // Fail-loud empty-scene guard (via assert_scene_not_empty).
-    // A student-visible protocol must render a non-empty scene. dev_smoke is exempt.
-    assert_scene_not_empty(
-      pipeline_result.final.length,
-      active_config.protocol_type,
-      protocol_name,
-      next_scene_name,
-    );
+    // Every protocol must render a non-empty scene; the guard applies uniformly.
+    assert_scene_not_empty(pipeline_result.final.length, protocol_name, next_scene_name);
 
     // Mount (or re-mount) the Solid scene. mountScene owns the Solid root
     // dispose: a re-render into the same root disposes the prior root first
@@ -551,7 +546,7 @@ function mount(): void {
     const snapshot_signal = shell_binding.snapshot;
     shell_unsubscribe = shell_binding.unsubscribe;
     // Pass config.steps to ProtocolHud so the read-only step outline can render.
-    // sequence_runner protocols have no steps list; mini_protocols and dev_smoke do.
+    // sequence_runner protocols have no steps list; mini_protocols do.
     const protocol_steps = active_config.steps ?? [];
     render(() => <ProtocolHud snapshot={snapshot_signal} steps={protocol_steps} />, shell_root);
   }

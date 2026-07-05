@@ -202,36 +202,25 @@ describe("WP-RESOLVE-1: resolve_entry_scene_name - sequence_runner delegation", 
 
 describe("WP-RESOLVE-2: assert_scene_not_empty - empty scene guard", () => {
   test("throws for mini_protocol with empty final (0 items)", () => {
-    assert.throws(
-      () => assert_scene_not_empty(0, "mini_protocol", "proto_a", "scene_a"),
-      /rendered empty/,
-    );
+    assert.throws(() => assert_scene_not_empty(0, "proto_a", "scene_a"), /rendered empty/);
   });
 
   test("throws for sequence_runner with empty final", () => {
-    assert.throws(
-      () => assert_scene_not_empty(0, "sequence_runner", "runner_b", "scene_b"),
-      /rendered empty/,
-    );
-  });
-
-  test("does NOT throw for dev_smoke with empty final", () => {
-    // dev_smoke is the only exempt protocol_type
-    assert.doesNotThrow(() => assert_scene_not_empty(0, "dev_smoke", "smoke_proto", "smoke_scene"));
+    assert.throws(() => assert_scene_not_empty(0, "runner_b", "scene_b"), /rendered empty/);
   });
 
   test("does NOT throw for mini_protocol with non-empty final (1 item)", () => {
-    assert.doesNotThrow(() => assert_scene_not_empty(1, "mini_protocol", "proto_c", "scene_c"));
+    assert.doesNotThrow(() => assert_scene_not_empty(1, "proto_c", "scene_c"));
   });
 
   test("does NOT throw for sequence_runner with non-empty final", () => {
-    assert.doesNotThrow(() => assert_scene_not_empty(5, "sequence_runner", "runner_d", "scene_d"));
+    assert.doesNotThrow(() => assert_scene_not_empty(5, "runner_d", "scene_d"));
   });
 
   test("error message names the protocol and scene", () => {
     let caught_message = "";
     try {
-      assert_scene_not_empty(0, "mini_protocol", "my_protocol", "my_scene");
+      assert_scene_not_empty(0, "my_protocol", "my_scene");
     } catch (e) {
       caught_message = e.message;
     }

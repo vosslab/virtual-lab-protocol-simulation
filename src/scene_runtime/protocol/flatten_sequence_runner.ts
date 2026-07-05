@@ -38,7 +38,7 @@ import { resolve_entry_scene_name } from "./resolve_entry_scene.js";
 //============================================
 
 // Expand a protocol into the ordered list of step-carrying constituent configs
-// it plays. A mini_protocol or dev_smoke is its own single constituent; a
+// it plays. A mini_protocol is its own single constituent; a
 // sequence_runner expands to its listed mini_protocols in order, recursing so a
 // runner listed inside a runner inlines its constituents too. Every returned
 // config carries a real steps list.

@@ -118,7 +118,7 @@ REPOSITION_ALLOWED_FIELDS = {'placement_name', 'zone', 'position', 'depth', 'anc
 # ============================================
 
 # spec: docs/PRIMARY_SPEC.md "Protocol types"
-PROTOCOL_TYPES = {'protocol', 'mini_protocol', 'sequence_runner', 'dev_smoke'}
+PROTOCOL_TYPES = {'protocol', 'mini_protocol', 'sequence_runner'}
 
 # spec: docs/PRIMARY_SPEC.md "Gestures"
 VALID_GESTURES = {'click', 'drag', 'adjust', 'select', 'type'}

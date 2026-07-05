@@ -133,9 +133,8 @@ Acceptance criteria:
 - `validation/stepper/step_check.py` can emit a per-cell snapshot for any
   placement with subparts, suitable for byte-for-byte snapshot
   comparison.
-- The dose-response explicit-per-column fixture
-  (`tests/content/dev_smoke/dose_response_explicit_check/`) reports
-  12 distinct `material_volume` values from the stepper's observed
+- A dose-response protocol with explicit per-column drug concentrations
+  reports 12 distinct `material_volume` values from the stepper's observed
   state, not from YAML derivation.
 - The 12 currently shipped protocols continue to step cleanly.
 
@@ -152,8 +151,7 @@ ships today on `main` without any spec change.
 If a real subset use case surfaces:
 
 - Draft a spec amendment for protocol-level `regions:` + region-aware
-  `ObjectStateChange` (the shape tested in
-  `tests/content/dev_smoke/mtt_uniform_region_check/`).
+  `ObjectStateChange` (the shape exercised by the uniform-region spike).
 - Include a `members: all` (or equivalent inferred-all) shorthand so
   the region shape is not line-count-penalized when the region
   happens to span the whole plate. The spike found the explicit

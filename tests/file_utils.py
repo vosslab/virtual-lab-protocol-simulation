@@ -4,7 +4,6 @@ import ast
 import fnmatch
 import pathlib
 import functools
-import importlib
 import tokenize
 import subprocess
 import importlib.util
@@ -600,21 +599,32 @@ def _load_repo_hygiene_filters() -> dict:
 	files must hold no repo-specific data, so repo-specific exclusions live
 	here instead.
 
+	The registry loads from the explicit tests/conftest.py path anchored at
+	the repo root, never by module name. A module-name lookup would resolve
+	to whichever conftest.py pytest imported first: under full-suite
+	collection order a same-basename conftest elsewhere (for example
+	tests/meta/conftest.py, which sorts before test_*) can win
+	sys.modules["conftest"] and silently shadow the real registry. Loading by
+	file path removes that shadowing entirely.
+
 	An absent conftest or an absent REPO_HYGIENE_FILTERS attribute is normal:
-	a repo with no repo-local exclusions simply has an empty registry. This
-	uses importlib.util.find_spec to avoid try/except for the import-guard.
+	a repo with no repo-local exclusions simply has an empty registry.
 
 	Returns:
 		dict: Mapping of key -> list of repo-relative POSIX glob patterns.
 			Keys are "all" plus vendored test keys. Empty when absent.
 	"""
-	# find_spec returns None when conftest is not importable; absent is normal.
-	spec = importlib.util.find_spec("conftest")
-	if spec is None:
+	# Anchor the load at the explicit repo-root conftest path, not a name.
+	conftest_path = os.path.join(get_repo_root(), "tests", "conftest.py")
+	# An absent conftest is normal for a repo with no repo-local exclusions.
+	if not os.path.isfile(conftest_path):
 		return {}
-	# conftest is importable, so import it and read the optional registry.
-	conftest = importlib.import_module("conftest")
-	registry = getattr(conftest, "REPO_HYGIENE_FILTERS", {})
+	# Load by file path under a private module name so the load never touches
+	# or trusts sys.modules["conftest"]; do not insert it into sys.modules.
+	spec = importlib.util.spec_from_file_location("_repo_hygiene_conftest", conftest_path)
+	module = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(module)
+	registry = getattr(module, "REPO_HYGIENE_FILTERS", {})
 	return registry
 
 

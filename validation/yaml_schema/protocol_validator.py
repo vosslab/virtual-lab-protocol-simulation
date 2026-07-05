@@ -107,7 +107,7 @@ class ProtocolValidator:
 					severity=Severity.ERROR,
 					message=f"protocol_type '{ptype}' requires 'steps'",
 				))
-			# V1: Reject `mini_protocols:` on mini_protocol/dev_smoke (must be omitted per spec)
+			# V1: Reject `mini_protocols:` on mini_protocol (must be omitted per spec)
 			if 'mini_protocols' in protocol:
 				findings.append(Finding(
 					path=path,

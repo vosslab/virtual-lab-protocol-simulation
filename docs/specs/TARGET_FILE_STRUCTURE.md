@@ -41,11 +41,8 @@ generated/            emitted build outputs only (gitignored)
   scene_data.ts
   svg_assets/
 
-tests/                test code and test fixtures
-  content/
-    dev_smoke/        permanent diagnostic protocol YAML
+tests/                test code
   playwright/         browser-driven Playwright tests
-  fixtures/           shared test fixtures
 
 assets/               source SVGs and other binary inputs
   equipment/
@@ -63,7 +60,7 @@ dist-single/          portable single-file HTML build (gitignored)
 - `src/` is authored TypeScript and the bundled web shell source (HTML fragments and CSS that ship with the bundle). No YAML, no generated data, no archived code.
 - `content/` is authored protocol and scene YAML.
 - `generated/` is the only emitted generated-code/data tree. Gitignored.
-- `tests/` holds test code and test fixtures; `tests/content/dev_smoke/` is permanent diagnostic YAML, not student curriculum.
+- `tests/` holds test code.
 - `assets/` holds source SVGs and other binary inputs.
 - `archive/code/` is the only home for retired TypeScript.
 - `docs/`, `tools/`, `dist/`, `dist-single/` keep their conventional repo meanings.
@@ -73,21 +70,19 @@ dist-single/          portable single-file HTML build (gitignored)
 - **Source / content / generated split.** Authored code, authored data, and emitted artifacts are three different kinds of input to the build. Separate top-level trees keep reviews focused, let `generated/` stay fully gitignored, and let authors edit `content/` without touching TypeScript.
 - **Scene YAML lives in `content/base_scenes/`, not `src/scenes/`.** Scene declarations are authored configuration data, not runtime code. The runtime that consumes them lives in `src/scene_runtime/`.
 - **Retired code goes in `archive/code/`, not `src/`.** Old code inside `src/` clutters refactor reviews and confuses readers about what is live. `archive/` is excluded from active development.
-- **Permanent diagnostic YAML lives in `tests/content/dev_smoke/`.** It is test fixture data, not student-facing content, so it belongs under `tests/`.
 
 ## What must not go in src/
 
 - YAML data files (protocols, scenes).
 - Generated TypeScript or generated SVG modules.
 - Retired code snapshots.
-- Test fixtures.
 
 ## Protocol cluster layout
 
 Every protocol under `content/protocols/` lives in one of three topic clusters. The rule body below
-is the single canonical statement of the constraint. The pytest gate
-`tests/test_protocol_folder_layout.py` enforces every clause and cites this section in each
-assertion-failure message. Author-facing docs (`content/README.md`, `docs/FILE_STRUCTURE.md`) link
+is the single canonical statement of the constraint. The standalone validator
+`validation/structure/layout_check.py` enforces every clause and cites this section in each
+finding message. Author-facing docs (`content/README.md`, `docs/FILE_STRUCTURE.md`) link
 here for the binding rule; they do not restate it.
 
 - **Closed cluster set.** Only three top-level subdirectories are permitted under
@@ -106,8 +101,7 @@ here for the binding rule; they do not restate it.
 - **`protocol_type` per cluster.** `cell_culture/<name>/protocol.yaml` and
   `sdspage/<name>/protocol.yaml` must declare `protocol_type: mini_protocol`.
   `runners/<name>/protocol.yaml` must declare `protocol_type: sequence_runner`. No other
-  `protocol_type` value is permitted under `content/protocols/`; in particular, `dev_smoke`
-  protocols belong under `tests/content/`, not here.
+  `protocol_type` value is permitted under `content/protocols/`.
 - **Folder name equals `protocol_name`.** The leaf folder basename equals the `protocol_name` field
   inside its `protocol.yaml`. Prevents identity drift where folder `foo/` carries
   `protocol_name: bar` and the tree stops being self-explanatory.

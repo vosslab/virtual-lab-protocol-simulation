@@ -4,7 +4,7 @@ This document is the technical specification for the virtual lab protocol games 
 
 ## Protocol types
 
-Every protocol declares a `protocol_type` field. The active enum values are `mini_protocol`, `sequence_runner`, and `dev_smoke`. Definitions for each kind, the protocol package surface, and the structural use of the word "protocol" live in [PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md#protocol-kinds).
+Every protocol declares a `protocol_type` field. The active enum values are `mini_protocol` and `sequence_runner`. Definitions for each kind, the protocol package surface, and the structural use of the word "protocol" live in [PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md#protocol-kinds).
 
 ## Protocol YAML top-level fields
 
@@ -36,7 +36,7 @@ steps:
     next_step: null
 ```
 
-A `protocol` carries `protocol_name`, `entry_step`, and `steps`. Each `step` carries `step_name`, `prompt`, `sequence`, `step_validator`, `outcome`, and `next_step`. Each `interaction` in a `sequence` carries `target`, `gesture`, `validator`, and `response`. Flow is `entry_step` plus `next_step`; YAML `steps` list order is reading convenience only and never controls flow. Sequence runners list constituent mini-protocols rather than authored steps; see Sequence runners below. Developer smoke protocols use the same top-level shape as mini-protocols but are exempt from the learning-block requirement. Step count is determined by pedagogy. Each step is one pedagogical unit per learning block. Over-atomization (UI-shortcut steps) and under-atomization (multi-skill steps) are review-gated, not count-gated.
+A `protocol` carries `protocol_name`, `entry_step`, and `steps`. Each `step` carries `step_name`, `prompt`, `sequence`, `step_validator`, `outcome`, and `next_step`. Each `interaction` in a `sequence` carries `target`, `gesture`, `validator`, and `response`. Flow is `entry_step` plus `next_step`; YAML `steps` list order is reading convenience only and never controls flow. Sequence runners list constituent mini-protocols rather than authored steps; see Sequence runners below. Step count is determined by pedagogy. Each step is one pedagogical unit per learning block. Over-atomization (UI-shortcut steps) and under-atomization (multi-skill steps) are review-gated, not count-gated.
 
 ## Entry step
 
@@ -57,8 +57,6 @@ No protocol-level `entry_scene` field exists or is read; adding one would violat
 
 For `sequence_runner` protocols: the runner carries no `steps` list. Resolution delegates to the first listed mini-protocol by looking it up in the protocol registry and applying the same three-step precedence to its entry step.
 
-For `dev_smoke` protocols: the empty-scene guard (which throws when `final.length === 0`) is exempt. Smoke fixtures may intentionally exercise partial or empty scenes.
-
 Validation rules:
 
 - `entry_step` must name a `step_name` present in the `steps` list.
@@ -75,8 +73,6 @@ For mini-protocols the three fields are required and use these required leading 
 - `goals`: "Overall, this mini-protocol aims to accomplish..."
 
 For sequence runners the `learning` block carries the overall pathway's pedagogy and may use "Students completing this protocol..." in place of the mini-protocol phrasing.
-
-Developer smoke protocols and internal diagnostic protocols are exempt from the `learning` block requirement.
 
 ## Step structure
 
@@ -157,7 +153,7 @@ If the walker cannot complete a step through visible UI, the YAML schema, the sc
 
 Authored TypeScript source for the shared scene runtime lives under `src/scene_runtime/`. Generated runtime data (protocols, scenes, inventory, registry) emits under `generated/` at the repo root. Do not place generated files under `src/`.
 
-Curriculum content lives under `content/protocols/<cluster>/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. The builder and walker support `tests/content/` as an explicit dev/test content root for smoke fixtures. Smoke fixtures use the same schema as curriculum content and remain validatable and runnable in dev/test mode, but are excluded from the student launcher and the full-protocol sequence. Smoke fixtures declare `protocol_type: dev_smoke`.
+Curriculum content lives under `content/protocols/<cluster>/<protocol_name>/`.
 
 Mini-protocol HTML output uses the `<protocol_name>.html` convention. Example: `passage_hood_detachment.html`, `trypan_blue_counting.html`, `cell_culture_full.html`.
 

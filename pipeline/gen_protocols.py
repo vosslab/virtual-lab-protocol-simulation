@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 """
-Codegen for protocol index and protocol config from content/protocols and tests/content/dev_smoke.
+Codegen for protocol index and protocol config from content/protocols.
 
 Reads all protocol.yaml files from:
 - content/protocols/<cluster>/<protocol_name>/protocol.yaml
-- tests/content/dev_smoke/<name>_check/protocol.yaml
 
 Validates against the closed protocol schema per PRIMARY_SPEC.md and
 PROTOCOL_VOCABULARY.md. Emits generated/protocols.ts with two named exports:
 - PROTOCOLS: Readonly<Record<string, ProtocolConfig>>
-- PROTOCOLS_INDEX: ReadonlyArray<ProtocolIndexEntry> (excludes dev_smoke)
+- PROTOCOLS_INDEX: ReadonlyArray<ProtocolIndexEntry>
 
 Validation:
-- protocol_type is one of: mini_protocol, sequence_runner, dev_smoke
+- protocol_type is one of: mini_protocol, sequence_runner
 - protocol_name is present and is a string
 - entry_step is present and matches a step_name
 - mini_protocol and sequence_runner require a learning block
-- steps array is present for mini_protocol and dev_smoke
+- steps array is present for mini_protocol
 - sequence array is present for sequence_runner
 - every step carries step_name, prompt, sequence, step_validator, outcome, next_step
 - every interaction carries target, gesture, validator, response
@@ -70,9 +69,9 @@ def get_repo_root() -> str:
 
 def collect_protocols(repo_root: str) -> tuple:
 	"""
-	Collect all protocol.yaml files from content/protocols and tests/content/dev_smoke.
+	Collect all protocol.yaml files from content/protocols.
 	Returns a tuple (protocols, protocol_dirs) where:
-	  protocols: {protocol_name: (yaml_data, cluster, is_dev_smoke)}
+	  protocols: {protocol_name: (yaml_data, cluster)}
 	  protocol_dirs: {protocol_name: absolute path of the protocol package dir}
 
 	The package directory map is returned alongside the protocols dict (rather
@@ -103,33 +102,8 @@ def collect_protocols(repo_root: str) -> tuple:
 							f"Protocol YAML must be a mapping: {protocol_yaml}"
 						)
 					protocol_name = data["protocol_name"]
-					protocols[protocol_name] = (data, cluster, False)
+					protocols[protocol_name] = (data, cluster)
 					protocol_dirs[protocol_name] = protocol_path
-
-	# Collect dev_smoke protocols from tests/content/dev_smoke/<name>_check/
-	smoke_dir = os.path.join(repo_root, "tests", "content", "dev_smoke")
-	if os.path.isdir(smoke_dir):
-		for smoke_check_dir in os.listdir(smoke_dir):
-			smoke_path = os.path.join(smoke_dir, smoke_check_dir)
-			if not os.path.isdir(smoke_path):
-				continue
-			protocol_yaml = os.path.join(smoke_path, "protocol.yaml")
-			if os.path.isfile(protocol_yaml):
-				with open(protocol_yaml, "r") as f:
-					data = yaml.safe_load(f)
-				if not isinstance(data, dict):
-					raise ValueError(
-						f"Protocol YAML must be a mapping: {protocol_yaml}"
-					)
-				# Legacy dev_smoke fixtures used a different schema (camelCase
-				# fields, no `protocol_name`). They are excluded from the new
-				# generator surface. Skip rather than error so they can sit
-				# alongside current-schema dev_smoke YAMLs until retired.
-				if "protocol_name" not in data:
-					continue
-				protocol_name = data["protocol_name"]
-				protocols[protocol_name] = (data, "dev_smoke", True)
-				protocol_dirs[protocol_name] = smoke_path
 
 	return protocols, protocol_dirs
 
@@ -293,7 +267,7 @@ def enforce_top_level_closure(protocol_data: dict, path: str) -> None:
 
 
 def validate_protocol(
-	protocol_data: dict, cluster: str, is_dev_smoke: bool, path: str
+	protocol_data: dict, cluster: str, path: str
 ) -> None:
 	"""Validate a protocol against the closed schema."""
 	enforce_top_level_closure(protocol_data, path)
@@ -306,7 +280,7 @@ def validate_protocol(
 		)
 
 	protocol_type = protocol_data["protocol_type"]
-	valid_types = {"mini_protocol", "sequence_runner", "dev_smoke"}
+	valid_types = {"mini_protocol", "sequence_runner"}
 	if protocol_type not in valid_types:
 		raise ValueError(
 			f"Unknown protocol_type: {protocol_type}. Must be one of: {valid_types}"
@@ -338,8 +312,8 @@ def validate_protocol(
 				f"Protocol {protocol_name}: learning block missing: {missing_learning}"
 			)
 
-	# mini_protocol and dev_smoke require steps
-	if protocol_type in {"mini_protocol", "dev_smoke"}:
+	# mini_protocol requires steps
+	if protocol_type in {"mini_protocol"}:
 		if "steps" not in protocol_data:
 			raise ValueError(
 				f"Protocol {protocol_name}: {protocol_type} requires steps field"
@@ -450,16 +424,14 @@ def emit_protocols_index_slim_ts(repo_root: str, protocols: dict) -> None:
 	)
 	ts_lines.append("")
 	ts_lines.append(
-		"// Slim launcher metadata (excludes dev_smoke). Sorted by cluster then protocol_name."
+		"// Slim launcher metadata. Sorted by cluster then protocol_name."
 	)
 	ts_lines.append(
 		"export const PROTOCOLS_INDEX_SLIM: ReadonlyArray<ProtocolIndexSlimEntry> = ["
 	)
 
 	index_entries = []
-	for protocol_name, (protocol_data, cluster, is_dev_smoke) in protocols.items():
-		if is_dev_smoke:
-			continue
+	for protocol_name, (protocol_data, cluster) in protocols.items():
 		learning_goal_hook = extract_learning_hook(protocol_data.get("learning"))
 		display_title = derive_display_title(protocol_name)
 		# protocol_type is required at this point; validation has already run.
@@ -494,7 +466,6 @@ def compute_step_count(protocol_data: dict, all_protocols: dict) -> int:
 	Compute the step count for a protocol.
 	- mini_protocol: length of the `steps` list
 	- sequence_runner: sum of step counts of constituent mini-protocols
-	- dev_smoke: excluded from slim index (caller guarantees this)
 	If a constituent mini-protocol is missing, raise loudly so the
 	authoring surface stays closed.
 	"""
@@ -510,7 +481,7 @@ def compute_step_count(protocol_data: dict, all_protocols: dict) -> int:
 				raise ValueError(
 					f"sequence_runner references missing mini-protocol: {mini_name}"
 				)
-			mini_data, _cluster, _is_smoke = all_protocols[mini_name]
+			mini_data, _cluster = all_protocols[mini_name]
 			# Recurse one level (a sequence_runner referencing another
 			# sequence_runner is not in scope; mini-protocols only).
 			if mini_data["protocol_type"] != "mini_protocol":
@@ -520,7 +491,7 @@ def compute_step_count(protocol_data: dict, all_protocols: dict) -> int:
 				)
 			total += len(mini_data["steps"])
 		return total
-	# dev_smoke or unknown: caller should not have reached here.
+	# Unknown protocol_type: caller should not have reached here.
 	raise ValueError(f"compute_step_count: unsupported protocol_type {protocol_type}")
 
 
@@ -560,38 +531,36 @@ def emit_protocols_ts(
 	)
 	ts_lines.append("")
 	ts_lines.append(
-		"// All protocols (including dev_smoke, for validation and testing)."
+		"// All protocols (mini_protocol and sequence_runner), for validation and testing."
 	)
 	ts_lines.append(
 		"export const PROTOCOLS: Readonly<Record<string, ProtocolConfig>> = {"
 	)
 
 	for protocol_name in sorted(protocols.keys()):
-		protocol_data, cluster, is_dev_smoke = protocols[protocol_name]
+		protocol_data, cluster = protocols[protocol_name]
 		ts_lines.append(f"\t{protocol_name}: {to_ts_literal(protocol_data)},")
 
 	ts_lines.append("} as const;")
 	ts_lines.append("")
 	ts_lines.append(
-		"// Student-visible protocol index (excludes dev_smoke). Sorted by cluster then protocol_name."
+		"// Student-visible protocol index. Sorted by cluster then protocol_name."
 	)
 	ts_lines.append(
 		"export const PROTOCOLS_INDEX: ReadonlyArray<ProtocolIndexEntry> = ["
 	)
 
-	# Build index: exclude dev_smoke, sort by cluster then protocol_name
+	# Build index: sort by cluster then protocol_name
 	index_entries = []
-	for protocol_name, (protocol_data, cluster, is_dev_smoke) in protocols.items():
-		if is_dev_smoke:
-			continue
+	for protocol_name, (protocol_data, cluster) in protocols.items():
 		learning_hook = extract_learning_hook(protocol_data.get("learning"))
 		index_entries.append((cluster, protocol_name, learning_hook))
 
 	index_entries.sort()
 
 	for cluster, protocol_name, learning_hook in index_entries:
-		protocol_data, _, _ = protocols[protocol_name]
-		protocol_type = protocol_data.get("protocol_type")
+		protocol_data, _cluster = protocols[protocol_name]
+		protocol_type = protocol_data["protocol_type"]
 		ts_lines.append(
 			f"\t{{ protocol_name: '{protocol_name}', cluster: '{cluster}', protocol_type: '{protocol_type}', learning_hook: {to_ts_literal(learning_hook)} }},"
 		)
@@ -665,13 +634,13 @@ def resolve_protocol_materials(
 	protocol_name: str, protocols: dict, protocol_dirs: dict
 ) -> dict:
 	"""
-	Resolve the material registry for one protocol. A mini_protocol or dev_smoke
-	uses its own package materials.yaml. A sequence_runner aggregates the
-	materials of its constituent mini-protocols (each per-package, merged by
-	material_name; later minis win on a name collision, which is fine since the
-	same material_name carries the same definition by convention).
+	Resolve the material registry for one protocol. A mini_protocol uses its
+	own package materials.yaml. A sequence_runner aggregates the materials of
+	its constituent mini-protocols (each per-package, merged by material_name;
+	later minis win on a name collision, which is fine since the same
+	material_name carries the same definition by convention).
 	"""
-	protocol_data, _cluster, _is_smoke = protocols[protocol_name]
+	protocol_data, _cluster = protocols[protocol_name]
 	protocol_type = protocol_data["protocol_type"]
 	if protocol_type == "sequence_runner":
 		merged: dict = {}
@@ -762,12 +731,12 @@ def main() -> None:
 	protocols, protocol_dirs = collect_protocols(repo_root)
 
 	if not protocols:
-		raise RuntimeError("No protocols found in content/protocols or tests/content/dev_smoke")
+		raise RuntimeError("No protocols found in content/protocols")
 
-	for protocol_name, (protocol_data, cluster, is_dev_smoke) in protocols.items():
+	for protocol_name, (protocol_data, cluster) in protocols.items():
 		protocol_path = os.path.join(protocol_dirs[protocol_name], "protocol.yaml")
 		protocol_rel_path = os.path.relpath(protocol_path, repo_root)
-		validate_protocol(protocol_data, cluster, is_dev_smoke, protocol_rel_path)
+		validate_protocol(protocol_data, cluster, protocol_rel_path)
 
 	emit_protocols_ts(repo_root, protocols)
 	emit_protocols_index_slim_ts(repo_root, protocols)

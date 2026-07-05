@@ -196,9 +196,6 @@ tests/
 +- test_*.mjs                  -- Node unit tests (run by node --import tsx --test)
 +- TESTS_README.md             -- test-suite overview
 +- file_utils.py           -- shared REPO_ROOT helper
-+- content/
-|  `- dev_smoke/               -- dev-smoke protocol fixtures (same schema as content/)
-+- data/                       -- baseline snapshots used by pytest fixtures
 +- e2e/                        -- non-browser E2E runners (e2e_*.py, e2e_*.sh)
 `- playwright/                 -- browser-driven tests, runner model (@playwright/test)
    +- repo_root.mjs            -- shared REPO_ROOT resolver

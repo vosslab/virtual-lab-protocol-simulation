@@ -166,7 +166,7 @@ function get_active_interaction(
   if (!step_name) {
     return { target: null, gesture: null };
   }
-  // sequence_runner protocols have no steps list; this helper is mini_protocol/dev_smoke only.
+  // sequence_runner protocols have no steps list; this helper is mini_protocol only.
   const steps = config.steps ?? [];
   const step = steps.find((s) => s.step_name === step_name);
   if (!step) {
@@ -227,7 +227,7 @@ function create_snapshot_reducer(
       case "step_started": {
         const active = get_active_interaction(config, event.step_name, 0);
         // Resolve the step's tip from config; null when absent.
-        // sequence_runner protocols have no steps list; this path is mini_protocol/dev_smoke only.
+        // sequence_runner protocols have no steps list; this path is mini_protocol only.
         const steps = config.steps ?? [];
         const started_step = steps.find((s) => s.step_name === event.step_name);
         const step_tip = started_step?.tip ?? null;

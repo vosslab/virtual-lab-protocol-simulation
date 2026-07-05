@@ -326,7 +326,7 @@ The `strict` mode is the gate: a scene that passes strict mode has all its SVG
 assets present and is safe to render. The `placeholder` mode is a development
 aid that lets authors work on protocol flow before final art is available.
 
-Example (placeholder mode for a smoke fixture build):
+Example (placeholder mode for a local development build):
 
 ```bash
 source source_me.sh && python3 pipeline/gen_scene_index.py --missing-svg=placeholder

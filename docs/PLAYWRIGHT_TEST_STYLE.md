@@ -8,8 +8,8 @@ always Node + Playwright even when the app itself is Python or Markdown.
 Read this before writing a browser test. For install and run mechanics
 (installing Playwright, running scripts, screenshots, PDF export), see the
 `PLAYWRIGHT_USAGE.md` doc where it ships. For the fast unit lane and the e2e
-folder layout, see [PYTEST_STYLE.md](PYTEST_STYLE.md) and
-[E2E_TESTS.md](E2E_TESTS.md).
+folder layout, see the `PYTEST_STYLE.md` and `E2E_TESTS.md` docs, which land
+beside this one in a consumer repo's docs/ folder.
 
 Existing tests are evidence of what works, not a compliance checklist. Apply
 this guide to new and revised tests; leave working tests in place.
@@ -62,14 +62,10 @@ user actually receives.
 - Pin a random free port into an environment variable so parallel workers agree
   on the same URL.
 
-A repo can wrap either model in a `run_playwright_tests.sh` single entry point
-that preflights tooling, honors `--build`, prints a single PASS or FAIL line,
-and exits with the underlying tool's code. In the runner model, the wrapper
-forwards remaining arguments to `npx playwright test`, and the config's
-`webServer` block owns the server. In the bare-library model, the wrapper runs
-the `.mjs` entry point (for example `npm run test:smoke`, which builds and
-serves the site itself), and `--build` triggers the site build (`mkdocs
-build`). Reuse this shape where a repo wants one entry point.
+A repo can wrap the runner flow in a `run_playwright_tests.sh` that preflights
+tooling, rebuilds on `--build`, forwards remaining arguments to
+`npx playwright test`, and prints a single PASS or FAIL line. Reuse that shape
+where a repo wants one entry point.
 
 ## Selectors
 

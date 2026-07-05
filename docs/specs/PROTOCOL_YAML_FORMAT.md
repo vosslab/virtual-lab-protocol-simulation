@@ -109,10 +109,10 @@ A required top-level `learning` block carries pedagogy metadata for every mini-p
 
 | Field           | Type   | Required                                     | Description                                                                                                                          |
 | --------------- | ------ | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `protocol_type` | enum   | yes                                          | One of `mini_protocol`, `sequence_runner`, `dev_smoke`. See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) Protocol kinds section. |
-| `protocol_name` | string | yes                                          | Stable snake_case identifier for the protocol.                                                                                       |
-| `entry_step`    | string | yes                                          | `step_name` of the first step the runtime runs.                                                                                      |
-| `steps`         | list   | conditional (mini_protocol + dev_smoke only) | List of authored step entries. Absent for `sequence_runner`.                                                                         |
+| `protocol_type` | enum   | yes                             | One of `mini_protocol`, `sequence_runner`. See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) Protocol kinds section. |
+| `protocol_name` | string | yes                             | Stable snake_case identifier for the protocol.                                                                          |
+| `entry_step`    | string | yes                             | `step_name` of the first step the runtime runs.                                                                         |
+| `steps`         | list   | conditional (mini_protocol only) | List of authored step entries. Absent for `sequence_runner`.                                                            |
 
 Example top of a mini-protocol `protocol.yaml`:
 
@@ -136,7 +136,7 @@ in the broader curriculum.
 | `outcomes`   | string | For mini-protocols | Begins with "Students completing this mini-protocol will be able to..." and states what students can do after completing the mini-protocol. |
 | `goals`      | string | For mini-protocols | Begins with "Overall, this mini-protocol aims to accomplish..." and states the broader purpose.                                             |
 
-Mini-protocols use the required prefixes shown above ("Students completing this mini-protocol..."). Sequence runners also carry a `learning` block scoped to the overall pathway; for sequence runners the prefix may use "Students completing this protocol..." to describe the complete student-facing pathway. Developer smoke protocols and internal diagnostic protocols are exempt from the `learning` block requirement. See [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for the full learning-block schema.
+Mini-protocols use the required prefixes shown above ("Students completing this mini-protocol..."). Sequence runners also carry a `learning` block scoped to the overall pathway; for sequence runners the prefix may use "Students completing this protocol..." to describe the complete student-facing pathway. See [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for the full learning-block schema.
 
 ### Entry step (required for mini-protocols)
 

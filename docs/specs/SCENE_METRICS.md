@@ -85,7 +85,7 @@ metrics show, not who is responsible for a fix.
 | Category | What it means |
 | --- | --- |
 | `healthy` | Fill, shrink, and label are within the target bands. No action needed. |
-| `sparse` | Very little content; fill is well below the lower band. Usually a dev or test fixture. |
+| `sparse` | Very little content; fill is well below the lower band. Usually a small, minimal-object scene. |
 | `crowded` | Fill is above the upper band or object bounding boxes overlap. Dense layouts may be intentional (microscope views). |
 | `shrink-stressed` | Objects are compressed to near the packing floor. Mean final scale at or below the corpus median (0.47), or a uniform rescale was applied. Content may be too small to read comfortably. |
 | `label-stressed` | Label conflict count is 2 or more. Labels overlap or are very close to object artwork. |
@@ -104,7 +104,7 @@ kind of change is needed. The finding appears next to each scene in the report.
 | `healthy` | Metrics within all bands. | No change needed. |
 | `authoring` | Too many objects for the current zone layout; packer shrinks content to fit. | Reduce object count in the named zone (check protocol first -- do not remove objects the protocol actually uses), or add a zone row to give the packer more vertical space. |
 | `engine-fit` | Objects pack correctly but the zone spans only part of the scene, leaving a large empty region outside it. Object count is not too high. | Widen the packed zone in scene YAML so the packer uses more of the scene. Do not reduce object count. |
-| `intentional` | Dense layering (microscope views) or trivial content (dev fixtures) is expected by design. | Confirm the design is correct and leave the scene alone. |
+| `intentional` | Dense layering (microscope views) or trivial content (minimal scenes) is expected by design. | Confirm the design is correct and leave the scene alone. |
 | `validation` | A constraint violation the engine did not catch: off-canvas art, same-tier object overlap, or unresolved label conflicts. | Fix the violation directly: pull off-canvas objects inside `scene_bounds`, separate overlapping same-tier objects by moving one to a different depth tier, or shorten labels and widen label spacing. |
 
 ### Practical authoring moves mapped to findings
