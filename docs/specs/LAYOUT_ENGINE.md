@@ -284,6 +284,43 @@ distributed proportionally to authored band height. When it does not fit, bands
 compress to their content extents and the residual overflow is handed to the
 uniform rescale below.
 
+### Band-owned AABB containment invariant
+
+Every coordinate in this invariant is expressed in the same frame as the rest
+of this doc: scene percent (see the anchor-coordinate convention above), not
+pixels and not authored zone units.
+
+The invariant made true by construction: each item's final placed object box
+(an axis-aligned bounding box, AABB) is contained within its assigned
+computed zone band, and computed zone bands form a non-overlapping partition
+of the scene's vertical range. An item cannot be placed with its box
+extending outside the band that owns it, and two bands cannot claim the same
+vertical range.
+
+Band membership is same-horizontal-row grouping, not raw vertical-range
+overlap. `groupVerticalBands` (`src/scene_runtime/layout/reflow_zones.ts`)
+groups zones into one band only when they occupy the same horizontal row
+(exact side-by-side zones, or a small documented partial-overlap pair). A
+zone whose authored vertical span crosses multiple row cohorts is a spanning
+overlay, not a row participant, and is placed in its own authored bounds
+outside the contiguous row stack rather than fusing the rows it crosses. A
+predicate that instead treats any vertical-range overlap as row membership
+lets a single tall zone transitively bridge unrelated rows into one band,
+which breaks the containment invariant above: two items from different
+authored rows can then be placed inside the same computed band and land at
+the same coordinates.
+
+The engine's own diagnostic must reflect final placement, not per-band
+containment alone. A check that only verifies each item sits inside its own
+band cannot see two items from different bands landing on the same
+coordinates when those bands were wrongly fused upstream; the diagnostic
+compares final placed object AABBs (the same boxes `vertical_layout.ts`
+produces and the renderer draws) across every zone, not only within a single
+band, so a real overlap always increments the reported overlap count. The
+post-render guard (`checkNoItemOverlap`,
+`src/scene_runtime/renderer/structural_guards.ts`) is the independent
+rendered-DOM oracle for this same invariant.
+
 ### Terminal uniform object rescale
 
 When reflowed content still overflows the scene vertical range, one

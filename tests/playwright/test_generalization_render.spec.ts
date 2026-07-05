@@ -54,9 +54,7 @@ const SCENES_TO_RENDER = discoverBaseSceneNames();
 // test.fail() still RUNS the render and assertions (unlike test.skip/
 // test.fixme); if the scene is ever fixed, its test starts passing and
 // Playwright reports an unexpected pass, forcing this entry to be removed.
-const EXPECTED_FAIL_SCENES: Record<string, string> = {
-  microscope_basic: "expected-fail: microscope_basic item/label overlap, routed O6 scene-manager",
-};
+const EXPECTED_FAIL_SCENES: Record<string, string> = {};
 
 //============================================
 // Types

@@ -24,6 +24,14 @@ import {
   AVG_CHAR_WIDTH_PCT,
   LABEL_LINE_HEIGHT_PCT,
 } from "../layout/constants.js";
+import {
+  itemBbox,
+  bboxesIntersect,
+  bboxArea,
+  intersectionArea,
+  itemOverlapPercent,
+  ITEM_OVERLAP_TOLERANCE_PCT,
+} from "../layout/diagnostics/item_overlap.js";
 
 //============================================
 // Type assertions for generated values (ESLint/TypeScript compatibility)
@@ -66,7 +74,6 @@ export interface StructuralViolation {
 //============================================
 
 const JITTER_TOLERANCE = 0.5; // percent units
-const ITEM_OVERLAP_TOLERANCE = 1; // percent units
 const LABEL_OVERLAP_TOLERANCE = 1; // percent units
 const ASPECT_TOLERANCE = 0.05; // 5% tolerance
 // AVG_CHAR_WIDTH_PCT and LABEL_LINE_HEIGHT_PCT are imported from layout/constants.ts
@@ -76,18 +83,12 @@ const DEFAULT_ZONE_GAP = 8; // px, converted to percent using viewport width
 //============================================
 // Bbox computation helpers
 //============================================
-
-// Derive item bbox from the anchor-coordinate convention:
-//   _centerX = shared horizontal center; left/right derived from it.
-//   _top = derived visual top edge (used verbatim).
-function itemBbox(item: ComputedItem): Bounds {
-  return {
-    left: item._centerX - item._visualWidth / 2,
-    top: item._top,
-    right: item._centerX + item._visualWidth / 2,
-    bottom: item._top + item._height,
-  };
-}
+//
+// itemBbox, bboxesIntersect, bboxArea, and intersectionArea are imported from
+// layout/diagnostics/item_overlap.ts, the single source of truth also used by
+// the engine's pre-render cross-zone overlap diagnostic. Keeping one
+// copy of the AABB math means Guard 3 here and the engine's own overlap_count
+// can never drift onto two different epsilons for the same question.
 
 // Compute label bbox using the engine's character width and line height constants.
 // labelWidth: longest line * AVG_CHAR_WIDTH_PCT (0.45, matches wrap_label/stagger logic).
@@ -105,25 +106,6 @@ function labelBbox(item: ComputedItem): Bounds {
     right: labelLeft + labelWidth,
     bottom: labelTop + labelHeight,
   };
-}
-
-function bboxesIntersect(a: Bounds, b: Bounds): boolean {
-  return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
-}
-
-function bboxArea(bbox: Bounds): number {
-  const width = Math.max(0, bbox.right - bbox.left);
-  const height = Math.max(0, bbox.bottom - bbox.top);
-  return width * height;
-}
-
-function intersectionArea(a: Bounds, b: Bounds): number {
-  if (!bboxesIntersect(a, b)) {
-    return 0;
-  }
-  const width = Math.min(a.right, b.right) - Math.max(a.left, b.left);
-  const height = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
-  return Math.max(0, width * height);
 }
 
 function bboxContained(inner: Bounds, outer: Bounds, tolerance: number): boolean {
@@ -223,13 +205,9 @@ function checkNoItemOverlap(final: ComputedItem[]): StructuralViolation[] {
         continue;
       }
 
-      const areaA = bboxArea(bboxA);
-      const areaB = bboxArea(bboxB);
-      const minArea = Math.min(areaA, areaB);
-      const overlapArea = intersectionArea(bboxA, bboxB);
-      const overlapPct = minArea > 0 ? (overlapArea / minArea) * 100 : 100;
+      const overlapPct = itemOverlapPercent(bboxA, bboxB);
 
-      if (overlapPct > ITEM_OVERLAP_TOLERANCE) {
+      if (overlapPct > ITEM_OVERLAP_TOLERANCE_PCT) {
         violations.push({
           guard: "item_overlap",
           placement_name: itemA.placement_name,

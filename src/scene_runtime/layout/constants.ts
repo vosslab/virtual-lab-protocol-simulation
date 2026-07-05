@@ -64,6 +64,11 @@ export const DIAGNOSTIC_KINDS = [
   "label_row_staggered",
   "zone_clamped_to_bounds",
   "max_iterations_reached",
+  // Cross-zone final-placed-item overlap: two items from DIFFERENT
+  // zones landed in the same computed band and their artwork boxes coincide.
+  // Emitted by diagnostics/item_overlap.ts against the FINAL item array, so it
+  // fires independent of band membership (unlike the per-band checks above).
+  "item_overlap",
 ] as const;
 
 // Numeric constants

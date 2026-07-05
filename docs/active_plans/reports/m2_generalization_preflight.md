@@ -1,6 +1,6 @@
 # M2c generalization preflight report
 
-Run at: 2026-07-05 00:07:40 UTC
+Run at: 2026-07-05 02:03:28 UTC
 
 ## Scope
 
@@ -35,18 +35,18 @@ layout geometry before D4 attempts rendering.
 | electrophoresis_bench | 1 | 1 | 16 | PASS | 0 | 0 |
 | extraction_workspace | 2 | 3 | 17 | PASS | 0 | 0 |
 | heat_block_bench | 0 | 1 | 13 | PASS | 0 | 0 |
-| hemocytometer_view | 1 | 1 | 9 | FAIL: Structural guard failure (item overlap): item "rear_tip_box" overlaps with "left_microtube_rack" by 100.0%. | 0 | 0 |
+| hemocytometer_view | 0 | 1 | 9 | PASS | 0 | 0 |
 | hood_basic | 0 | 1 | 10 | PASS | 0 | 0 |
 | hood_workspace | 0 | 1 | 12 | PASS | 0 | 0 |
 | imaging_bench | 0 | 1 | 12 | PASS | 0 | 0 |
 | incubator_workspace | 0 | 1 | 9 | PASS | 0 | 0 |
-| microscope_basic | 2 | 1 | 7 | FAIL: Structural guard failure (item overlap): item "rear_tip_box" overlaps with "left_microtube_rack" by 100.0%. | 0 | 0 |
+| microscope_basic | 0 | 1 | 7 | PASS | 0 | 0 |
 | missing_svg_check | 1 | 1 | 1 | PASS | 0 | 0 |
 | mtt_reagent_prep_bench_workspace | 0 | 1 | 7 | PASS | 0 | 0 |
 | mtt_solubilization_readout_bench_workspace | 0 | 1 | 7 | PASS | 0 | 0 |
 | mtt_solubilization_readout_plate_reader_workspace | 0 | 1 | 7 | PASS | 0 | 0 |
 | passage_hood_detachment_hood_workspace | 0 | 1 | 9 | PASS | 0 | 0 |
-| passage_hood_detachment_microscope_view | 1 | 2 | 6 | FAIL: Structural guard failure (item overlap): item "rear_tip_box" overlaps with "left_microtube_rack" by 100.0%. | 0 | 0 |
+| passage_hood_detachment_microscope_view | 0 | 2 | 6 | PASS | 0 | 0 |
 | plate_drug_treatment_media_adjustment_plate_workspace | 0 | 1 | 9 | PASS | 0 | 0 |
 | plate_workspace | 0 | 1 | 11 | PASS | 0 | 0 |
 | sample_prep_bench | 0 | 1 | 12 | PASS | 0 | 0 |
@@ -204,11 +204,10 @@ layout geometry before D4 attempts rendering.
 
 ### hemocytometer_view
 
-**Guard verdict:** FAIL
-**Guard failure message:** Structural guard failure (item overlap): item "rear_tip_box" overlaps with "left_microtube_rack" by 100.0%.
+**Guard verdict:** PASS
 
-**Diagnostics:** 1 (passes: 1, final items: 9)
-- labels/info/label_row_staggered [rear_tip_box]
+**Diagnostics:** 0 (passes: 1, final items: 9)
+(none)
 
 **Zones shrunk per pass:** 0
 
@@ -265,12 +264,10 @@ layout geometry before D4 attempts rendering.
 
 ### microscope_basic
 
-**Guard verdict:** FAIL
-**Guard failure message:** Structural guard failure (item overlap): item "rear_tip_box" overlaps with "left_microtube_rack" by 100.0%.
+**Guard verdict:** PASS
 
-**Diagnostics:** 2 (passes: 1, final items: 7)
-- labels/info/label_row_staggered [rear_tip_box]
-- labels/info/label_row_staggered [right_hemocytometer_slide]
+**Diagnostics:** 0 (passes: 1, final items: 7)
+(none)
 
 **Zones shrunk per pass:** 0
 
@@ -339,11 +336,10 @@ layout geometry before D4 attempts rendering.
 
 ### passage_hood_detachment_microscope_view
 
-**Guard verdict:** FAIL
-**Guard failure message:** Structural guard failure (item overlap): item "rear_tip_box" overlaps with "left_microtube_rack" by 100.0%.
+**Guard verdict:** PASS
 
-**Diagnostics:** 1 (passes: 2, final items: 6)
-- labels/info/label_row_staggered [rear_tip_box]
+**Diagnostics:** 0 (passes: 2, final items: 6)
+(none)
 
 **Zones shrunk per pass:** 0, 0
 
@@ -544,7 +540,7 @@ layout geometry before D4 attempts rendering.
 
 ## Summary and next steps
 
-**D4-ready (preflight pass):** 35 / 38
+**D4-ready (preflight pass):** 38 / 38
 
 ### Preflight-passing scenes (ready for D4 render):
 
@@ -558,15 +554,18 @@ layout geometry before D4 attempts rendering.
 - **electrophoresis_bench**: 1 diagnostics
 - **extraction_workspace**: 2 diagnostics
 - **heat_block_bench**: 0 diagnostics
+- **hemocytometer_view**: 0 diagnostics
 - **hood_basic**: 0 diagnostics
 - **hood_workspace**: 0 diagnostics
 - **imaging_bench**: 0 diagnostics
 - **incubator_workspace**: 0 diagnostics
+- **microscope_basic**: 0 diagnostics
 - **missing_svg_check**: 1 diagnostics
 - **mtt_reagent_prep_bench_workspace**: 0 diagnostics
 - **mtt_solubilization_readout_bench_workspace**: 0 diagnostics
 - **mtt_solubilization_readout_plate_reader_workspace**: 0 diagnostics
 - **passage_hood_detachment_hood_workspace**: 0 diagnostics
+- **passage_hood_detachment_microscope_view**: 0 diagnostics
 - **plate_drug_treatment_media_adjustment_plate_workspace**: 0 diagnostics
 - **plate_workspace**: 0 diagnostics
 - **sample_prep_bench**: 0 diagnostics
@@ -583,12 +582,6 @@ layout geometry before D4 attempts rendering.
 - **select_check**: 0 diagnostics
 - **staining_bench**: 0 diagnostics
 - **type_check**: 0 diagnostics
-
-### Preflight-failing scenes (needs fix before D4):
-
-- **hemocytometer_view**: Structural guard failure (item overlap): item "rear_tip_box" overlaps with "left_microtube_rack" by 100.0%.
-- **microscope_basic**: Structural guard failure (item overlap): item "rear_tip_box" overlaps with "left_microtube_rack" by 100.0%.
-- **passage_hood_detachment_microscope_view**: Structural guard failure (item overlap): item "rear_tip_box" overlaps with "left_microtube_rack" by 100.0%.
 
 Scenes that pass structural guards proceed to D4 rendering.
 Scenes that fail are classified per D5 taxonomy.

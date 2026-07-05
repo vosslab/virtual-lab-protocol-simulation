@@ -49,3 +49,9 @@ export { buildUnifiedDiagnostics } from "./unified.js";
 export type { UnifiedDiagnostic, UnifiedDiagnosticSource } from "./unified.js";
 
 export { promoteBelowViewport, collectUnfittableAssets } from "./promote.js";
+
+// ITEM_OVERLAP_TOLERANCE_PCT, itemBbox, bboxesIntersect, bboxArea,
+// intersectionArea, itemOverlapPercent, collectItemOverlapDiagnostics omitted:
+// no consumer imports them via this barrel; every real consumer imports
+// directly from "./item_overlap.js" (grep confirmed zero imports via
+// diagnostics/index.js or layout/index.js for these symbols).

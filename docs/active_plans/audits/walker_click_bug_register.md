@@ -209,22 +209,6 @@ O5. **`gel_cassette` / `dilution_tube_rack_8` per-subpart material has no
     owner (architect / scene-manager territory) -- NOT the walker plan (the
     walker only reads; this is a renderer/object change).
 
-O6. **`microscope_basic` base scene fails generalization assertions F (item
-    overlap) and I (label-label overlap), scoring 7/11.** Surfaced by the
-    content-derived base-scene discovery widening in
-    `tests/playwright/test_generalization_render.mjs` (see the 2026-07-04
-    "Base-scene test sets" entry in
-    [docs/CHANGELOG.md](../../CHANGELOG.md)); `microscope_basic` was one of
-    the 4 base scenes the stale hand list had never exercised. Possibly the
-    same base-zone family as O4 (`right_hemocytometer_slide_clear` over
-    `rear_right_hood_return` -- shared-base-zone / instrument-band placement
-    overlap), not a fresh isolated bug; confirm before opening a separate
-    investigation. Clearing action: scene-manager reviews `microscope_basic`
-    placements for the same shared-base-zone overlap class as O4 and either
-    consolidates the fix with O4's re-place/re-zone action or, if the root
-    cause differs, splits this into its own tracked item. Owner:
-    scene-manager plan.
-
 ### Currently open (content, walker plan)
 
 OC1. **`sdspage_prepare_sample_mix_single_lane` ambiguous `microtube_rack_24` at
@@ -317,6 +301,26 @@ R5. **`unresolved_label_overlap` blocked the M19 failBuild gate.** RESOLVED. Was
     only remaining `unresolved_overlap` is the exempt `adversarial_overflow_smoke`
     dev fixture. The 3 historical object-overlap scenes (`seeding_workspace`,
     `hood_workspace`, `imaging_bench`) are clean.
+
+R6. **`microscope_basic` base scene failed generalization assertions F (item
+    overlap) and I (label-label overlap), scoring 7/11.** RESOLVED. Was open item
+    O6. Surfaced by the content-derived base-scene discovery widening in
+    `tests/playwright/test_generalization_render.mjs` (see the 2026-07-04
+    "Base-scene test sets" entry in [docs/CHANGELOG.md](../../CHANGELOG.md));
+    `microscope_basic` was one of the 4 base scenes the stale hand list had never
+    exercised. Initially suspected as the same shared-base-zone placement-overlap
+    family as O4, but the actual root cause was different: `groupVerticalBands` in
+    `src/scene_runtime/layout/reflow_zones.ts` used raw vertical-range overlap as
+    band membership, so a tall spanning zone could transitively bridge two
+    disjoint rows into one band and let items from unrelated rows overlap
+    undetected. Clearing action landed: a `crossesDisjointRowGap` predicate now
+    excludes that transitive-bridge case from band membership, and a new
+    engine-level `item_overlap` diagnostic
+    (`src/scene_runtime/layout/diagnostics/item_overlap.ts`) un-blinds cross-zone
+    item overlaps generally (shared AABB overlap predicate reused by both
+    `run_pipeline.ts` and `structural_guards.ts`). `microscope_basic` was removed
+    from `EXPECTED_FAIL_SCENES`, and an identity-clickability spec was added to
+    guard the fix. Owner: scene-manager plan (landed).
 
 ## Load-time invariants
 

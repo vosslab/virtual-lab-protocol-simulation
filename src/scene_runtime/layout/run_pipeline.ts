@@ -20,6 +20,7 @@ import {
   buildPackZoneDecision,
   buildRowZoneDecision,
 } from "./diagnostics/decision_metadata.js";
+import { collectItemOverlapDiagnostics } from "./diagnostics/item_overlap.js";
 import { collectUnfittableAssets, promoteBelowViewport } from "./diagnostics/promote.js";
 import { buildUnifiedDiagnostics } from "./diagnostics/unified.js";
 import { normalizeSchema } from "./normalize_schema.js";
@@ -240,6 +241,15 @@ export function runPipeline(scene: SceneA, opts: Partial<PipelineInputs> = {}): 
   for (const zone of normalScene.zones ?? []) {
     for (const it of finalClamped.get(zone.id) ?? []) final.push(it);
   }
+
+  // Cross-zone final-placed-item overlap check. The per-band checks
+  // above (place-horizontal, resolve-collisions) never compare two items whose
+  // zones got transitively fused into one computed band, so a real 100% render
+  // overlap could otherwise report overlap_count 0. This scans the FINAL item
+  // array -- every zone at once, the same boxes the renderer and
+  // structural_guards.ts Guard 3 use -- so it closes that blind spot
+  // independent of how band membership is computed upstream.
+  for (const d of collectItemOverlapDiagnostics(final)) diagnostics.push(d);
 
   // Build per-scene decision metadata, separate from the diagnostics array.
   // Packer outcomes from the final pass: zones the dispatcher packed record a

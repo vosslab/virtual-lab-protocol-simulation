@@ -1074,6 +1074,77 @@
   `.sh`/`.mjs`/`.json` file, only historical mentions in `docs/CHANGELOG.md`,
   its dated archive, and `docs/archive/`.
 
+### Behavior or Interface Changes
+
+- `microscope_basic`, `hemocytometer_view`, and
+  `passage_hood_detachment_microscope_view` now honestly stack two rows
+  (rear shelf and bench) instead of one fused band, so the uniform object
+  rescale engages and objects render somewhat smaller than the prior,
+  buggy, fused-band render. Aspect is preserved and no artwork is cropped;
+  all render-integrity gates pass.
+
+### Fixes and Maintenance
+
+- Root-caused the `microscope_basic` / `hemocytometer_view` /
+  `passage_hood_detachment_microscope_view` 100% item-overlap fail (O6) to a
+  transitive band-merge in `groupVerticalBands`
+  (`src/scene_runtime/layout/reflow_zones.ts`): the function used
+  vertical-range overlap as the band-membership test, so the tall
+  `instrument_area` zone (authored `[18, 92]`) bridged the vertically-disjoint
+  rear-shelf row `[5, 34]` and bench row `[40, 92]`, fusing all five zones of
+  the scene into one computed band. `rear_tip_box` and `left_microtube_rack`
+  (same `depth_tier`, same x-column) then landed at an identical position --
+  a 100% coincident box -- while the engine's own `overlap_count` read 0,
+  because containment was checked per-band and no cross-zone AABB check
+  existed. Fixed with a new `crossesDisjointRowGap` predicate that classifies
+  a zone bridging two vertically-disjoint row cohorts as a spanning overlay,
+  placed at its own authored bounds outside the contiguous row stack, while
+  genuine same-horizontal-row zones (side-by-side rows and the documented
+  small partial-overlap pair) still merge unchanged. The predicate stays
+  threshold-free apart from `BAND_EPS = 1e-9`.
+- Un-blinded the engine's overlap diagnostic: new
+  `src/scene_runtime/layout/diagnostics/item_overlap.ts` compares final
+  placed object AABBs across all zones and emits an `item_overlap`
+  diagnostic (added to `DIAGNOSTIC_KINDS`); `structural_guards.ts` now
+  imports the same shared AABB predicate as its single source of truth, so a
+  real 100% render overlap can no longer read `overlap_count = 0`.
+
+### Removals and Deprecations
+
+- Retired the `microscope_basic` entry from `EXPECTED_FAIL_SCENES`
+  (`tests/playwright/test_generalization_render.spec.ts`) now that the
+  underlying overlap is fixed. Added
+  `tests/playwright/test_rear_tip_box_rack_identity.spec.ts` proving
+  `rear_tip_box` and `left_microtube_rack` are independently visible and
+  clickable by their own placement identity.
+
+### Decisions and Failures
+
+- Fixed the band-membership predicate rather than adding a vertical gap
+  constant or removing an object: a gap constant would have patched a scene
+  the engine already believed fit, and object removal was rejected as
+  whack-a-mole that deletes pedagogy and only moves which pair collides
+  (the same class of fix that previously targeted `rear_tip_box` itself).
+
+### Developer Tests and Notes
+
+- Added the "Band-owned AABB containment invariant" section to
+  `docs/specs/LAYOUT_ENGINE.md`: the coordinate frame (scene-percent), the
+  containment invariant (final placed object box inside its band; bands
+  non-overlapping), same-horizontal-row band membership, and the rule that
+  the engine diagnostic reflects final placement.
+- Added `tests/test_layout_placement_containment.mjs` (4 tests, inline
+  data): asserts distinct non-overlapping cohort intervals, per-item band
+  containment, zero cross-zone overlap, and catches a seeded transitive
+  fusion.
+- Witness (band ids, `microscope_basic`, before/after): before, all 5 zones
+  shared one band `[5, 95]`; after, rear cohort `[5, 40.14]`, bench cohort
+  `[40.14, 95]`, `instrument_area` in its own band `[18, 92]`;
+  `rear_tip_box` vs `left_microtube_rack` overlap 100.0% -> 0.0%.
+- Verified: `npx tsc --noEmit` clean; `node --import tsx --test` reflow_zones
+  9/9, placement_containment 4/4, item_overlap 7/7; `./run_playwright_tests.sh`
+  -> 91 passed / 1 skipped / PASS, no unexpected-pass.
+
 ## 2026-07-03
 
 ### Additions and New Features

@@ -299,36 +299,106 @@ interface VerticalBandGroup {
   // fixedExtent stays consistent with the contentExtent it contributes: a uniform
   // object rescale shrinks (contentExtent - fixedExtent) and leaves fixedExtent.
   fixedExtent: number;
+  // True when this group is a SPANNING-OVERLAY: a single tall zone whose authored
+  // span crosses the gap between two vertically-disjoint row cohorts (see
+  // crossesDisjointRowGap). A spanning overlay is placed at its own authored
+  // bounds OUTSIDE the contiguous row stack (reflowZones), so it overlays the rows
+  // it spans instead of fusing them into one band or pushing the stack down. Plain
+  // row groups (side-by-side rows) have this false.
+  isSpanningOverlay: boolean;
 }
 
-// Group zones that share an authored vertical band. Two zones belong to the same
-// group when their authored vertical ranges OVERLAP (transitively): sweeping the
-// zones by authored top, a zone joins the current group while its authored top is
-// below the group's running authored bottom, otherwise it opens a new group. This
-// merges exact side-by-side rows (identical [top, bottom]) AND partially
-// overlapping rows (a center band [38,76] and a front band [72,94] that overlap by
-// a few units stay in one vertical band so they are not stacked into a false
-// overflow). The group's contentExtent is the MAX member content extent.
+// Epsilon for authored-bounds comparisons in scene-percent units. Guards the
+// strict inequalities in the spanning-overlay test against float noise.
+const BAND_EPS = 1e-9;
+
+// Classify a zone as a SPANNING-OVERLAY. A spanning overlay crosses the authored
+// vertical GAP between two vertically-disjoint zones: its authored span reaches UP
+// into an upper cohort and DOWN into a lower cohort that do not themselves overlap.
+// This is the exact structural signature of a tall center element (e.g. an
+// instrument_area authored to fill the canvas vertically) that must OVERLAY the
+// rows it spans rather than fuse them into one band.
+//
+// The test reads only authored bounds. It is threshold free (no tuned coverage
+// fraction) and independent of horizontal placement, so it cannot drift with a
+// magic constant. A genuine side-by-side row member never crosses such a gap: its
+// row-mates and any spanning zone all overlap it, so no vertically-disjoint pair
+// exists for it to bridge. Removing spanning overlays from the row sweep is what
+// lets two rows that were only ever chained THROUGH the spanning zone (e.g. a rear
+// shelf and a bench separated by a real gap) fall back into distinct bands.
+function crossesDisjointRowGap(subject: ZoneContent, contents: ZoneContent[]): boolean {
+  const s = subject.zone.bounds;
+  for (const upper of contents) {
+    if (upper === subject) continue;
+    const a = upper.zone.bounds;
+    // The subject must reach UP into the upper cohort: its top sits strictly above
+    // the upper cohort's bottom edge.
+    if (s.top >= a.bottom - BAND_EPS) continue;
+    for (const lower of contents) {
+      if (lower === subject || lower === upper) continue;
+      const b = lower.zone.bounds;
+      // The upper and lower cohorts must be vertically DISJOINT (a real gap): the
+      // upper cohort ends at or above the lower cohort's top edge.
+      if (a.bottom > b.top + BAND_EPS) continue;
+      // The subject must reach DOWN into the lower cohort: its bottom sits strictly
+      // below the lower cohort's top edge. Combined with the reach-up test above,
+      // the subject spans from within the upper cohort, across the gap, into the
+      // lower cohort.
+      if (s.bottom > b.top + BAND_EPS) return true;
+    }
+  }
+  return false;
+}
+
+// Group zones that share an authored horizontal row into one vertical band.
+//
+// First classify each zone as a SPANNING-OVERLAY (crosses the gap between two
+// disjoint row cohorts, see crossesDisjointRowGap) or a plain ROW PARTICIPANT.
+// Only row participants are swept into shared bands; spanning overlays are pulled
+// out and become their own single-zone group so a tall zone can no longer bridge
+// two distinct rows into one band.
+//
+// Among the row participants, two zones share a band when their authored vertical
+// ranges OVERLAP (transitively): sweeping by authored top, a zone joins the
+// current group while its authored top is below the group's running authored
+// bottom, otherwise it opens a new group. With spanning overlays removed, the only
+// zones that overlap in this sweep are genuine same-row members: exact side-by-side
+// rows (identical [top, bottom]) AND the documented small partial-overlap pair (a
+// center band [38,76] and a front band [72,94] that overlap by a few units). Row
+// merging stays on VERTICAL overlap alone (not horizontal disjointness) because
+// that documented pair is full-width and horizontally overlapping yet must merge.
+// The group's contentExtent is the MAX member content extent.
 function groupVerticalBands(contents: ZoneContent[]): VerticalBandGroup[] {
-  // Order the zones in depth order (authored top ascending). The tie-break returns
-  // 0, so equal authored tops keep their INCOMING array order: zoneContentFor
-  // preserved the caller-supplied depth order (the zones[] authored order), and
-  // Array.prototype.sort is stable in V8/Node, so the sweep is deterministic and
-  // depends on the caller passing zones in their authored depth order.
-  const ordered = [...contents].sort((a, b) => {
-    const da = a.zone.bounds.top - b.zone.bounds.top;
-    if (da !== 0) return da;
-    return 0;
-  });
+  // Classify spanning overlays up front. Classification reads only authored bounds,
+  // so it is independent of the sweep order below and deterministic.
+  const spanning = new Set<ZoneContent>();
+  for (const content of contents) {
+    if (crossesDisjointRowGap(content, contents)) spanning.add(content);
+  }
+
+  // Order the ROW PARTICIPANTS in depth order (authored top ascending). The
+  // tie-break returns 0, so equal authored tops keep their INCOMING array order:
+  // zoneContentFor preserved the caller-supplied depth order (the zones[] authored
+  // order), and Array.prototype.sort is stable in V8/Node, so the sweep is
+  // deterministic and depends on the caller passing zones in their authored depth
+  // order.
+  const ordered = contents
+    .filter((content) => !spanning.has(content))
+    .sort((a, b) => {
+      const da = a.zone.bounds.top - b.zone.bounds.top;
+      if (da !== 0) return da;
+      return 0;
+    });
 
   const groups: VerticalBandGroup[] = [];
   for (const content of ordered) {
     const zoneTop = content.zone.bounds.top;
     const zoneBottom = content.zone.bounds.bottom;
     const current = groups[groups.length - 1];
-    // Join the current group when this zone's authored range overlaps the group's
-    // running authored range (its top sits above the group's authored bottom).
-    if (current !== undefined && zoneTop < current.authoredBottom - 1e-9) {
+    // Join the current row group when this zone's authored range overlaps the
+    // group's running authored range (its top sits above the group's authored
+    // bottom). A spanning overlay can no longer appear here to bridge two rows.
+    if (current !== undefined && zoneTop < current.authoredBottom - BAND_EPS) {
       current.contents.push(content);
       current.authoredBottom = Math.max(current.authoredBottom, zoneBottom);
       current.authoredTop = Math.min(current.authoredTop, zoneTop);
@@ -346,8 +416,25 @@ function groupVerticalBands(contents: ZoneContent[]): VerticalBandGroup[] {
         authoredBottom: zoneBottom,
         contentExtent: content.contentExtent,
         fixedExtent: content.fixedExtent,
+        isSpanningOverlay: false,
       });
     }
+  }
+
+  // Each spanning-overlay zone is its OWN band. reflowZones places it at its
+  // authored bounds outside the contiguous row stack, so it neither re-bridges the
+  // rows nor pushes the stack down the canvas. Appended after the row groups; the
+  // caller separates the two by isSpanningOverlay, so this order is not load-bearing.
+  for (const content of contents) {
+    if (!spanning.has(content)) continue;
+    groups.push({
+      contents: [content],
+      authoredTop: content.zone.bounds.top,
+      authoredBottom: content.zone.bounds.bottom,
+      contentExtent: content.contentExtent,
+      fixedExtent: content.fixedExtent,
+      isSpanningOverlay: true,
+    });
   }
   return groups;
 }
@@ -369,6 +456,12 @@ function groupVerticalBands(contents: ZoneContent[]): VerticalBandGroup[] {
 // had (each zone placed in its own authored bounds); stacking every zone instead
 // would push a 5-7 zone grid scene 3-4x past its scene range and place most objects
 // off-screen.
+//
+// SPANNING-OVERLAY zones (a tall zone crossing the gap between two disjoint row
+// cohorts, e.g. an instrument_area spanning a rear shelf and a bench) are NOT part
+// of the contiguous row stack. They are placed at their own authored bounds so they
+// overlay the rows they span; the contiguous stack, the totalContent/overflow
+// demand, and the leftover distribution are all computed over the ROW groups only.
 //
 // zonePad and tierGap default to the canonical constants (ZONE_PADDING and the
 // depth spacing magnitude DEPTH_TIER_GAP) so a direct caller matches the pipeline
@@ -397,54 +490,61 @@ export function reflowZones(
   );
 
   // Group side-by-side zones into vertical band groups so a horizontal row of
-  // zones shares one band instead of stacking into a false overflow.
+  // zones shares one band instead of stacking into a false overflow. Spanning
+  // overlays come back flagged; they are laid out separately below.
   const groups = groupVerticalBands(contents);
+  // The contiguous ROW stack (side-by-side rows) versus the SPANNING overlays (tall
+  // zones placed at their authored bounds outside the stack).
+  const rowGroups = groups.filter((g) => !g.isSpanningOverlay);
+  const spanGroups = groups.filter((g) => g.isSpanningOverlay);
 
-  // totalContent is the SUM of the per-GROUP content extents (a group contributes
-  // its tallest member once), so a horizontal row counts a single band height.
-  const totalContent = groups.reduce((sum, g) => sum + g.contentExtent, 0);
-  // fixedOverhead is the SUM of the per-group fixedExtent (the same winning member
-  // per group whose contentExtent it contributed). It is the non-scaling portion of
-  // totalContent: zone padding, tier gaps, and the fixed label strips. The uniform
-  // object rescale shrinks only (totalContent - fixedOverhead).
-  const fixedOverhead = groups.reduce((sum, g) => sum + g.fixedExtent, 0);
+  // totalContent is the SUM of the per-ROW-GROUP content extents (a group
+  // contributes its tallest member once), so a horizontal row counts a single band
+  // height. Spanning overlays overlay the rows they span and add no demand to the
+  // stack, so they are excluded here.
+  const totalContent = rowGroups.reduce((sum, g) => sum + g.contentExtent, 0);
+  // fixedOverhead is the SUM of the per-row-group fixedExtent (the same winning
+  // member per group whose contentExtent it contributed). It is the non-scaling
+  // portion of totalContent: zone padding, tier gaps, and the fixed label strips.
+  // The uniform object rescale shrinks only (totalContent - fixedOverhead).
+  const fixedOverhead = rowGroups.reduce((sum, g) => sum + g.fixedExtent, 0);
   const overflow = totalContent > sceneRange;
 
-  // Per-group computed band height.
+  // Per-row-group computed band height.
   const computedHeights: number[] = [];
   if (overflow) {
-    // Content does not fit: compress each group to its content extent and stack
+    // Content does not fit: compress each row group to its content extent and stack
     // from the scene-range top. The stack extends past the scene-range bottom; the
     // terminal uniform object rescale shrinks objects so the recomputed content fits.
-    for (const g of groups) computedHeights.push(g.contentExtent);
+    for (const g of rowGroups) computedHeights.push(g.contentExtent);
   } else {
-    // Content fits: each group gets its content extent plus a share of the leftover
-    // vertical range, distributed proportionally to authored band height (the
-    // group's authored extent).
+    // Content fits: each row group gets its content extent plus a share of the
+    // leftover vertical range, distributed proportionally to authored band height
+    // (the group's authored extent).
     const leftover = sceneRange - totalContent;
-    const authoredHeights = groups.map((g) => Math.max(0, g.authoredBottom - g.authoredTop));
+    const authoredHeights = rowGroups.map((g) => Math.max(0, g.authoredBottom - g.authoredTop));
     const authoredTotal = authoredHeights.reduce((sum, h) => sum + h, 0);
-    for (let i = 0; i < groups.length; i++) {
+    for (let i = 0; i < rowGroups.length; i++) {
       const authored = authoredHeights[i];
-      const group = groups[i];
+      const group = rowGroups[i];
       if (group === undefined || authored === undefined) continue;
       // Proportional share of the leftover. When the authored heights sum to zero
       // (degenerate scene), split the leftover evenly so the band stack still fills
       // the scene range deterministically.
       const share =
-        authoredTotal > 0 ? leftover * (authored / authoredTotal) : leftover / groups.length;
+        authoredTotal > 0 ? leftover * (authored / authoredTotal) : leftover / rowGroups.length;
       computedHeights.push(group.contentExtent + share);
     }
   }
 
-  // Lay the band groups out top-to-bottom from the scene-range top. Every member
+  // Lay the ROW groups out top-to-bottom from the scene-range top. Every member
   // zone of a group gets the SAME computed [top, bottom]; its tier rows are placed
   // top-to-bottom inside that shared band and its baseline recomputed against it.
   const bands = new Map<string, ComputedZoneBand>();
   const baselineClamps: BaselineClampReport[] = [];
   let cursor = sceneRangeTop;
-  for (let i = 0; i < groups.length; i++) {
-    const group = groups[i];
+  for (let i = 0; i < rowGroups.length; i++) {
+    const group = rowGroups[i];
     const computedHeight = computedHeights[i];
     if (group === undefined || computedHeight === undefined) continue;
     const top = cursor;
@@ -462,6 +562,29 @@ export function reflowZones(
       bands.set(content.zone.id, band);
     }
     cursor = bottom;
+  }
+
+  // Place each SPANNING-OVERLAY zone at its own authored bounds (clamped to the
+  // scene range), OUTSIDE the contiguous row stack. It keeps its authored vertical
+  // position and overlays the rows it spans, so it neither re-bridges the rows nor
+  // pushes the stack down the canvas. Each spanning group holds exactly one zone.
+  for (const group of spanGroups) {
+    const content = group.contents[0];
+    if (content === undefined) continue;
+    const authored = content.zone.bounds;
+    const top = Math.max(sceneRangeTop, Math.min(authored.top, sceneRangeBottom));
+    const bottom = Math.max(top, Math.min(authored.bottom, sceneRangeBottom));
+    const computedHeight = bottom - top;
+    const tiers = placeTiers(content, top, tierGap, zonePad);
+    const baseline = recomputeBaseline(content.zone, top, computedHeight, baselineClamps);
+    const band: ComputedZoneBand = {
+      id: content.zone.id,
+      top,
+      bottom,
+      baseline,
+      tiers,
+    };
+    bands.set(content.zone.id, band);
   }
 
   const result: ReflowZonesResult = {

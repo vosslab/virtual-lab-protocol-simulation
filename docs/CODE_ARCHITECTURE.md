@@ -127,6 +127,7 @@ diagnostic stream.
 | `src/scene_runtime/layout/diagnostics/payload.ts` | Typed diagnostic payload shapes |
 | `src/scene_runtime/layout/diagnostics/decision_metadata.ts` | Per-scene decision metadata type |
 | `src/scene_runtime/layout/diagnostics/offcanvas.ts` | Off-canvas classifier: emits `fully_off_canvas` (error-level) or `partial_overflow` (magnitude-scaled warning) onto `PipelineResult.offCanvasDiagnostics`; report-only, never blocks build gate |
+| `src/scene_runtime/layout/diagnostics/item_overlap.ts` | Shared AABB overlap predicate and the item_overlap cross-zone diagnostic; imported by run_pipeline.ts and structural_guards.ts |
 | `src/scene_runtime/layout/diagnostics/index.ts` | Barrel export |
 
 #### Placement strategies (`src/scene_runtime/layout/strategies/`)

@@ -31,10 +31,13 @@ source source_me.sh
 
 LOG="SUPER_LOG.txt"
 
-# These three lists record the outcome of each step, filled in by run().
+# These lists record the outcome of each step, filled in by run(). STEP_CMDS
+# holds the exact command each step ran, so the summary can show how to re-run
+# any single test on its own.
 STEP_NAMES=()
 STEP_STATUS=()
 STEP_SECONDS=()
+STEP_CMDS=()
 
 # Color codes for the screen only. Empty when stdout is not a terminal, so the
 # log file (and piped output) never gets ANSI escapes. Only PASS/FAIL colored.
@@ -69,6 +72,7 @@ status_token() {
 run() {
 	name="$1"
 	shift  # everything after the name is the command to run
+	cmd="$*"  # the exact command, saved so the summary can show how to re-run it
 
 	# Write a clear header into the log so each step is easy to find.
 	{
@@ -98,6 +102,7 @@ run() {
 	STEP_NAMES+=("$name")
 	STEP_STATUS+=("$result")
 	STEP_SECONDS+=("$seconds")
+	STEP_CMDS+=("$cmd")
 
 	# Print a short live line to the screen (colored status token).
 	printf '%s %-40s %5ds\n' "$(status_token "$result")" "$name" "$seconds"
@@ -108,12 +113,14 @@ run() {
 print_summary() {
 	echo ""
 	echo "========== SUMMARY =========="
+	echo "Re-run any one test with the command shown after '->' (from the repo root)."
 	failed=0
 	total=${#STEP_NAMES[@]}
 	i=0
 	while [ "$i" -lt "$total" ]; do
-		printf '  %s %-40s %5ds\n' \
-			"$(status_token "${STEP_STATUS[$i]}")" "${STEP_NAMES[$i]}" "${STEP_SECONDS[$i]}"
+		printf '  %s %-40s %5ds  ->  %s\n' \
+			"$(status_token "${STEP_STATUS[$i]}")" "${STEP_NAMES[$i]}" \
+			"${STEP_SECONDS[$i]}" "${STEP_CMDS[$i]}"
 		if [ "${STEP_STATUS[$i]}" = "FAIL" ]; then
 			failed=$(( failed + 1 ))
 		fi
@@ -130,10 +137,12 @@ print_summary() {
 	{
 		echo ""
 		echo "========== SUMMARY =========="
+		echo "Re-run any one test with the command shown after '->' (from the repo root)."
 		i=0
 		while [ "$i" -lt "$total" ]; do
-			printf '  [%s] %-40s %5ds\n' \
-				"${STEP_STATUS[$i]}" "${STEP_NAMES[$i]}" "${STEP_SECONDS[$i]}"
+			printf '  [%s] %-40s %5ds  ->  %s\n' \
+				"${STEP_STATUS[$i]}" "${STEP_NAMES[$i]}" \
+				"${STEP_SECONDS[$i]}" "${STEP_CMDS[$i]}"
 			i=$(( i + 1 ))
 		done
 		echo "failed: $failed of $total"
