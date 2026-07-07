@@ -119,6 +119,29 @@ async function assertSceneSelectorContract(page: Page, sceneName: string): Promi
 
   expect(items.length, `${sceneName}: at least one rendered item`).toBeGreaterThan(0);
 
+  // Declared scene zones (pipeline-truth) the viewer stashes on window. Every
+  // item's data-zone must be one of these: the geometry dump groups rendered
+  // item boxes by data-zone into each declared zone's item_union_rect, so an
+  // item whose data-zone matches no declared zone would silently drop out of
+  // every union. Assert the membership contract here.
+  const declaredZones: string[] | null = await page.evaluate(() => {
+    const geo = (window as unknown as { __SCENE_GEOMETRY__?: { zones: { name: string }[] } })
+      .__SCENE_GEOMETRY__;
+    if (!geo) return null;
+    return geo.zones.map((z) => z.name);
+  });
+  expect(
+    Array.isArray(declaredZones) && declaredZones.length > 0,
+    `${sceneName}: window.__SCENE_GEOMETRY__ declares at least one zone`,
+  ).toBe(true);
+  const declaredZoneSet = new Set(declaredZones ?? []);
+  for (const item of items) {
+    expect(
+      declaredZoneSet.has(item.zone ?? ""),
+      `${sceneName}[${String(item.placementName)}]: data-zone "${String(item.zone)}" is a declared scene zone`,
+    ).toBe(true);
+  }
+
   const labels: RenderedLabel[] = await page.evaluate(() => {
     const els = Array.from(document.querySelectorAll("[data-label]"));
     return els.map((el) => ({

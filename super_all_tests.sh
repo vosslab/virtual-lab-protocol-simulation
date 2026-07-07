@@ -157,7 +157,7 @@ main() {
 	echo "Running the full suite. Details in $LOG"
 	echo ""
 
-	# --- 1. Build first. validate, scene health, and the browser tests all
+	# --- 1. Build first. validate, scene metrics, and the browser tests all
 	#        read what this produces (generated/, dist/, render stats). ---
 	run "build" bash build_github_pages.sh
 
@@ -165,7 +165,7 @@ main() {
 	run "check_codebase" ./check_codebase.sh
 	run "pytest"         pytest tests/
 	run "validate"       bash run_validate.sh
-	run "scene_health"   ./run_scene_health.py
+	run "scene_metrics"  python3 -m validation.scene_design.cli -S content/base_scenes/*.yaml
 
 	# --- 3. End-to-end tests in tests/e2e/ (pytest skips this folder). ---
 	#     Python E2E tests:

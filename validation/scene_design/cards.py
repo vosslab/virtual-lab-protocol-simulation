@@ -1,8 +1,8 @@
 """Scene card writers: JSON and Markdown formats.
 
 Generates design-lint scorecards for individual scenes. M1 output includes stub
-metrics explicitly marked confidence: stub and score: null. Downstream WPs
-(WP-METRICS-*) will populate real metric values into the same card schema.
+metrics explicitly marked confidence: stub and score: null. Downstream work
+will populate real metric values into the same card schema.
 
 Card schema fields (all required, even if null):
 	scene: str - scene name

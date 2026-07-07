@@ -4,6 +4,26 @@
 
 ### Additions and New Features
 
+- Extended the scene geometry dump (WP-1B1) in `tools/scene_stats.mjs`
+  `computeGeometry`: each zone entry now carries `item_union_rect`, the measured
+  edge-coordinate union of every rendered item tagged with that `data-zone`
+  (null when no item rendered into the zone), distinct from the declared
+  `bounds`/`inner_rect`. The geometry block also carries informational
+  `provenance` (`renderer_bundle` with the built bundle mtime, and `rendered_at`),
+  gathered by the impure caller `tools/scene_to_png.mjs` and passed in so
+  `scene_stats.mjs` stays deterministic. Re-rendered all scenes via
+  `node tools/scene_to_png.mjs --all` to regenerate
+  `generated/scene_render_stats/*.stats.json` with the new fields.
+- Added `docs/active_plans/decisions/scene_metric_calibration.md` (WP-2A1), a
+  provisional scene-metric calibration set: eight real scenes from the round-0
+  vision review (`docs/active_plans/reports/aesthetic_baseline_round0.md`)
+  spanning the full verdict range, each with a plain-language judgment that
+  anchors the `focal_dominance` and `instructional_grouping` scores. Meets the
+  coverage floor (at least four usable calibration points per metric, anchored
+  high and low). Status provisional; ratification is non-blocking. Serves as the
+  ground-truth reference the bbox scorecard candidates in
+  `docs/active_plans/decisions/aesthetic_review_metrics.md` are calibrated
+  against before any metric is promoted to a gate.
 - Added `docs/specs/NO_FIXTURE_POLICY.md`, the repo-specific no-fixture policy
   ("content is the fixture": curriculum content under `content/protocols/**`
   is exercised directly by the walker sweep; there is no separate diagnostic
@@ -207,6 +227,18 @@
 
 ### Developer Tests and Notes
 
+- WP-1B1 verification, all green: added two deterministic unit tests in
+  `tests/test_scene_stats.mjs` (per-zone `item_union_rect` equals the edge-form
+  union of same-zone item boxes, and null for an item-free zone; geometry
+  `provenance` echoes the caller-supplied stamp). Added a `data-zone` membership
+  assertion to both `tests/playwright/test_scene_dom_contract_selectors.mjs` and
+  its `.spec.ts` sibling: every item's `data-zone` must be a declared scene zone
+  (from `window.__SCENE_GEOMETRY__`), guarding the union grouping against an item
+  whose zone would silently drop out of every union. `./check_codebase.sh` 5/5
+  (512 node tests pass); the `.mjs` contract test passes 214/0; the two contract
+  specs pass under the Playwright runner. Observed the intended measured-vs-
+  declared divergence in real output (e.g. `hood_basic` rear_left
+  `item_union_rect.bottom` 575 vs declared `bounds.bottom` 398).
 - WP-F1 bottom-anchor verification, all green: `npx tsc --noEmit` exit 0;
   `./check_codebase.sh` 5/5 (86 layout node tests pass, including rewritten
   bottom-alignment invariant tests); `precompute_layout.mjs` emitted 34 scenes

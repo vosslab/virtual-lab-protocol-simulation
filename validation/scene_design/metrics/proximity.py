@@ -10,7 +10,7 @@ Each function accepts the scene YAML dict and dump_data dict produced by
 validation.scene_calc.dump.dump_scene_geometry, and returns a float in [0, 100]
 or None when required data is absent (NotReady semantics).
 
-Dump schema reference (WP-SIM-2 pinned):
+Dump schema reference:
   dump_data['placements'] list of dicts with keys:
     placement_name, kind, footprint_bbox ({x, y, w, h}), etc.
   dump_data['scene_bounds'] {left, right, top, bottom} in scene-%.

@@ -1,0 +1,91 @@
+<svg viewBox="190 150 690 320" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lid" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2c3d33"></stop>
+      <stop offset="1" stop-color="#13201a"></stop>
+    </linearGradient>
+    <linearGradient id="frontF" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4f2ea"></stop>
+      <stop offset="1" stop-color="#dedbcc"></stop>
+    </linearGradient>
+    <linearGradient id="sideF" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#cbc8b9"></stop>
+      <stop offset="1" stop-color="#a9a698"></stop>
+    </linearGradient>
+    <linearGradient id="baseF" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2ba055"></stop>
+      <stop offset="1" stop-color="#1c7a3f"></stop>
+    </linearGradient>
+    <radialGradient id="led" cx="0.5" cy="0.5" r="0.8">
+      <stop offset="0" stop-color="#3a0d0d"></stop>
+      <stop offset="1" stop-color="#170303"></stop>
+    </radialGradient>
+    <radialGradient id="jR" cx="0.35" cy="0.32" r="0.85">
+      <stop offset="0" stop-color="#e85d4e"></stop><stop offset="0.5" stop-color="#c0392b"></stop><stop offset="1" stop-color="#7d2018"></stop>
+    </radialGradient>
+    <radialGradient id="jB" cx="0.35" cy="0.32" r="0.85">
+      <stop offset="0" stop-color="#454545"></stop><stop offset="0.5" stop-color="#1c1c1c"></stop><stop offset="1" stop-color="#000"></stop>
+    </radialGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7"></feGaussianBlur></filter>
+  </defs>
+
+  
+  <ellipse cx="505" cy="410" rx="300" ry="28" fill="#000" opacity="0.16" filter="url(#soft)"></ellipse>
+
+  
+  <polygon points="230,250 690,250 788.6,195.6 485,195.6" fill="url(#lid)"></polygon>
+  <polygon points="287.3,245.1 664.5,245.1 745.4,200.5 496.4,200.5" fill="#ffffff" opacity="0.06"></polygon>
+
+  
+  <polygon points="690,250 788.6,195.6 788.6,274.8 690,370" fill="url(#sideF)"></polygon>
+
+  
+  <rect x="230" y="370" width="460" height="24" fill="url(#baseF)"></rect>
+  <polygon points="690,370 690,394 788.6,298.8 788.6,274.8" fill="#176835"></polygon>
+
+  
+  <g transform="translate(230,250)">
+    <rect x="0" y="0" width="460" height="120" rx="10" fill="url(#frontF)"></rect>
+    <rect x="0" y="0" width="460" height="3" fill="#fff" opacity="0.5"></rect>
+
+    
+    <circle cx="62" cy="40" r="15" fill="url(#jB)" stroke="#0a0a0a" stroke-width="1.5"></circle>
+    <circle cx="62" cy="40" r="4.5" fill="#000"></circle>
+    <circle cx="62" cy="86" r="15" fill="url(#jR)" stroke="#5e1810" stroke-width="1.5"></circle>
+    <circle cx="62" cy="86" r="4.5" fill="#7d2018"></circle>
+
+    
+    <circle cx="398" cy="40" r="15" fill="url(#jB)" stroke="#0a0a0a" stroke-width="1.5"></circle>
+    <circle cx="398" cy="40" r="4.5" fill="#000"></circle>
+    <circle cx="398" cy="86" r="15" fill="url(#jR)" stroke="#5e1810" stroke-width="1.5"></circle>
+    <circle cx="398" cy="86" r="4.5" fill="#7d2018"></circle>
+
+    
+    <rect x="145" y="30" width="160" height="60" rx="7" fill="url(#led)" stroke="#0a0a0a" stroke-width="2"></rect>
+    <g fill="#ff3030">
+      <rect x="187" y="40" width="16" height="4" rx="2"></rect>
+      <rect x="202" y="43" width="4" height="16" rx="2"></rect>
+      <rect x="202" y="63" width="4" height="16" rx="2"></rect>
+      <rect x="187" y="80" width="16" height="4" rx="2"></rect>
+      <rect x="187" y="60" width="16" height="4" rx="2"></rect>
+      <rect x="217" y="40" width="16" height="4" rx="2"></rect>
+      <rect x="232" y="43" width="4" height="16" rx="2"></rect>
+      <rect x="232" y="63" width="4" height="16" rx="2"></rect>
+      <rect x="217" y="80" width="16" height="4" rx="2"></rect>
+      <rect x="214" y="43" width="4" height="16" rx="2"></rect>
+      <rect x="214" y="63" width="4" height="16" rx="2"></rect>
+      <rect x="247" y="40" width="16" height="4" rx="2"></rect>
+      <rect x="262" y="43" width="4" height="16" rx="2"></rect>
+      <rect x="262" y="63" width="4" height="16" rx="2"></rect>
+      <rect x="247" y="80" width="16" height="4" rx="2"></rect>
+      <rect x="244" y="43" width="4" height="16" rx="2"></rect>
+      <rect x="244" y="63" width="4" height="16" rx="2"></rect>
+    </g>
+
+    
+    <rect x="320" y="30" width="38" height="27" rx="5" fill="#ebe9de" stroke="#c7c4b4"></rect>
+    <path d="M339,37 l8,9 h-16 Z" fill="#3a3a36"></path>
+    <rect x="320" y="63" width="38" height="27" rx="5" fill="#ebe9de" stroke="#c7c4b4"></rect>
+    <path d="M339,83 l8,-9 h-16 Z" fill="#3a3a36"></path>
+  </g>
+</svg>

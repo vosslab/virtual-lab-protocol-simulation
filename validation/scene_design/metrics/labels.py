@@ -12,7 +12,7 @@ Each function accepts the scene YAML dict and dump_data dict produced by
 validation.scene_calc.dump.dump_scene_geometry, and returns a float in [0, 100]
 or None when required data is absent (NotReady semantics).
 
-Dump schema reference (WP-SIM-2 pinned):
+Dump schema reference:
   dump_data['placements'] is a list of dicts with keys:
     placement_name, kind, asset_path, visual_bbox, footprint_bbox,
     placement_bbox, label_bbox, aspect_delta_pct, scale_source

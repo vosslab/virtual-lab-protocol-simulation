@@ -292,6 +292,18 @@ function toDumpBox(rect) {
   return { x: rect.x, y: rect.y, w: rect.width, h: rect.height };
 }
 
+// Converts a {x,y,w,h} dump box to {left,right,top,bottom} edge-coordinate form,
+// matching the zone bounds/inner_rect convention so every box on a zone entry
+// shares one shape.
+function dumpBoxToEdges(box) {
+  return {
+    left: box.x,
+    right: box.x + box.w,
+    top: box.y,
+    bottom: box.y + box.h,
+  };
+}
+
 // Computes aspect_delta_pct for one rendered item: how far the rendered visual
 // box deviates from the intended SVG aspect, as a percentage. Mirrors
 // validation/scene_calc/aspect.py: abs(rendered - authored) / authored * 100.
@@ -345,7 +357,7 @@ function sceneBoundsPx(sceneRootBbox) {
 // pipeline-truth geometry summary, and the scene-root box. Returns null when
 // the pipeline geometry or scene-root box is unavailable (load-failed pages);
 // the loader treats a null geometry block as "not renderable" and fails loudly.
-function computeGeometry(renderedItems, labels, sceneGeometry, sceneRootBbox) {
+function computeGeometry(renderedItems, labels, sceneGeometry, sceneRootBbox, provenance) {
   if (!sceneGeometry || !sceneRootBbox) return null;
 
   // Index pipeline-truth placements and labels by placement name.
@@ -387,14 +399,32 @@ function computeGeometry(renderedItems, labels, sceneGeometry, sceneRootBbox) {
     });
   }
 
+  // Measured per-zone extent: the union of the placement boxes of every rendered
+  // item tagged with that data-zone. This is the RENDERED zone footprint, keyed
+  // by item.zone (the DOM data-zone attribute), distinct from the DECLARED zone
+  // bounds/inner_rect below (pipeline-truth scene-percent bounds). Items with no
+  // zone or no positive-area box contribute nothing.
+  const zoneItemUnions = new Map();
+  for (const item of renderedItems) {
+    if (!item.zone) continue;
+    const box = toDumpBox(item.bbox);
+    if (box.w <= 0 || box.h <= 0) continue;
+    const prev = zoneItemUnions.get(item.zone);
+    zoneItemUnions.set(item.zone, prev ? unionBox(prev, box) : box);
+  }
+
   const zones = [];
   for (const zone of sceneGeometry.zones) {
     const boundsPx = pctEdgesToPx(zone.bounds, sceneRootBbox);
     const innerRect = zoneInnerRectPx(zone.bounds, sceneGeometry.zone_padding, sceneRootBbox);
+    // item_union_rect: measured union (edge-coord pixels) of every rendered item
+    // whose data-zone equals this zone, or null when no item rendered into it.
+    const unionForZone = zoneItemUnions.get(zone.name) ?? null;
     zones.push({
       name: zone.name,
       bounds: boundsPx,
       inner_rect: innerRect,
+      item_union_rect: unionForZone ? dumpBoxToEdges(unionForZone) : null,
     });
   }
 
@@ -403,6 +433,10 @@ function computeGeometry(renderedItems, labels, sceneGeometry, sceneRootBbox) {
     scene_bounds: sceneBoundsPx(sceneRootBbox),
     placements,
     zones,
+    // Informational render provenance (which built bundle produced this geometry
+    // and when the render ran). Supplied by the impure caller so this module
+    // stays deterministic; null when the caller passes none.
+    provenance: provenance ?? null,
   };
 }
 
@@ -496,6 +530,7 @@ export function computeSceneStats({
   labels,
   sceneRootBbox,
   sceneGeometry = null,
+  provenance = null,
   loadFailed = false,
 }) {
   const items = renderedItems || [];
@@ -508,7 +543,7 @@ export function computeSceneStats({
 
   // Dump-shaped geometry for the scene_calc validator (single producer). Null on
   // load-failed pages; the loader fails loudly rather than synthesizing geometry.
-  const geometry = computeGeometry(items, labelList, sceneGeometry, sceneRootBbox);
+  const geometry = computeGeometry(items, labelList, sceneGeometry, sceneRootBbox, provenance);
 
   const category = classifyScene(counts, loadFailed);
   const advisoryFlags = computeAdvisoryFlags(category, counts, layout, missing);

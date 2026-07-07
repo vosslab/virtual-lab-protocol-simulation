@@ -463,7 +463,7 @@ export interface PipelineResult {
   // set; this carries the actionable severity payloads. Empty when nothing is
   // unresolved.
   severityDiagnostics: SeverityDiagnostic[];
-  // Report-only per-item off-canvas classification from the validate phase (WS-F).
+  // Report-only per-item off-canvas classification from the validate phase.
   // One entry per item whose artwork box escapes scene_bounds: fully_off_canvas
   // (error class) or partial_overflow (warning, magnitude-scaled). This is a
   // SEPARATE informational stream from severityDiagnostics: it never fails or

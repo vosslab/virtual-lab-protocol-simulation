@@ -331,6 +331,61 @@ test("every label-art overlap counts, including a label over its own item", () =
 });
 
 //============================================
+// Geometry: per-zone item union and provenance
+//============================================
+
+test("zone item_union_rect is the edge-form union of same-zone item boxes", () => {
+  const manifestEntry = makeManifestEntry("zone_scene", ["a", "b"]);
+  // Two items both tagged data-zone "bench"; one item-free zone "shelf".
+  const renderedItems = [
+    makeItem("a", { zone: "bench", bbox: { x: 10, y: 10, width: 20, height: 20 } }),
+    makeItem("b", { zone: "bench", bbox: { x: 50, y: 40, width: 10, height: 10 } }),
+  ];
+  const sceneGeometry = {
+    zones: [
+      { name: "bench", bounds: { left: 0, right: 100, top: 0, bottom: 100 } },
+      { name: "shelf", bounds: { left: 0, right: 100, top: 0, bottom: 100 } },
+    ],
+    zone_padding: 0,
+    placements: [],
+  };
+  const stats = computeSceneStats({
+    sceneName: "zone_scene",
+    manifestEntry,
+    renderedItems,
+    labels: [],
+    sceneRootBbox: SCENE_ROOT,
+    sceneGeometry,
+  });
+  const benchZone = stats.geometry.zones.find((z) => z.name === "bench");
+  // Union of (10,10,20x20) and (50,40,10x10): left=10, top=10, right=60, bottom=50.
+  assert.deepEqual(benchZone.item_union_rect, { left: 10, right: 60, top: 10, bottom: 50 });
+  // A zone with no rendered items has a null union.
+  const shelfZone = stats.geometry.zones.find((z) => z.name === "shelf");
+  assert.equal(shelfZone.item_union_rect, null);
+});
+
+test("geometry provenance echoes the informational stamp from the caller", () => {
+  const manifestEntry = makeManifestEntry("prov_scene", ["a"]);
+  // A fixed provenance object (no clock read) so the assertion stays stable.
+  const provenance = {
+    renderer_bundle: "dist/scene_viewer.js@2020-01-01T00:00:00.000Z",
+    rendered_at: "2020-01-01T00:00:00.000Z",
+  };
+  const sceneGeometry = { zones: [], zone_padding: 0, placements: [] };
+  const stats = computeSceneStats({
+    sceneName: "prov_scene",
+    manifestEntry,
+    renderedItems: [makeItem("a")],
+    labels: [],
+    sceneRootBbox: SCENE_ROOT,
+    sceneGeometry,
+    provenance,
+  });
+  assert.deepEqual(stats.geometry.provenance, provenance);
+});
+
+//============================================
 // Structured output shape
 //============================================
 

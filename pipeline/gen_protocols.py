@@ -35,19 +35,19 @@ Validation:
 Output ordering: PROTOCOLS_INDEX sorted by cluster then protocol_name (deterministic).
 """
 
+# Standard Library
 import os
 import subprocess
-import sys
 
+# PIP3 modules
 import yaml
 
 # Cross-package import: the canonical protocol closure check lives in
 # validation/yaml_schema/, a sibling top-level directory to pipeline/.
-# pipeline/ generator scripts add the repo root to sys.path so the
-# package-qualified import resolves regardless of the caller's PYTHONPATH
-# (pipeline/build_generated.sh invokes this script directly, without
-# sourcing source_me.sh).
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# pipeline/build_generated.sh exports PYTHONPATH with the repo root before
+# invoking this script, so the package-qualified import resolves.
+
+# local repo modules
 import pipeline.entity_decode
 import validation.yaml_schema.protocol_validator
 

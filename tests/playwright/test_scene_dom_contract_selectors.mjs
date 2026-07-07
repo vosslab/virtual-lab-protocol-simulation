@@ -188,6 +188,28 @@ async function testSceneSelectorContract(page, sceneName) {
 
   assertGt(items.length, 0, `${sceneName}: at least one rendered item`);
 
+  // Declared scene zones (pipeline-truth) the viewer stashes on window. Every
+  // item's data-zone must be one of these: the geometry dump groups rendered
+  // item boxes by data-zone into each declared zone's item_union_rect, so an
+  // item whose data-zone matches no declared zone would silently drop out of
+  // every union. Assert the membership contract here.
+  const declaredZones = await page.evaluate(() => {
+    const geo = window.__SCENE_GEOMETRY__;
+    if (!geo) return null;
+    return geo.zones.map((z) => z.name);
+  });
+  assert(
+    Array.isArray(declaredZones) && declaredZones.length > 0,
+    `${sceneName}: window.__SCENE_GEOMETRY__ declares at least one zone`,
+  );
+  const declaredZoneSet = new Set(declaredZones ?? []);
+  for (const item of items) {
+    assert(
+      declaredZoneSet.has(item.zone),
+      `${sceneName}[${item.placementName}]: data-zone "${item.zone}" is a declared scene zone`,
+    );
+  }
+
   // Collect all label elements.
   const labels = await page.evaluate(() => {
     const els = Array.from(document.querySelectorAll("[data-label]"));

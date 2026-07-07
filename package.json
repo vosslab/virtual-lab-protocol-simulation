@@ -15,9 +15,7 @@
 		"protocol:png": "node tools/protocol_to_png.mjs",
 		"scene:png": "node tools/scene_to_png.mjs",
 		"layout:diff": "node --import tsx tools/layout_golden_diff.mjs",
-		"layout:refresh": "node --import tsx tools/layout_golden_diff.mjs --refresh",
-		"layout:metrics": "node --import tsx tools/layout_metrics.mjs --all",
-		"layout:health": "node --import tsx tools/layout_health_report.mjs --all"
+		"layout:refresh": "node --import tsx tools/layout_golden_diff.mjs --refresh"
 	},
 	"devDependencies": {
 		"@eslint/js": ">=10.0.1",

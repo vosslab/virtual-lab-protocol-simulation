@@ -19,7 +19,7 @@ def aggregate_score(metrics: dict[str, float | None], scene_class: str) -> float
 	Returns:
 		Weighted sum score (0-100 float), or None if any required metric
 		for the class is None. Returns None represents NotReady semantics;
-		metrics will be populated in downstream WPs (WP-METRICS-*).
+		metrics will be populated in downstream work.
 
 	Raises:
 		ValueError: If scene_class is not in WEIGHTS (class name invalid).

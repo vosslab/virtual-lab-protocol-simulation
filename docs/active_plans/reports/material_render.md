@@ -1,17 +1,74 @@
 # Material-render regression guard report
 
-**This report proves "no worse than baseline", NOT "material rendering is correct".** It records how much of each fill_height() overlay's item bbox the overlay actually paints, and defends that geometry against drift; it does not judge whether any individual percent is the right answer.
+This report explains what the material-render test learned, not just whether it passed.
+It records how much of each `fill_height()` overlay's item bbox the overlay paints, and
+uses that geometry as a regression guard. It does not claim that any measured percentage
+is the ideal visual answer.
 
-**Segmentation rule (how the numerator is counted):** each item's bbox is screenshotted with its fill overlay(s) visible, then again with them hidden (isolated per driving field, so a two-overlay item is never diffed against itself). A pixel counts toward the numerator when its color changes by more than the diff threshold between the two shots. Glass, background, outline, and label pixels are IDENTICAL in both shots and drop out by construction; the same threshold absorbs the thin anti-aliased edge band. See tests/playwright/material_render_capture.mjs for the full rationale (the overlay's resolved color is frequently translucent and composited per-pixel over the base artwork, so no single flat target color would match reliably).
+## What the test measures
 
-**Baseline status: `known-bad-current-state`.** Every fill_height overlay in this baseline currently paints the full object item bbox rather than being constrained to the SVG liquid interior (docs/ROADMAP.md:183, deferred fix, out of scope for this guard). All measured percentages below are CURRENT-STATE geometry, not a target to imitate; the guard only blocks this state from getting worse. The per-entry "tag" field stays empty and reserved for future targeted annotation once the render fix lands.
+Each item's bbox is rendered twice:
 
-**Mode:** verify  
-**Items measured:** 231  
-**Diff threshold:** 15 (per-channel max-abs-diff)  
-**Regression threshold:** +5.0 percentage points above baseline  
+1. once with its fill overlay(s) visible
+2. once with them hidden
 
-## Verification summary
+The measurement is the pixel difference between those two images, isolated per driving
+field so a two-overlay object is never diffed against itself. A pixel counts toward the
+overlay area when its color changes by more than the diff threshold between the two shots.
+Glass, background, outline, and label pixels are identical in both shots and drop out by
+construction.
+
+The diff method is the important methodological result from this test run. Flat-color pixel
+matching was not reliable because the overlay color is often translucent and composited per
+pixel over the underlying art. The visible-vs-hidden diff is the robust segmentation.
+
+## What we learned
+
+### 1. The fill overlay currently paints the full object bbox
+
+The measured percentages show that the current fill overlay behaves like bbox coverage, not
+liquid-interior clipping. Full containers land around the mid-to-high 90s, partial containers
+land in the middle, and empty containers land at 0. That pattern is consistent with a volume
+proxy, but it also confirms the deferred bug in `docs/ROADMAP.md:183`: the overlay is not yet
+constrained to the SVG liquid interior.
+
+This is the structural issue the guard is meant to pin. The report is intentionally labeled as
+"no worse than baseline" rather than "correct rendering."
+
+### 2. The material color path is currently falling back to grey
+
+Every measured fill rendered as the same neutral grey fallback (`rgba(120, 120, 120, 0.35)`),
+not as a material identity color. That means the renderer is not showing PBS as PBS, media as
+media, waste as waste, and so on. The test did not uncover a content-authoring mistake; it
+exposed a renderer-side color-path gap.
+
+That makes the color problem distinct from the geometry problem:
+
+- geometry: how much of the bbox is being painted
+- color identity: whether the painted region is using the material's declared color at all
+
+### 3. The percentage is a coarse proxy, not a correctness proof
+
+The measured percentage tracks how high the fill rises, so it behaves like a volume proxy. It
+does not prove that the painted shape is clipped correctly, nor that the color path is correct.
+In other words, the metric can tell us when fill got bigger or smaller, but not whether the fill
+has the right interior shape or the right material identity.
+
+## Baseline status
+
+**Baseline status: `known-bad-current-state`.**
+
+Every fill_height overlay in this baseline currently paints the full object item bbox rather than
+being constrained to the SVG liquid interior. The guard only blocks this state from getting worse.
+The per-entry `tag` field stays empty and is reserved for future targeted annotation once the
+renderer fix lands.
+
+## Run summary
+
+**Mode:** verify
+**Items measured:** 231
+**Diff threshold:** 15 (per-channel max-abs-diff)
+**Regression threshold:** +5.0 percentage points above baseline
 
 | Outcome | Count |
 | --- | --- |
@@ -20,9 +77,20 @@
 | new (no baseline entry yet) | 0 |
 | missing (baseline entry, no longer captured) | 0 |
 
+## Interpretation
+
+The test tells us two things with confidence:
+
+- the current renderer behavior is stable relative to the saved baseline
+- the renderer is still wrong in two separate ways: full-bbox fill behavior and grey fallback
+
+The test does not tell us that the current state is acceptable. It tells us that the current
+incorrect behavior is now measured and guarded.
+
 ## Full measured corpus
 
-Every row below is known-bad current-state geometry (see **Baseline status** above); the per-entry `tag` column stays empty and reserved for future targeted annotation once the render fix for docs/ROADMAP.md:183 lands.
+Every row below is known-bad current-state geometry. The `tag` column stays empty and is reserved
+for future targeted annotation once the render fix for `docs/ROADMAP.md:183` lands.
 
 | Key | Object | Declared fill color | Measured % | Tag |
 | --- | --- | --- | --- | --- |

@@ -422,6 +422,28 @@ function compute_scene_clip(scene_root_bbox, viewport_size) {
 }
 
 //============================================
+// Render provenance
+//============================================
+
+// Builds the informational provenance stamped into the geometry dump: which
+// built renderer bundle produced the geometry, and when this render ran. This
+// is passed into the deterministic scene_stats module so it never reads the
+// clock or filesystem itself. renderer_bundle carries the bundle mtime so a
+// stale dump (built from an older bundle) is visible in the dump.
+function compute_render_provenance() {
+  const bundle_path = path.join(DIST_DIR, "scene_viewer.js");
+  let renderer_bundle = "dist/scene_viewer.js";
+  if (fs.existsSync(bundle_path)) {
+    const mtime = fs.statSync(bundle_path).mtime.toISOString();
+    renderer_bundle = `dist/scene_viewer.js@${mtime}`;
+  }
+  return {
+    renderer_bundle,
+    rendered_at: new Date().toISOString(),
+  };
+}
+
+//============================================
 // Render one scene: load, wait for ready, capture, compute stats
 //============================================
 
@@ -490,7 +512,9 @@ async function render_scene(
     scene_geometry = await collect_scene_geometry(page);
   }
 
-  // Compute stats using the shared module.
+  // Compute stats using the shared module. Provenance is gathered here (the
+  // impure caller) and passed in so scene_stats stays deterministic.
+  const provenance = compute_render_provenance();
   const stats = computeSceneStats({
     sceneName: scene_name,
     manifestEntry: manifest_entry,
@@ -498,6 +522,7 @@ async function render_scene(
     labels,
     sceneRootBbox: scene_root_bbox,
     sceneGeometry: scene_geometry,
+    provenance,
     loadFailed: load_failed,
   });
 

@@ -29,8 +29,9 @@ import lxml.etree
 
 # Import the shared validator (lives in tools/ as a dev-tool helper).
 # pipeline/ generator scripts add the sibling tools/ dir to sys.path so the
-# bare-name import remains valid per docs/PYTHON_STYLE.md.
-sys.path.insert(0, os.path.dirname(__file__))
+# bare-name import remains valid per docs/PYTHON_STYLE.md. This insert is
+# still required: PYTHONPATH (repo root) does not cover a bare-name import
+# of a tools/ dev-tool module.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "tools"))
 import svg_validate
 

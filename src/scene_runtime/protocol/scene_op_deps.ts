@@ -200,7 +200,7 @@ export function build_store_scene_op_deps(
       // eslint-disable-next-line no-console
       console.warn(
         `LayoutMove is unsupported this pass (target "${op.target}" -> zone "${op.zone}"); ` +
-          `no-op. See migration plan WS-M2-I/WS-M3-D LayoutMove decision (Option A).`,
+          `no-op. See migration plan LayoutMove decision (Option A).`,
       );
     },
 
