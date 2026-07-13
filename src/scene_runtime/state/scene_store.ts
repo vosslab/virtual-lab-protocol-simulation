@@ -84,6 +84,10 @@ export interface TargetRuntimeFlags {
   // cursor holds nothing (detached, or attached with no material).
   held_material_name: string | null;
   held_material_volume: number | null;
+  // Runtime equipment phase driven by TimedWait. The display string is an
+  // authored render hint, not declared object state.
+  timed_wait_active: boolean;
+  timed_wait_display: string | null;
 }
 
 // One target's full reactive record: declared state plus runtime flags.
@@ -160,6 +164,8 @@ export interface SceneStore {
 // Runtime-flag write payload. The flag may be omitted to leave it as-is.
 export interface FlagWrite {
   is_selected?: boolean;
+  timed_wait_active?: boolean;
+  timed_wait_display?: string | null;
 }
 
 // Cursor write payload. attach=true holds the target (optionally with the
@@ -233,6 +239,8 @@ function build_default_flags(): TargetRuntimeFlags {
     cursor_attached: false,
     held_material_name: null,
     held_material_volume: null,
+    timed_wait_active: false,
+    timed_wait_display: null,
   };
 }
 
@@ -529,6 +537,12 @@ export function create_scene_store(material_registry: MaterialRegistry | null = 
         // Partial-merge: only the named flags change.
         if (flags.is_selected !== undefined) {
           current.flags.is_selected = flags.is_selected;
+        }
+        if (flags.timed_wait_active !== undefined) {
+          current.flags.timed_wait_active = flags.timed_wait_active;
+        }
+        if (flags.timed_wait_display !== undefined) {
+          current.flags.timed_wait_display = flags.timed_wait_display;
         }
       }),
     );

@@ -126,6 +126,25 @@ test("solid walker: sdspage_heat_denature_samples completes through visible clic
       continue;
     }
 
+    if (
+      snapshot.active_interaction_target === null &&
+      (await page.locator('[data-timed-wait="active"]:visible').count()) > 0
+    ) {
+      await page.waitForFunction(
+        (stepName) => {
+          const next = window.__shellEmitter?.get_snapshot();
+          return (
+            next?.current_step_name !== stepName ||
+            next?.active_interaction_target !== null ||
+            document.querySelector('[data-timed-wait="active"]') === null
+          );
+        },
+        snapshot.current_step_name,
+        { timeout: 3000 },
+      );
+      continue;
+    }
+
     if (snapshot.current_step_name !== lastStepName) {
       lastStepName = snapshot.current_step_name;
       stepCounter += 1;

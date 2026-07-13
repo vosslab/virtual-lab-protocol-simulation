@@ -293,7 +293,6 @@ Developer-only helpers that do not appear in any build chain.
 | [html_to_pdf.mjs](../tools/html_to_pdf.mjs) | Playwright-based HTML-to-PDF renderer |
 | [seam_types_compile_check.ts](../tools/seam_types_compile_check.ts) | Compile-time type check for seam interface literals |
 | [README.md](../tools/svg_picker/README.md) | Browser-based SVG asset picker for content authors |
-| [scorecard_m2.mjs](../tools/scorecard_m2.mjs) | M2 scene scorecard runner |
 | [scene_to_png.mjs](../tools/scene_to_png.mjs) | `scene:png` -- renders a scene page to PNG + writes render-yield stats |
 | [protocol_to_png.mjs](../tools/protocol_to_png.mjs) | `protocol:png` -- renders a protocol page to PNG; records load outcomes |
 | [scene_stats.mjs](../tools/scene_stats.mjs) | `computeSceneStats` -- shared scene statistics helper |

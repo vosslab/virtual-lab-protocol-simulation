@@ -246,12 +246,11 @@ Rules for the schema:
 
 ## Scorecard v2 candidates
 
-A subset of catalog metrics is bounding-box-automatable and can replace the three
-placeholder metrics in
-[scorecard_m2.mjs](../../../tools/scorecard_m2.mjs) that currently return the
-hardcoded value 75: `support_distance`, `balance`, and `region_filling`. These
-candidates compute from DOM bounding boxes, so they need no vision call and can
-run in the deterministic scorecard once calibrated.
+A subset of catalog metrics is bounding-box-automatable and can replace the
+three placeholder metrics from the now-retired `tools/scorecard_m2.mjs` that
+returned the hardcoded value 75: `support_distance`, `balance`, and
+`region_filling`. These candidates compute from DOM bounding boxes, so they need
+no vision call and can run in a future deterministic scorecard once calibrated.
 
 | candidate | replaces / adds | computes from |
 | --- | --- | --- |

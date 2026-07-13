@@ -23,7 +23,6 @@
 | [pip_requirements-dev.txt](../pip_requirements-dev.txt) | Python dev dependencies (pytest, pyflakes) |
 | [eslint.config.js](../eslint.config.js) | ESLint flat config |
 | [REPO_TYPE](../REPO_TYPE) | Repo type marker (`typescript`) |
-| [run_scene_health.py](../run_scene_health.py) | Visible author entry point: run the layout health check for one or all scenes |
 
 ## Key subtrees
 

@@ -158,13 +158,17 @@ function read_flags(
   target: string,
 ): {
   is_selected: boolean;
+  timed_wait_active: boolean;
+  timed_wait_display: string | null;
 } {
   const entry = store.state[target];
   if (entry === undefined) {
-    return { is_selected: false };
+    return { is_selected: false, timed_wait_active: false, timed_wait_display: null };
   }
   return {
     is_selected: entry.flags.is_selected,
+    timed_wait_active: entry.flags.timed_wait_active,
+    timed_wait_display: entry.flags.timed_wait_display,
   };
 }
 
@@ -660,6 +664,7 @@ export function SceneItem(props: {
       data-asset={asset_name()}
       data-resolver-degraded={resolverDegraded().length > 0 ? resolverDegraded() : undefined}
       data-affordance={affordance_kind()}
+      data-timed-wait={flags().timed_wait_active ? "active" : undefined}
       style={{ ...base_style, ...highlight_style() }}
     >
       {/* SVG host keyed by the resolved asset name. When the asset changes
@@ -687,6 +692,12 @@ export function SceneItem(props: {
           registry={props.materialRegistry}
           on_subpart_degrade={forward_subpart_degrade}
         />
+      </Show>
+      <Show when={flags().timed_wait_active}>
+        <div class="scene-item-timed-wait" role="status">
+          <span aria-hidden="true">Timer:</span>
+          <span>{flags().timed_wait_display ?? "Timed phase in progress"}</span>
+        </div>
       </Show>
     </div>
   );

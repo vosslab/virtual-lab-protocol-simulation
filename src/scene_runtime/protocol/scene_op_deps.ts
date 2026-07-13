@@ -20,14 +20,11 @@
 //     (scene-local vessel state clears; cursor-held tool/material persists;
 //     active-target + selected flags clear; subpart state clears on leaving
 //     the scene) and disposing the prior Solid root.
-//   - LayoutMove        -> Option A (zero authored uses found in corpus scan):
-//     explicitly unsupported this pass. Reported as a clear no-op (warn), not
-//     a silent skip and not a throw, so an authored protocol that later adds a
-//     LayoutMove surfaces in logs without crashing a student walkthrough.
-//   - TimedWait         -> keep observable semantics through the store by
-//     writing the timed-wait phase onto the target's declared state when the
-//     object declares the relevant fields; otherwise it is an observable
-//     no-op (the step machine drives completion via handle_timer_elapsed).
+//   - LayoutMove        -> fails loudly until the layout engine exposes a
+//     placement-override write surface. Accepting an operation without moving
+//     the object would report false success.
+//   - TimedWait         -> writes runtime equipment-phase flags for the render
+//     layer and delegates elapsed scheduling to the host.
 //
 // References:
 //   - docs/PRIMARY_SPEC.md (scene operations, reset policy)
@@ -106,6 +103,7 @@ function object_segment(target: string): string {
 export function build_store_scene_op_deps(
   store: SceneStore,
   render_scene: (scene_name: string) => void,
+  schedule_timed_wait: (op: TimedWaitOp) => void = () => {},
 ): SceneOpDeps {
   const deps: SceneOpDeps = {
     //----------------------------------------
@@ -192,37 +190,19 @@ export function build_store_scene_op_deps(
 
     //----------------------------------------
     apply_layout_move(op: LayoutMoveOp): void {
-      // Option A (zero authored LayoutMove uses found in corpus scan).
-      // Explicitly unsupported this pass: report a clear no-op rather than
-      // silently skipping or throwing. If an authored protocol ever emits a
-      // LayoutMove, this warning surfaces it for the follow-up that adds the
-      // typed placement-override field (Option B), without crashing a walk.
-      // eslint-disable-next-line no-console
-      console.warn(
-        `LayoutMove is unsupported this pass (target "${op.target}" -> zone "${op.zone}"); ` +
-          `no-op. See migration plan LayoutMove decision (Option A).`,
+      throw new Error(
+        `LayoutMove cannot be applied: the runtime has no placement-override surface ` +
+          `(target "${op.target}" -> zone "${op.zone}")`,
       );
     },
 
     //----------------------------------------
     start_timed_wait(op: TimedWaitOp): void {
-      // TimedWait keeps observable semantics through the store WHEN the target
-      // object declares a timed-wait state field. The vocabulary has no
-      // dedicated timed-wait state primitive, so we only write fields the
-      // object actually declares; the step machine drives phase completion via
-      // handle_timer_elapsed. When the target declares no such field this is an
-      // observable no-op (the spinner display is a render concern, not state).
-      const entry = store.state[op.target];
-      if (entry === undefined) {
-        // Target not seeded in the active scene: nothing observable to write.
-        // This is not an error: a timed wait may name equipment whose only
-        // role is to gate step completion, not to change declared state.
-        return;
-      }
-      // No declared timed-wait state field exists in the closed vocabulary, so
-      // there is no store field to write here. The observable progress signal
-      // for a TimedWait is the subsequent ObjectStateChange in the same
-      // interaction response (e.g. focused: true), which writes the store.
+      store.set_flags(op.target, {
+        timed_wait_active: true,
+        timed_wait_display: op.display ?? null,
+      });
+      schedule_timed_wait(op);
     },
   };
   return deps;

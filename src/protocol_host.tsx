@@ -32,6 +32,7 @@ import type {
   ProtocolConfig,
   ProtocolShellEmitter,
   ShellViewSnapshot,
+  TimedWaitOp,
   UnsubscribeFn,
 } from "./shell/adapter/types";
 
@@ -50,9 +51,11 @@ import { createProtocolShellEmitter } from "./scene_runtime/protocol/emitter.js"
 import {
   create_step_machine,
   create_snapshot_reducer,
+  type StepMachineHandle,
 } from "./scene_runtime/protocol/step_machine.js";
 import { create_scene_op_handler } from "./scene_runtime/protocol/scene_operations.js";
 import { build_store_scene_op_deps } from "./scene_runtime/protocol/scene_op_deps.js";
+import { timed_wait_runtime_delay_ms } from "./scene_runtime/protocol/timed_wait.js";
 import { install_walker_debug_surface } from "./scene_runtime/protocol/walker_debug.js";
 import { attach_click_resolver } from "./scene_runtime/protocol/click_resolver.js";
 import {
@@ -366,10 +369,27 @@ function mount(): void {
   // the reactive store; SceneChange re-renders the target scene through
   // render_protocol_scene (which disposes the prior Solid root and reseeds the
   // store, applying the reset policy) while the deps preserve cursor-held state
-  // across the transition; LayoutMove is a reported no-op (Option A); TimedWait
-  // keeps observable semantics through the subsequent ObjectStateChange.
+  // across the transition. TimedWait writes a render-layer equipment phase and
+  // schedules its elapsed transition; LayoutMove fails loudly until the layout
+  // engine exposes a placement-override write surface.
+  let step_machine_for_timer: StepMachineHandle | null = null;
+  let timed_wait_timeout: number | null = null;
+  function schedule_timed_wait(op: TimedWaitOp): void {
+    if (timed_wait_timeout !== null) {
+      window.clearTimeout(timed_wait_timeout);
+    }
+    const duration_ms = timed_wait_runtime_delay_ms(op.duration_min);
+    timed_wait_timeout = window.setTimeout(() => {
+      timed_wait_timeout = null;
+      scene_store.set_flags(op.target, {
+        timed_wait_active: false,
+        timed_wait_display: null,
+      });
+      step_machine_for_timer?.handle_timer_elapsed(op.target);
+    }, duration_ms);
+  }
   const scene_op_handler = create_scene_op_handler(
-    build_store_scene_op_deps(scene_store, render_protocol_scene),
+    build_store_scene_op_deps(scene_store, render_protocol_scene, schedule_timed_wait),
   );
   // Read-only declared-field lookup seam. Built over the generated object schemas;
   // the construction layer owns the impl so the protocol layer stays free of any
@@ -433,6 +453,7 @@ function mount(): void {
     // on an actual change, never redundantly re-rendering the entry scene.
     initial_scene: scene_name,
   });
+  step_machine_for_timer = step_machine;
 
   // Restore the read-only walker/debug surfaces (window.PROTOCOL_STEPS +
   // window.gameState) the Solid HUD migration dropped. Read-only: the walker
@@ -577,6 +598,10 @@ function mount(): void {
         adjust_editor_root.parentNode.removeChild(adjust_editor_root);
       }
       dispose_walker_surface();
+      if (timed_wait_timeout !== null) {
+        window.clearTimeout(timed_wait_timeout);
+        timed_wait_timeout = null;
+      }
       // Release the emitter snapshot subscriptions so listeners do not
       // accumulate across navigations. These bindings mount outside a Solid
       // owner, so onCleanup does not apply; pagehide is the release path.

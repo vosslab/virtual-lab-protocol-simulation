@@ -140,6 +140,23 @@ async function walkActiveStep(page, step, report, opts) {
     const target = gs.activeTarget;
     const gesture = gs.activeGesture;
     if (target === null || gesture === null) {
+      const timedWait = page.locator('[data-timed-wait="active"]:visible').first();
+      if ((await timedWait.count()) > 0) {
+        report.info(`Waiting for visible timed phase on step ${step.id}`);
+        await page.waitForFunction(
+          (stepId) => {
+            const state = window.gameState;
+            return (
+              state.activeStepId !== stepId ||
+              state.activeTarget !== null ||
+              document.querySelector('[data-timed-wait="active"]') === null
+            );
+          },
+          step.id,
+          { timeout: CLICK_BUDGET_MS },
+        );
+        continue;
+      }
       throw new Error(
         `no_active_interaction: step ${step.id} has no active target/gesture but is still active`,
       );

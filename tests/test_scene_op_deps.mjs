@@ -7,8 +7,8 @@
 // These deps replace the old imperative build_scene_op_deps that poked DOM
 // attributes. Here the contract is: ObjectStateChange/CursorAttach write the
 // store; SceneChange reseeds (via the injected render_scene closure) and
-// preserves cursor-held state; LayoutMove is a reported no-op (no throw);
-// TimedWait is observable through the store only when the target is seeded.
+// preserves cursor-held state; LayoutMove fails loudly while unsupported;
+// TimedWait writes runtime equipment-phase flags and delegates scheduling.
 //
 // The render_scene closure is the test seam: in the browser, protocol_host
 // passes a closure that runs runPipeline + mountScene (which reseeds the store
@@ -330,43 +330,59 @@ describe("scene_op_deps SceneChange reset matrix", () => {
 });
 
 //============================================
-// LayoutMove (Option A: reported no-op)
+// LayoutMove (unsupported: fail loud)
 //============================================
 
 describe("scene_op_deps LayoutMove", () => {
-  test("LayoutMove does not throw and does not mutate the store", () => {
+  test("LayoutMove throws instead of reporting false success", () => {
     const store = create_scene_store();
     seed_scene(store);
     const deps = build_store_scene_op_deps(store, () => {});
-    const before = store.state["centrifuge"].state.running;
-    // Option A: explicitly unsupported, reported no-op (warn), never a throw.
-    assert.doesNotThrow(() =>
-      deps.apply_layout_move({ type: "LayoutMove", target: "centrifuge", zone: "mid" }),
+    assert.throws(
+      () => deps.apply_layout_move({ type: "LayoutMove", target: "centrifuge", zone: "mid" }),
+      /no placement-override surface/,
     );
-    assert.strictEqual(store.state["centrifuge"].state.running, before);
   });
 });
 
 //============================================
-// TimedWait (observable through the subsequent ObjectStateChange)
+// TimedWait (runtime phase + injected scheduler)
 //============================================
 
 describe("scene_op_deps TimedWait", () => {
-  test("TimedWait on a seeded target does not throw", () => {
+  test("TimedWait marks the target active and delegates scheduling", () => {
     const store = create_scene_store();
     seed_scene(store);
-    const deps = build_store_scene_op_deps(store, () => {});
-    assert.doesNotThrow(() =>
-      deps.start_timed_wait({ type: "TimedWait", target: "centrifuge", duration_min: 0.05 }),
+    const scheduled = [];
+    const deps = build_store_scene_op_deps(
+      store,
+      () => {},
+      (op) => scheduled.push(op),
     );
+    const op = {
+      type: "TimedWait",
+      target: "centrifuge",
+      duration_min: 0.05,
+      display: "Centrifuging",
+    };
+    deps.start_timed_wait(op);
+    assert.strictEqual(store.state["centrifuge"].flags.timed_wait_active, true);
+    assert.strictEqual(store.state["centrifuge"].flags.timed_wait_display, "Centrifuging");
+    assert.deepStrictEqual(scheduled, [op]);
   });
 
-  test("TimedWait on an unseeded target is a safe no-op", () => {
+  test("TimedWait on an unseeded target fails loudly", () => {
     const store = create_scene_store();
     seed_scene(store);
     const deps = build_store_scene_op_deps(store, () => {});
-    assert.doesNotThrow(() =>
-      deps.start_timed_wait({ type: "TimedWait", target: "not_seeded_equipment", duration_min: 1 }),
+    assert.throws(
+      () =>
+        deps.start_timed_wait({
+          type: "TimedWait",
+          target: "not_seeded_equipment",
+          duration_min: 1,
+        }),
+      /not seeded/,
     );
   });
 });

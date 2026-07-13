@@ -157,6 +157,56 @@ describe("step machine - happy path click", () => {
   });
 });
 
+describe("step machine - TimedWait sequencing", () => {
+  test("pauses at TimedWait and resumes later operations exactly once", () => {
+    const step = make_click_step("wait", "centrifuge", null);
+    step.sequence[0].response.scene_operations = [
+      {
+        type: "TimedWait",
+        target: "centrifuge",
+        duration_min: 1,
+        display: "Centrifuging",
+      },
+      {
+        type: "ObjectStateChange",
+        target: "centrifuge",
+        state: { running: false },
+      },
+    ];
+    const { machine, events, scene_ops, emitter } = build_harness(make_config([step], "wait"));
+
+    machine.start();
+    machine.handle_click("centrifuge", "click");
+
+    assert.deepStrictEqual(
+      scene_ops.map((op) => op.type),
+      ["TimedWait"],
+    );
+    // The interaction validator has fired, so the read-only shell snapshot may
+    // project the next interaction index; step completion remains blocked until
+    // the timed phase elapses.
+    assert.strictEqual(emitter.get_snapshot().is_complete, false);
+
+    machine.handle_click("centrifuge", "click");
+    assert.strictEqual(events.at(-1).kind, "interaction_rejected");
+    assert.strictEqual(events.at(-1).reason_code, "out_of_order");
+
+    machine.handle_timer_elapsed("other_equipment");
+    assert.deepStrictEqual(
+      scene_ops.map((op) => op.type),
+      ["TimedWait"],
+    );
+
+    machine.handle_timer_elapsed("centrifuge");
+    assert.deepStrictEqual(
+      scene_ops.map((op) => op.type),
+      ["TimedWait", "ObjectStateChange"],
+    );
+    assert.strictEqual(emitter.get_snapshot().is_complete, true);
+    assert.strictEqual(events.filter((event) => event.kind === "interaction_validated").length, 1);
+  });
+});
+
 describe("step machine - wrong target", () => {
   test("emits interaction_rejected with reason wrong_target; no advance", () => {
     const cfg = make_config([make_two_click_step("a", "t1", "t2", null)], "a");

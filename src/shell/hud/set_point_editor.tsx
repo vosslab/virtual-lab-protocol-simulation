@@ -65,6 +65,15 @@ export interface SetPointEditorProps {
 // step size never needs to be configurable per field.
 const STEP_SIZE = 1;
 
+export function parse_set_point_draft(text: string): number | null {
+  const trimmed = text.trim();
+  if (trimmed.length === 0) {
+    return null;
+  }
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 //============================================
 // Component implementation
 //============================================
@@ -96,20 +105,13 @@ export function SetPointEditor(props: SetPointEditorProps): JSXElement {
     }
   });
 
-  // Parse the current draft to a number, treating a blank draft as 0 so the
-  // stepper has a well-defined starting point.
-  function draft_number(): number {
-    const trimmed = draft().trim();
-    if (trimmed.length === 0) {
-      return 0;
-    }
-    const parsed = Number(trimmed);
-    return Number.isFinite(parsed) ? parsed : 0;
+  function draft_number(): number | null {
+    return parse_set_point_draft(draft());
   }
 
   // Nudge the draft by the stepper step size (direction is +1 or -1).
   function step(direction: number): void {
-    const next = draft_number() + direction * STEP_SIZE;
+    const next = (draft_number() ?? 0) + direction * STEP_SIZE;
     set_draft(String(next));
   }
 
@@ -120,7 +122,12 @@ export function SetPointEditor(props: SetPointEditorProps): JSXElement {
     if (target === null) {
       return;
     }
-    const accepted = props.on_commit(target, draft_number());
+    const value = draft_number();
+    if (value === null) {
+      set_rejected(true);
+      return;
+    }
+    const accepted = props.on_commit(target, value);
     // Show visible feedback when the commit is rejected by the validator.
     set_rejected(!accepted);
   }
@@ -184,7 +191,11 @@ export function SetPointEditor(props: SetPointEditorProps): JSXElement {
           data-adjust-target={active_target() ?? ""}
           type="number"
           value={draft()}
-          onInput={(event) => set_draft(event.currentTarget.value)}
+          aria-invalid={rejected() ? "true" : undefined}
+          onInput={(event) => {
+            set_draft(event.currentTarget.value);
+            set_rejected(false);
+          }}
           onKeyDown={on_keydown}
           style={{
             "font-size": "14px",

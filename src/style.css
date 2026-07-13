@@ -245,7 +245,7 @@
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(80, 60, 30, 0.10) 40%,
+    rgba(80, 60, 30, 0.1) 40%,
     rgba(80, 60, 30, 0.18) 100%
   );
   pointer-events: none;
@@ -269,7 +269,7 @@
     180deg,
     transparent 0%,
     rgba(120, 125, 130, 0.12) 40%,
-    rgba(110, 116, 122, 0.20) 100%
+    rgba(110, 116, 122, 0.2) 100%
   );
   pointer-events: none;
   /* Behind all scene objects (depth back = z-index 1). */
@@ -404,7 +404,6 @@
   object-fit: contain;
 }
 
-
 /*============================================
   Interaction affordance: baseline + ring rules
 
@@ -456,6 +455,29 @@
 [data-item-id][data-affordance="candidate"] {
   outline: 3px dashed #2563eb;
   outline-offset: 3px;
+}
+
+/* Render-layer status for a semantic TimedWait equipment phase. */
+.scene-item-timed-wait {
+  position: absolute;
+  left: 50%;
+  bottom: -2.25rem;
+  z-index: 4;
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  min-width: max-content;
+  max-width: 15rem;
+  padding: 0.3rem 0.55rem;
+  color: #172033;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #fff7d6;
+  border: 1px solid #8a6500;
+  border-radius: 0.4rem;
+  box-shadow: 0 2px 5px rgba(23, 32, 51, 0.2);
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 /*============================================

@@ -741,6 +741,17 @@ export function create_step_machine(
   let interaction_index = 0;
   let started = false;
   let completed = false;
+  // A validated interaction pauses at its first TimedWait operation. Operations
+  // after the wait remain queued so authored response order is preserved; the
+  // timer callback resumes from next_operation_index without validating the
+  // interaction a second time.
+  let pending_timed_wait: {
+    readonly step_name: string;
+    readonly interaction_index: number;
+    readonly target: string;
+    readonly operations: ReadonlyArray<SceneOperation>;
+    readonly next_operation_index: number;
+  } | null = null;
   // Current rendered scene, tracked so the step-entry scene render fires only on
   // an actual change. Seeded from the initially-mounted scene and updated by both
   // the step-entry render and every authored SceneChange scene_operation.
@@ -760,6 +771,7 @@ export function create_step_machine(
     }
     active_step_name = step.step_name;
     interaction_index = 0;
+    pending_timed_wait = null;
     // Step-entry scene render. ProtocolStep.scene is the authoritative
     // initial/transition scene for the step; when it names a scene different from
     // the one currently rendered, transition to it BEFORE step_started so the
@@ -792,29 +804,58 @@ export function create_step_machine(
     emitter.emit(event);
   }
 
-  function apply_response_scene_ops(ops: ReadonlyArray<SceneOperation>): void {
-    for (const op of ops) {
-      scene_op_handler(op);
-      const target_name = "target" in op ? op.target : null;
-      const applied: ProtocolShellEvent = {
-        kind: "scene_operation_applied",
-        operation_type: op.type,
-        target_name,
+  function emit_applied_scene_op(op: SceneOperation): void {
+    const target_name = "target" in op ? op.target : null;
+    const applied: ProtocolShellEvent = {
+      kind: "scene_operation_applied",
+      operation_type: op.type,
+      target_name,
+    };
+    emitter.emit(applied);
+    if (op.type === "SceneChange") {
+      current_scene = op.to_scene;
+      const scene_changed: ProtocolShellEvent = {
+        kind: "scene_changed",
+        from_scene: null,
+        to_scene: op.to_scene,
       };
-      emitter.emit(applied);
-      if (op.type === "SceneChange") {
-        // Keep the current-scene tracker in sync so a later step-entry render
-        // (sequence_runner boundary) sees the scene an authored SceneChange left
-        // active and does not re-render redundantly.
-        current_scene = op.to_scene;
-        const scene_changed: ProtocolShellEvent = {
-          kind: "scene_changed",
-          from_scene: null,
-          to_scene: op.to_scene,
+      emitter.emit(scene_changed);
+    }
+  }
+
+  function finish_validated_interaction(step: ProtocolStep): void {
+    interaction_index += 1;
+    if (interaction_index >= step.sequence.length) {
+      emit_step_validator_outcome(step);
+    }
+  }
+
+  function apply_response_scene_ops_from(
+    step: ProtocolStep,
+    ops: ReadonlyArray<SceneOperation>,
+    start_index: number,
+  ): void {
+    for (let op_index = start_index; op_index < ops.length; op_index += 1) {
+      const op = ops[op_index];
+      if (op === undefined) {
+        throw new Error(`Missing scene operation at response index ${String(op_index)}`);
+      }
+      if (op.type === "TimedWait") {
+        pending_timed_wait = {
+          step_name: step.step_name,
+          interaction_index,
+          target: op.target,
+          operations: ops,
+          next_operation_index: op_index + 1,
         };
-        emitter.emit(scene_changed);
+      }
+      scene_op_handler(op);
+      emit_applied_scene_op(op);
+      if (op.type === "TimedWait") {
+        return;
       }
     }
+    finish_validated_interaction(step);
   }
 
   // Build the observed object-state snapshot a final_state_matches step validator
@@ -934,13 +975,10 @@ export function create_step_machine(
     // Apply scene operations for the validated interaction.
     const interaction = step.sequence[interaction_index];
     if (interaction) {
-      apply_response_scene_ops(interaction.response.scene_operations);
+      apply_response_scene_ops_from(step, interaction.response.scene_operations, 0);
+      return;
     }
-    interaction_index += 1;
-    // If sequence done, run step validator.
-    if (interaction_index >= step.sequence.length) {
-      emit_step_validator_outcome(step);
-    }
+    finish_validated_interaction(step);
   }
 
   //============================================
@@ -986,6 +1024,11 @@ export function create_step_machine(
         "correct_target",
         "no_active_step",
       );
+      return;
+    }
+    if (pending_timed_wait !== null) {
+      const preset = narrow_interaction_preset(interaction.validator.preset);
+      emit_rejection(step.step_name, interaction_index, target, gesture, preset, "out_of_order");
       return;
     }
     const preset = narrow_interaction_preset(interaction.validator.preset);
@@ -1073,6 +1116,18 @@ export function create_step_machine(
       );
       return;
     }
+    if (pending_timed_wait !== null) {
+      const preset = narrow_interaction_preset(interaction.validator.preset);
+      emit_rejection(
+        step.step_name,
+        interaction_index,
+        interaction.target,
+        interaction.gesture,
+        preset,
+        "out_of_order",
+      );
+      return;
+    }
     const preset = narrow_interaction_preset(interaction.validator.preset);
     if (!committed) {
       // Cancel: emit interaction_rejected (reason: out_of_order) so the
@@ -1133,29 +1188,35 @@ export function create_step_machine(
       );
       return;
     }
-    const interaction = step.sequence[interaction_index];
-    if (!interaction) {
+    const pending = pending_timed_wait;
+    if (pending === null) {
       emit_rejection(
         step.step_name,
         interaction_index,
         equipment_name,
         "click",
         "correct_target",
-        "no_active_step",
+        "out_of_order",
       );
       return;
     }
-    // Find a TimedWait scene_operation in the current interaction's
-    // response naming this equipment (matched by target field).
-    const wait_op = interaction.response.scene_operations.find(
-      (op): op is Extract<SceneOperation, { type: "TimedWait" }> =>
-        op.type === "TimedWait" && op.target === equipment_name,
-    );
-    if (!wait_op) {
+    if (
+      pending.step_name !== step.step_name ||
+      pending.interaction_index !== interaction_index ||
+      pending.target !== equipment_name
+    ) {
+      emit_rejection(
+        step.step_name,
+        interaction_index,
+        equipment_name,
+        "click",
+        "correct_target",
+        "out_of_order",
+      );
       return;
     }
-    const preset = narrow_interaction_preset(interaction.validator.preset);
-    handle_validated(step, interaction.target, interaction.gesture, preset);
+    pending_timed_wait = null;
+    apply_response_scene_ops_from(step, pending.operations, pending.next_operation_index);
   }
 
   function handle_type_commit(target: string, typed_text: string): boolean {
@@ -1174,6 +1235,11 @@ export function create_step_machine(
         "correct_target",
         "no_active_step",
       );
+      return false;
+    }
+    if (pending_timed_wait !== null) {
+      const preset = narrow_interaction_preset(interaction.validator.preset);
+      emit_rejection(step.step_name, interaction_index, target, "type", preset, "out_of_order");
       return false;
     }
     const preset = narrow_interaction_preset(interaction.validator.preset);
@@ -1255,6 +1321,11 @@ export function create_step_machine(
       );
       return false;
     }
+    if (pending_timed_wait !== null) {
+      const preset = narrow_interaction_preset(interaction.validator.preset);
+      emit_rejection(step.step_name, interaction_index, target, "adjust", preset, "out_of_order");
+      return false;
+    }
     const preset = narrow_interaction_preset(interaction.validator.preset);
     // A set-point commit only applies to the active `adjust` interaction on its
     // target. The committed `target` is the set-point editor's active target,
@@ -1328,6 +1399,11 @@ export function create_step_machine(
         "correct_target",
         "no_active_step",
       );
+      return false;
+    }
+    if (pending_timed_wait !== null) {
+      const preset = narrow_interaction_preset(interaction.validator.preset);
+      emit_rejection(step.step_name, interaction_index, target, "drag", preset, "out_of_order");
       return false;
     }
     const preset = narrow_interaction_preset(interaction.validator.preset);

@@ -25,10 +25,9 @@
 # summary and exits non-zero immediately; it does not mask or skip later
 # steps by continuing past a failure.
 #
-# This script does not weaken run_validate.sh. A pre-existing content
-# error (for example a YAML target_missing or SCENE-LINT finding) is a
-# real failure and must make the umbrella gate fail; hiding it here would
-# defeat the purpose of an honest gate.
+# This script uses run_validate.sh's default severity policy: errors fail;
+# warnings and advisories remain visible but non-failing. Release callers that
+# require a warning-free corpus can use `./run_validate.sh --strict`.
 
 set -eo pipefail
 
