@@ -10,9 +10,9 @@ import importlib.util
 import collections.abc
 
 # Single shared set of directory names that no hygiene scan should lint.
-# Every entry is a build, cache, or legacy directory. This is the only
-# built-in directory-exclusion source; per-test exclusions go through the
-# extra_filter callable on discover_files.
+# Every entry is a build, cache, or legacy directory. Built-in directory and
+# scratch exclusions are applied by path_has_skip_dir; per-test exclusions go
+# through the extra_filter callable on discover_files.
 SKIP_DIRS = frozenset({
 	".git", ".venv", "__pycache__", ".pytest_cache", ".mypy_cache",
 	"old_shell_folder", "legacy",
@@ -565,24 +565,28 @@ def list_tracked_files(
 #============================================
 def path_has_skip_dir(path: str) -> bool:
 	"""
-	Check whether any path SEGMENT equals a skipped directory.
+	Check whether a path matches a built-in directory or scratch exclusion.
 
-	Match a full segment: "legacy/foo.py" is skipped, "notlegacy/foo.py"
-	is kept. Normalize separators to "/" first so git-style and OS-style
-	paths behave the same.
+	Match full directory segments and scratch conventions: "legacy/foo.py",
+	"_temp_check.py", and "dist_lane/main.js" are skipped, while
+	"notlegacy/foo.py" and "src/dist_report.py" are kept. Normalize
+	separators to "/" first so git-style and OS-style paths behave the same.
 
 	Args:
 		path: A path string, separators in either "/" or "\\" form.
 
 	Returns:
-		bool: True when any full segment is in SKIP_DIRS.
+		bool: True when the path belongs to a built-in excluded directory or
+			scratch file/build directory.
 	"""
 	# Normalize Windows-style separators so segment splitting is uniform.
 	normalized = path.replace("\\", "/")
 	parts = normalized.split("/")
-	# Match a full path segment, never a substring.
-	for part in parts:
-		if part in SKIP_DIRS:
+	# Match full skipped-directory segments and scratch naming conventions.
+	for index, part in enumerate(parts):
+		if part in SKIP_DIRS or part.startswith("_temp"):
+			return True
+		if index < len(parts) - 1 and part.startswith("dist_"):
 			return True
 	return False
 
@@ -648,8 +652,8 @@ def discover_files(
 
 	Exclusion uses three layers, applied in this order:
 
-	- Layer 1, SKIP_DIRS (vendored, this module): universal directory
-	  exclusions via path_has_skip_dir; identical across all repos.
+	- Layer 1, universal exclusions (vendored, this module): built-in skipped
+	  directories and scratch paths via path_has_skip_dir; identical across all repos.
 	- Layer 2, REPO_HYGIENE_FILTERS (repo-local, tests/conftest.py): per-test
 	  repo-local file/glob exclusions keyed by "all" or a vendored test_key.
 	  This is the home for any repo-specific exclusion, because conftest
@@ -709,7 +713,7 @@ def discover_files(
 	for abs_path in abs_paths:
 		# Step 4: repo-relative POSIX path for skip-dir and extra_filter.
 		rel = os.path.relpath(abs_path, repo_root).replace("\\", "/")
-		# Step 5: Layer 1 -- drop any path under a skipped directory.
+		# Step 5: Layer 1 -- drop any built-in skipped or scratch path.
 		if path_has_skip_dir(rel):
 			continue
 		# Step 6: case-insensitive extension filter when requested.
@@ -731,7 +735,6 @@ def discover_files(
 	# Step 10: sort ascending and return absolute paths.
 	matches.sort()
 	return matches
-
 
 #============================================
 def _gather_all_paths(repo_root: str) -> list[str]:

@@ -57,6 +57,8 @@ user actually receives.
   `mkdocs serve`, output under `site/`).
 - In the runner model, let the `playwright.config.ts` `webServer` block own the
   server so every worker shares one managed instance.
+- Set `testIgnore: ["**/_temp*", "**/dist_*/**"]` in `playwright.config.ts` so
+  scratch specs and private lane-build directories are never collected as durable tests.
 - In the library model, start a small repo-local static server (keep the setup
   in one helper) or target an already-running dev server.
 - Pin a random free port into an environment variable so parallel workers agree

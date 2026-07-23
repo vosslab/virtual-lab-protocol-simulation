@@ -38,6 +38,7 @@ output*/
 _temp*.?*
 OTHER_REPOS/
 # === TYPESCRIPT ===
+dist_*/
 _site/
 playwright-report/
 blob-report/
